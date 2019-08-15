@@ -11,7 +11,7 @@ export class AnimationManager {
     fpsratio = 1;
     focusback = false;
     fpsnode: HTMLElement;
-    list = [];
+    list:Array<Animation> = [];
 
     constructor() {
         window.addEventListener("focus", () => {
@@ -129,7 +129,7 @@ export class Animation {
 
 	/**
 	 * Create a new animation
-	 * @param System System of the 3D scene
+	 * @param animationManager Manager where to push animation
 	 * @param howmany How many step is needed to end the animation
 	 * @param start Starting value
 	 * @param step Progress step used in each run call
@@ -282,7 +282,7 @@ export class Animation {
 	 * @param arg Sent to functend so that it knows the stop can be forced and is not due to the end of the animation
 	 */
     stop(arg?: boolean) {
-        remove(this.animationManager.list, (a) => { return a.key == this.key });
+        remove(this.animationManager.list, (a:Animation) => { return a.key == this.key });
         this.count = this.start;
         if (this.functend && this.running) {
             this.running = false;
@@ -295,7 +295,7 @@ export class Animation {
 	 * Pause animation
 	 */
     pause() {
-        remove(this.animationManager.list, (a) => { return a.key == this.key });
+        remove(this.animationManager.list, (a:Animation) => { return a.key == this.key });
         this.running = false;
         return this;
     }

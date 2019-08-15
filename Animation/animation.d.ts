@@ -6,7 +6,7 @@ export declare class AnimationManager {
     fpsratio: number;
     focusback: boolean;
     fpsnode: HTMLElement;
-    list: never[];
+    list: Array<Animation>;
     constructor();
     /**
      * Make one step forward for all animations
@@ -65,7 +65,7 @@ export declare class Animation {
     key: string;
     /**
      * Create a new animation
-     * @param System System of the 3D scene
+     * @param animationManager Manager where to push animation
      * @param howmany How many step is needed to end the animation
      * @param start Starting value
      * @param step Progress step used in each run call

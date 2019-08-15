@@ -77,7 +77,7 @@ export { AnimationManager };
 var Animation = /** @class */ (function () {
     /**
      * Create a new animation
-     * @param System System of the 3D scene
+     * @param animationManager Manager where to push animation
      * @param howmany How many step is needed to end the animation
      * @param start Starting value
      * @param step Progress step used in each run call
