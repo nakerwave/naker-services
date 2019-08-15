@@ -1,11 +1,12 @@
 
-import { animationManager } from '../Animation/animationManager';
+import { AnimationManager } from '../Animation/animationManager';
 
 import '@babylonjs/core/Animations/animatable';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { el, mount, setStyle } from 'redom';
 
 /**
@@ -32,14 +33,15 @@ export class System {
   scene:Scene;
 
   /**
-   * BabylonJS FreeCamera
+   * BabylonJS Cameras
    */
-  freecamera:FreeCamera;
+   freeCamera:FreeCamera;
+   arcRotateCamera:ArcRotateCamera;
 
   /**
    * Manage all the animations only for this 3D Scene
    */
-  animationManager:animationManager;
+  animationManager:AnimationManager;
 
   /**
    * Element where the 3D Scene will be drawn
@@ -80,10 +82,25 @@ export class System {
     this.scene.shadowsEnabled = false;
     this.scene.ambientColor = new Color3(1, 1, 1);
 
-    this.freecamera = new FreeCamera('main_camera', new Vector3(0, 0, -10), this.scene);
-    this.freecamera.minZ = 0;
+    this.animationManager = new AnimationManager();
+  }
 
-    this.animationManager = new animationManager();
+  /**
+   * set a Camera to be used
+   */
+  setCamera (type:'free'|'arcrotate') {
+      let camera:FreeCamera|ArcRotateCamera;
+      if (type == 'free') {
+          this.freeCamera = new FreeCamera('main_freeCamera', new Vector3(0, 0, -10), this.scene);
+          this.freeCamera.minZ = 0;
+          camera = this.freeCamera;
+      } else if (type == 'arcrotate') {
+          this.arcRotateCamera = new ArcRotateCamera('main_arcRotateCamera', Math.PI/2, Math.PI/2, 10, new Vector3(0, 0, 0), this.scene);
+        this.arcRotateCamera.setTarget(new Vector3(0, 0, 0));
+        this.arcRotateCamera.minZ = 0;
+        camera = this.arcRotateCamera;
+      }
+      return camera;
   }
 
   /**
