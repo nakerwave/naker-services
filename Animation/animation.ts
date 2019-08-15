@@ -1,7 +1,83 @@
 
-import { System } from '../system/system';
-
 import remove from 'lodash/remove';
+
+/**
+ * Deal with all the scene animations
+ */
+
+export class AnimationManager {
+
+    fps = 60;
+    fpsratio = 1;
+    focusback = false;
+    fpsnode: HTMLElement;
+    list:Array<Animation> = [];
+
+    constructor() {
+        window.addEventListener("focus", () => {
+            this.setFocusBack();
+        });
+
+        window.addEventListener("blur", () => {
+            this.setFocusBack();
+        });
+    }
+
+	/**
+	 * Make one step forward for all animations
+	 * @param fps Frame per second of the engine
+	 */
+    runAnimations(fps: number) {
+        // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
+        this.fps = fps;
+        this.fpsratio = 60 / this.fps;
+
+        // if (this.focusback) return;
+        // To avoid acceleration when focus back
+        let fpsratio = Math.min(this.fpsratio, 2);
+        for (let i = 0; i < this.list.length; i++) {
+            let anim = this.list[i];
+            if (anim.running) {
+                anim.funct(anim.count, anim.count / anim.howmany);
+                if (anim.count >= anim.howmany) anim.stop(true);
+                anim.count += anim.step * fpsratio;
+            }
+        }
+    }
+
+	/**
+	 * Stop all the scene animation
+	 */
+    stopAnimations() {
+        this.setFocusBack();
+        for (let i = 0; i < this.list.length; i++) {
+            let anim = this.list[i];
+            anim.stop(true);
+        }
+    }
+
+	/**
+	 * Restart all the scene animation if there is any
+	 */
+    restartAnimations() {
+        this.setFocusBack();
+        for (let i = 0; i < this.list.length; i++) {
+            let anim = this.list[i];
+            anim.restart();
+        }
+    }
+
+	/**
+	 * Make a small pause of animations (Used when focus is back to window)
+	 */
+    setFocusBack() {
+        this.focusback = true;
+        localStorage.clear()
+        setTimeout(() => {
+            this.focusback = false;
+        }, 200);
+    }
+}
 
 /**
  * animation which can be create aniwhere and which will be run by animationManager
@@ -9,7 +85,7 @@ import remove from 'lodash/remove';
 
 export class Animation {
 
-    _system: System;
+    animationManager: AnimationManager;
 
 	/**
 	 * Starting value
@@ -53,13 +129,13 @@ export class Animation {
 
 	/**
 	 * Create a new animation
-	 * @param System System of the 3D scene
+	 * @param animationManager Manager where to push animation
 	 * @param howmany How many step is needed to end the animation
 	 * @param start Starting value
 	 * @param step Progress step used in each run call
 	 */
-    constructor(System: System, howmany?: number, start?: number, step?: number) {
-        this._system = System;
+    constructor(animationManager: AnimationManager, howmany?: number, start?: number, step?: number) {
+        this.animationManager = animationManager;
         if (howmany) this.setParam(howmany, start, step);
         this.key = Math.random().toString(36);
         return this;
@@ -109,7 +185,7 @@ export class Animation {
             count = count - alter * alterstep;
             perc = count / alter;
             if (ft) funct1(count, perc);
-            else funct2(count, perc);
+            else if (funct2) funct2(count, perc);
         }, functend);
         return this;
     }
@@ -206,7 +282,7 @@ export class Animation {
 	 * @param arg Sent to functend so that it knows the stop can be forced and is not due to the end of the animation
 	 */
     stop(arg?: boolean) {
-        remove(this._system.animationManager.list, (a) => { return a.key == this.key });
+        remove(this.animationManager.list, (a:Animation) => { return a.key == this.key });
         this.count = this.start;
         if (this.functend && this.running) {
             this.running = false;
@@ -219,7 +295,7 @@ export class Animation {
 	 * Pause animation
 	 */
     pause() {
-        remove(this._system.animationManager.list, (a) => { return a.key == this.key });
+        remove(this.animationManager.list, (a:Animation) => { return a.key == this.key });
         this.running = false;
         return this;
     }
@@ -228,7 +304,7 @@ export class Animation {
 	 * Play animation
 	 */
     play() {
-        if (this._system.animationManager.list.indexOf(this) == -1) this._system.animationManager.list.push(this);
+        if (this.animationManager.list.indexOf(this) == -1) this.animationManager.list.push(this);
         return this;
     }
 }

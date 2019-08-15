@@ -1,4 +1,5 @@
-import { System } from '../System/system';
+import { Engine } from '@babylonjs/core/Engines/engine';
+import { Scene } from '@babylonjs/core/scene';
 /**
  * Detect scene size change in order to adapt some size
  */
@@ -6,16 +7,15 @@ export declare class ResponsiveCatcher {
     /**
      * @ignore
      */
-    _system: System;
+    _engine: Engine;
+    /**
+    * Max Hardware scaling of BabylonJS Engine
+    */
+    maxScaling: number;
     /**
      * @param system System of the 3D scene
      */
-    constructor(system: System);
-    /**
-     * Listen to engine changes
-     * @ignore
-     */
-    _addEngineEvent(): void;
+    constructor(engine: Engine, scene: Scene);
     /**
      * Window viewport can be problematic for scale rendering, we check if one is present
      * @ignore

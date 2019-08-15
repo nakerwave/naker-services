@@ -1,4 +1,4 @@
-import { AnimationManager } from '../Animation/animationManager';
+import { AnimationManager } from '../Animation/animation';
 import '@babylonjs/core/Animations/animatable';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
@@ -40,18 +40,16 @@ export declare class System {
      */
     canvas: HTMLCanvasElement;
     /**
-     * Creates a new System
+     * Creates a new System, can't create Engine and Scene here or it won't include extensions
      * @param container Element where the scene will be drawn
+     * @param engine BabylonJS Engine
+     * @param scene BabylonJS Scene
      */
-    constructor(container: HTMLElement);
-    /**
-     * Build all the essentials assets for the 3D Scene
-     */
-    buildScene(): void;
+    set(container: HTMLElement, engine: Engine, scene: Scene): void;
     /**
      * set a Camera to be used
      */
-    setCamera(type: 'free' | 'arcrotate'): FreeCamera | ArcRotateCamera;
+    setCamera(type: 'free' | 'arcrotate'): void;
     /**
      * Allow to launch scene rendering (when everything is loaded for instance)
      */

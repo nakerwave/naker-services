@@ -3,7 +3,7 @@ import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
 var MouseCatcher = /** @class */ (function () {
-    function MouseCatcher(System) {
+    function MouseCatcher(animationManager) {
         var _this = this;
         this.mousecatch = new Vector2(0, 0);
         this.catching = true;
@@ -17,7 +17,7 @@ var MouseCatcher = /** @class */ (function () {
         this.rapidity = 0.1;
         this.finalPrecision = 0.01;
         this.listeners = [];
-        this.animation = new Animation(System, 10);
+        this.animation = new Animation(animationManager, 10);
         window.addEventListener("mousemove", function (evt) { _this.mouseOrientation(evt); });
         window.addEventListener("deviceorientation", function (evt) { _this.deviceOrientation(evt); });
         window.addEventListener("orientationchange", function () { _this.orientationChanged(); });

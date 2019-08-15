@@ -1,16 +1,88 @@
 import remove from 'lodash/remove';
 /**
+ * Deal with all the scene animations
+ */
+var AnimationManager = /** @class */ (function () {
+    function AnimationManager() {
+        var _this = this;
+        this.fps = 60;
+        this.fpsratio = 1;
+        this.focusback = false;
+        this.list = [];
+        window.addEventListener("focus", function () {
+            _this.setFocusBack();
+        });
+        window.addEventListener("blur", function () {
+            _this.setFocusBack();
+        });
+    }
+    /**
+     * Make one step forward for all animations
+     * @param fps Frame per second of the engine
+     */
+    AnimationManager.prototype.runAnimations = function (fps) {
+        // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
+        this.fps = fps;
+        this.fpsratio = 60 / this.fps;
+        // if (this.focusback) return;
+        // To avoid acceleration when focus back
+        var fpsratio = Math.min(this.fpsratio, 2);
+        for (var i = 0; i < this.list.length; i++) {
+            var anim = this.list[i];
+            if (anim.running) {
+                anim.funct(anim.count, anim.count / anim.howmany);
+                if (anim.count >= anim.howmany)
+                    anim.stop(true);
+                anim.count += anim.step * fpsratio;
+            }
+        }
+    };
+    /**
+     * Stop all the scene animation
+     */
+    AnimationManager.prototype.stopAnimations = function () {
+        this.setFocusBack();
+        for (var i = 0; i < this.list.length; i++) {
+            var anim = this.list[i];
+            anim.stop(true);
+        }
+    };
+    /**
+     * Restart all the scene animation if there is any
+     */
+    AnimationManager.prototype.restartAnimations = function () {
+        this.setFocusBack();
+        for (var i = 0; i < this.list.length; i++) {
+            var anim = this.list[i];
+            anim.restart();
+        }
+    };
+    /**
+     * Make a small pause of animations (Used when focus is back to window)
+     */
+    AnimationManager.prototype.setFocusBack = function () {
+        var _this = this;
+        this.focusback = true;
+        localStorage.clear();
+        setTimeout(function () {
+            _this.focusback = false;
+        }, 200);
+    };
+    return AnimationManager;
+}());
+export { AnimationManager };
+/**
  * animation which can be create aniwhere and which will be run by animationManager
  */
 var Animation = /** @class */ (function () {
     /**
      * Create a new animation
-     * @param System System of the 3D scene
+     * @param animationManager Manager where to push animation
      * @param howmany How many step is needed to end the animation
      * @param start Starting value
      * @param step Progress step used in each run call
      */
-    function Animation(System, howmany, start, step) {
+    function Animation(animationManager, howmany, start, step) {
         /**
          * Starting value
          */
@@ -27,7 +99,7 @@ var Animation = /** @class */ (function () {
          * Is the animation running or not
          */
         this.running = false;
-        this._system = System;
+        this.animationManager = animationManager;
         if (howmany)
             this.setParam(howmany, start, step);
         this.key = Math.random().toString(36);
@@ -79,7 +151,7 @@ var Animation = /** @class */ (function () {
             perc = count / alter;
             if (ft)
                 funct1(count, perc);
-            else
+            else if (funct2)
                 funct2(count, perc);
         }, functend);
         return this;
@@ -173,7 +245,7 @@ var Animation = /** @class */ (function () {
      */
     Animation.prototype.stop = function (arg) {
         var _this = this;
-        remove(this._system.animationManager.list, function (a) { return a.key == _this.key; });
+        remove(this.animationManager.list, function (a) { return a.key == _this.key; });
         this.count = this.start;
         if (this.functend && this.running) {
             this.running = false;
@@ -186,7 +258,7 @@ var Animation = /** @class */ (function () {
      */
     Animation.prototype.pause = function () {
         var _this = this;
-        remove(this._system.animationManager.list, function (a) { return a.key == _this.key; });
+        remove(this.animationManager.list, function (a) { return a.key == _this.key; });
         this.running = false;
         return this;
     };
@@ -194,8 +266,8 @@ var Animation = /** @class */ (function () {
      * Play animation
      */
     Animation.prototype.play = function () {
-        if (this._system.animationManager.list.indexOf(this) == -1)
-            this._system.animationManager.list.push(this);
+        if (this.animationManager.list.indexOf(this) == -1)
+            this.animationManager.list.push(this);
         return this;
     };
     return Animation;
