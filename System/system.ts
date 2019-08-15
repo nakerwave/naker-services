@@ -17,117 +17,117 @@ import { el, mount, setStyle } from 'redom';
 
 export class System {
 
-  /**
-  * Max Hardware scaling of BabylonJS Engine
-  */
-  maxScaling = 1;
+    /**
+    * Max Hardware scaling of BabylonJS Engine
+    */
+    maxScaling = 1;
 
-  /**
-  * BabylonJS Engine
-  */
-  engine:Engine;
+    /**
+    * BabylonJS Engine
+    */
+    engine: Engine;
 
-  /**
-   * BabylonJS Scene
-   */
-  scene:Scene;
+    /**
+     * BabylonJS Scene
+     */
+    scene: Scene;
 
-  /**
-   * BabylonJS Cameras
-   */
-   freeCamera:FreeCamera;
-   arcRotateCamera:ArcRotateCamera;
+    /**
+     * BabylonJS Cameras
+     */
+    freeCamera: FreeCamera;
+    arcRotateCamera: ArcRotateCamera;
 
-  /**
-   * Manage all the animations only for this 3D Scene
-   */
-  animationManager:AnimationManager;
+    /**
+     * Manage all the animations only for this 3D Scene
+     */
+    animationManager: AnimationManager;
 
-  /**
-   * Element where the 3D Scene will be drawn
-   */
-  container:HTMLElement;
+    /**
+     * Element where the 3D Scene will be drawn
+     */
+    container: HTMLElement;
 
-  /**
-   * Canvas used to draw the 3D scene
-   */
-  canvas:HTMLCanvasElement;
+    /**
+     * Canvas used to draw the 3D scene
+     */
+    canvas: HTMLCanvasElement;
 
-  /**
-   * Creates a new System
-   * @param container Element where the scene will be drawn
-   */
-  constructor (container:HTMLElement) {
-    if (!Engine.isSupported()) throw 'WebGL not supported';
-    // Keep that variable def
-    this.container = container;
-    // -webkit-tap to avoid touch effect on iphone
-    setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent'});
+    /**
+     * Creates a new System
+     * @param container Element where the scene will be drawn
+     */
+    constructor(container: HTMLElement) {
+        if (!Engine.isSupported()) throw 'WebGL not supported';
+        // Keep that variable def
+        this.container = container;
+        // -webkit-tap to avoid touch effect on iphone
+        setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
 
-    this.canvas = el('canvas', {style:{position: 'absolute', 'z-index':0, top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline:'none', 'touch-action': 'none'}, oncontextmenu:"javascript:return false;"});
-    mount(this.container, this.canvas);
+        this.canvas = el('canvas', { style: { position: 'absolute', 'z-index': 0, top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        mount(this.container, this.canvas);
 
-    // For now keep false as the last argument of the engine,
-    // We don't want the canvas to adapt to screen ratio as it slow down too much the scene
-    this.engine = new Engine(this.canvas, true, { limitDeviceRatio: this.maxScaling }, false);
-    // NOTE to avoid request for manifest files because it can block loading on safari
-    this.engine.enableOfflineSupport = false;
-  }
+        // For now keep false as the last argument of the engine,
+        // We don't want the canvas to adapt to screen ratio as it slow down too much the scene
+        this.engine = new Engine(this.canvas, true, { limitDeviceRatio: this.maxScaling }, false);
+        // NOTE to avoid request for manifest files because it can block loading on safari
+        this.engine.enableOfflineSupport = false;
+    }
 
-  /**
-   * Build all the essentials assets for the 3D Scene
-   */
-  buildScene () {
-    this.scene = new Scene(this.engine);
-    this.scene.shadowsEnabled = false;
-    this.scene.ambientColor = new Color3(1, 1, 1);
+    /**
+     * Build all the essentials assets for the 3D Scene
+     */
+    buildScene() {
+        this.scene = new Scene(this.engine);
+        this.scene.shadowsEnabled = false;
+        this.scene.ambientColor = new Color3(1, 1, 1);
 
-    this.animationManager = new AnimationManager();
-  }
+        this.animationManager = new AnimationManager();
+    }
 
-  /**
-   * set a Camera to be used
-   */
-  setCamera (type:'free'|'arcrotate') {
-      let camera:FreeCamera|ArcRotateCamera;
-      if (type == 'free') {
-          this.freeCamera = new FreeCamera('main_freeCamera', new Vector3(0, 0, -10), this.scene);
-          this.freeCamera.minZ = 0;
-          camera = this.freeCamera;
-      } else if (type == 'arcrotate') {
-          this.arcRotateCamera = new ArcRotateCamera('main_arcRotateCamera', Math.PI/2, Math.PI/2, 10, new Vector3(0, 0, 0), this.scene);
-        this.arcRotateCamera.setTarget(new Vector3(0, 0, 0));
-        this.arcRotateCamera.minZ = 0;
-        camera = this.arcRotateCamera;
-      }
-      return camera;
-  }
+    /**
+     * set a Camera to be used
+     */
+    setCamera(type: 'free' | 'arcrotate') {
+        let camera: FreeCamera | ArcRotateCamera;
+        if (type == 'free') {
+            this.freeCamera = new FreeCamera('main_freeCamera', new Vector3(0, 0, -10), this.scene);
+            this.freeCamera.minZ = 0;
+            camera = this.freeCamera;
+        } else if (type == 'arcrotate') {
+            this.arcRotateCamera = new ArcRotateCamera('main_arcRotateCamera', Math.PI / 2, Math.PI / 2, 10, new Vector3(0, 0, 0), this.scene);
+            this.arcRotateCamera.setTarget(new Vector3(0, 0, 0));
+            this.arcRotateCamera.minZ = 0;
+            camera = this.arcRotateCamera;
+        }
+        return camera;
+    }
 
-  /**
-   * Allow to launch scene rendering (when everything is loaded for instance)
-   */
-  launchRender () {
-    this.engine.stopRenderLoop();
-    this.engine.runRenderLoop( () => {
-      this.animationManager.runAnimations(this.engine.getFps());
-      this.scene.render();
-    });
-  }
+    /**
+     * Allow to launch scene rendering (when everything is loaded for instance)
+     */
+    launchRender() {
+        this.engine.stopRenderLoop();
+        this.engine.runRenderLoop(() => {
+            this.animationManager.runAnimations(this.engine.getFps());
+            this.scene.render();
+        });
+    }
 
-  /**
-   * Optimize scene to make rendering faster
-   * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
-   */
-  optimize () {
-      this.scene.blockMaterialDirtyMechanism = true;
-      this.scene.autoClear = false; // Color buffer
-      this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
-  }
+    /**
+     * Optimize scene to make rendering faster
+     * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
+     */
+    optimize() {
+        this.scene.blockMaterialDirtyMechanism = true;
+        this.scene.autoClear = false; // Color buffer
+        this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
+    }
 
-  /**
-   * Stop scene rendering
-   */
-  stopRender () {
-    this.engine.stopRenderLoop();
-  }
+    /**
+     * Stop scene rendering
+     */
+    stopRender() {
+        this.engine.stopRenderLoop();
+    }
 }
