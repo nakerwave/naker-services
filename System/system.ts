@@ -1,0 +1,116 @@
+
+import { animationManager } from '../Animation/animationManager';
+
+import '@babylonjs/core/Animations/animatable';
+import { Engine } from '@babylonjs/core/Engines/engine';
+import { Scene } from '@babylonjs/core/scene';
+import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
+import { el, mount, setStyle } from 'redom';
+
+/**
+ * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
+ *
+ * The system is really important as it is often sent in every other class created to manage core assets
+ */
+
+export class System {
+
+  /**
+  * Max Hardware scaling of BabylonJS Engine
+  */
+  maxScaling = 1;
+
+  /**
+  * BabylonJS Engine
+  */
+  engine:Engine;
+
+  /**
+   * BabylonJS Scene
+   */
+  scene:Scene;
+
+  /**
+   * BabylonJS FreeCamera
+   */
+  freecamera:FreeCamera;
+
+  /**
+   * Manage all the animations only for this 3D Scene
+   */
+  animationManager:animationManager;
+
+  /**
+   * Element where the 3D Scene will be drawn
+   */
+  container:HTMLElement;
+
+  /**
+   * Canvas used to draw the 3D scene
+   */
+  canvas:HTMLCanvasElement;
+
+  /**
+   * Creates a new System
+   * @param container Element where the scene will be drawn
+   */
+  constructor (container:HTMLElement) {
+    if (!Engine.isSupported()) throw 'WebGL not supported';
+    // Keep that variable def
+    this.container = container;
+    // -webkit-tap to avoid touch effect on iphone
+    setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent'});
+
+    this.canvas = el('canvas', {style:{position: 'absolute', 'z-index':0, top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline:'none', 'touch-action': 'none'}, oncontextmenu:"javascript:return false;"});
+    mount(this.container, this.canvas);
+
+    // For now keep false as the last argument of the engine,
+    // We don't want the canvas to adapt to screen ratio as it slow down too much the scene
+    this.engine = new Engine(this.canvas, true, { limitDeviceRatio: this.maxScaling }, false);
+    // NOTE to avoid request for manifest files because it can block loading on safari
+    this.engine.enableOfflineSupport = false;
+  }
+
+  /**
+   * Build all the essentials assets for the 3D Scene
+   */
+  buildScene () {
+    this.scene = new Scene(this.engine);
+    this.scene.shadowsEnabled = false;
+    this.scene.ambientColor = new Color3(1, 1, 1);
+
+    this.freecamera = new FreeCamera('main_camera', new Vector3(0, 0, -10), this.scene);
+    this.freecamera.minZ = 0;
+
+    this.animationManager = new animationManager();
+  }
+
+  /**
+   * Allow to launch scene rendering (when everything is loaded for instance)
+   */
+  launchRender () {
+    this.engine.stopRenderLoop();
+    this.engine.runRenderLoop( () => {
+      this.animationManager.runAnimations(this.engine.getFps());
+      this.scene.render();
+    });
+  }
+
+  /**
+   * Optimize scene to make rendering faster
+   * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
+   */
+  optimize () {
+      this.scene.blockMaterialDirtyMechanism = true;
+      this.scene.autoClear = false; // Color buffer
+      this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
+  }
+
+  /**
+   * Stop scene rendering
+   */
+  stopRender () {
+    this.engine.stopRenderLoop();
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Naker Services",
+  "description": "A list of tools which enabled interactivity with online users",
+  "repository": "https://github.com/nakerwave/naker-services.git",
+  "license": "Apache License 2.0",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "dev": "set NODE_ENV=development",
+    "start": "npm run clean && npm run dev && parcel index.html --no-hmr",
+    "build": "npm run clean && parcel build index.html --public-url ./",
+    "build-back-viewer": "npm run clean && parcel build src/viewer.ts --global nakerback -o viewer.js",
+  },
+  "dependencies": {
+    "@babylonjs/core": "^4.1.0-alpha.14",
+    "autoprefixer": "^8.6.5",
+    "debounce-promise": "^3.1.0",
+    "lodash": "^4.17.11",
+    "postcss-modules": "^1.4.1",
+    "redom": "^3.16.1",
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3",
+    "typescript": "^3.4.5"
+  }
+}
