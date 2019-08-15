@@ -1,15 +1,20 @@
 {
-  "name": "Naker_Services",
+  "name": "@naker/services",
   "description": "A list of tools which enabled interactivity with online users",
-  "repository": "https://github.com/nakerwave/naker-services.git",
-  "license": "Apache License 2.0",
+  "repository": "https://github.com/nakerwave/naker-services",
+  "homepage": "https://github.com/nakerwave/naker-services",
+  "license": "Apache-2.0",
+  "version": "1.0.0",
+  "typings": "index.d.ts",
+  "main": "index.js",
+  "module": "index.js",
   "scripts": {
-    "clean": "rm -rf dist",
-    "dev": "set NODE_ENV=development",
-    "start": "npm run clean && npm run dev && parcel index.html --no-hmr",
-    "build": "npm run clean && parcel build index.html --public-url ./",
-    "build-back-viewer": "npm run clean && parcel build src/viewer.ts --global nakerback -o viewer.js"
   },
+  "keywords": [
+    "3D",
+    "service"
+  ],
+  "author": "Pichou",
   "dependencies": {
     "@babylonjs/core": "^4.1.0-alpha.14",
     "lodash": "^4.17.11",
