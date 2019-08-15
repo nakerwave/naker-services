@@ -3,7 +3,6 @@ import { AnimationManager } from '../Animation/animationManager';
 
 import '@babylonjs/core/Animations/animatable';
 import { Engine } from '@babylonjs/core/Engines/engine';
-export interface Engine extends Engine {};
 
 import { Scene } from '@babylonjs/core/scene';
 import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
