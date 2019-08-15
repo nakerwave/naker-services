@@ -5,7 +5,7 @@ export declare class AnimationManager {
     fps: number;
     fpsratio: number;
     focusback: boolean;
-    fpsnode: any;
+    fpsnode: HTMLElement;
     list: never[];
     constructor();
     /**

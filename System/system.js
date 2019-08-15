@@ -1,9 +1,10 @@
-import { animationManager } from '../Animation/animationManager';
+import { AnimationManager } from '../Animation/animationManager';
 import '@babylonjs/core/Animations/animatable';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { el, mount, setStyle } from 'redom';
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -41,9 +42,25 @@ var System = /** @class */ (function () {
         this.scene = new Scene(this.engine);
         this.scene.shadowsEnabled = false;
         this.scene.ambientColor = new Color3(1, 1, 1);
-        this.freecamera = new FreeCamera('main_camera', new Vector3(0, 0, -10), this.scene);
-        this.freecamera.minZ = 0;
-        this.animationManager = new animationManager();
+        this.animationManager = new AnimationManager();
+    };
+    /**
+     * set a Camera to be used
+     */
+    System.prototype.setCamera = function (type) {
+        var camera;
+        if (type == 'free') {
+            this.freeCamera = new FreeCamera('main_freeCamera', new Vector3(0, 0, -10), this.scene);
+            this.freeCamera.minZ = 0;
+            camera = this.freeCamera;
+        }
+        else if (type == 'arcrotate') {
+            this.arcRotateCamera = new ArcRotateCamera('main_arcRotateCamera', Math.PI / 2, Math.PI / 2, 10, new Vector3(0, 0, 0), this.scene);
+            this.arcRotateCamera.setTarget(new Vector3(0, 0, 0));
+            this.arcRotateCamera.minZ = 0;
+            camera = this.arcRotateCamera;
+        }
+        return camera;
     };
     /**
      * Allow to launch scene rendering (when everything is loaded for instance)
