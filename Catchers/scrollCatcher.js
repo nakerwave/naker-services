@@ -336,3 +336,4 @@ var ScrollCatcher = /** @class */ (function () {
     return ScrollCatcher;
 }());
 export { ScrollCatcher };
+//# sourceMappingURL=scrollCatcher.js.map

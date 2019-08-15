@@ -89,3 +89,4 @@ var MouseCatcher = /** @class */ (function () {
     return MouseCatcher;
 }());
 export { MouseCatcher };
+//# sourceMappingURL=mouseCatcher.js.map

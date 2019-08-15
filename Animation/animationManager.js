@@ -70,3 +70,4 @@ var AnimationManager = /** @class */ (function () {
     return AnimationManager;
 }());
 export { AnimationManager };
+//# sourceMappingURL=animationManager.js.map

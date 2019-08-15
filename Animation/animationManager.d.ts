@@ -6,7 +6,7 @@ export declare class AnimationManager {
     fpsratio: number;
     focusback: boolean;
     fpsnode: HTMLElement;
-    list: any[];
+    list: never[];
     constructor();
     /**
      * Make one step forward for all animations

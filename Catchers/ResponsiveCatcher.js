@@ -135,3 +135,4 @@ var ResponsiveCatcher = /** @class */ (function () {
     return ResponsiveCatcher;
 }());
 export { ResponsiveCatcher };
+//# sourceMappingURL=ResponsiveCatcher.js.map
