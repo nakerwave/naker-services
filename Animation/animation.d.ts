@@ -1,9 +1,36 @@
-import { System } from '../system/system';
+/**
+ * Deal with all the scene animations
+ */
+export declare class AnimationManager {
+    fps: number;
+    fpsratio: number;
+    focusback: boolean;
+    fpsnode: HTMLElement;
+    list: never[];
+    constructor();
+    /**
+     * Make one step forward for all animations
+     * @param fps Frame per second of the engine
+     */
+    runAnimations(fps: number): void;
+    /**
+     * Stop all the scene animation
+     */
+    stopAnimations(): void;
+    /**
+     * Restart all the scene animation if there is any
+     */
+    restartAnimations(): void;
+    /**
+     * Make a small pause of animations (Used when focus is back to window)
+     */
+    setFocusBack(): void;
+}
 /**
  * animation which can be create aniwhere and which will be run by animationManager
  */
 export declare class Animation {
-    _system: System;
+    animationManager: AnimationManager;
     /**
      * Starting value
      */
@@ -43,7 +70,7 @@ export declare class Animation {
      * @param start Starting value
      * @param step Progress step used in each run call
      */
-    constructor(System: System, howmany?: number, start?: number, step?: number);
+    constructor(animationManager: AnimationManager, howmany?: number, start?: number, step?: number);
     /**
      * Set animation parameters
      * @param howmany How many step is needed to end the animation

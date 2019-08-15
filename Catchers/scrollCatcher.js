@@ -10,7 +10,7 @@ var ScrollCatcher = /** @class */ (function () {
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
-    function ScrollCatcher(system, responsive) {
+    function ScrollCatcher(animationManager, container, responsive) {
         var _this = this;
         /**
          * Current scroll position
@@ -69,8 +69,8 @@ var ScrollCatcher = /** @class */ (function () {
          * @ignore
          */
         this._listeners = [];
-        this._system = system;
-        this.animation = new Animation(this._system, 10);
+        this.animation = new Animation(animationManager, 10);
+        this._container = container;
         responsive.addListener(function () {
             _this.checkHeight(_this.scrollHeight);
         });
@@ -91,15 +91,15 @@ var ScrollCatcher = /** @class */ (function () {
      * @param height On what height should be base the test
      */
     ScrollCatcher.prototype.checkHeight = function (height) {
-        if (this._system.container) {
-            if (this._system.container == document.body) {
+        if (this._container) {
+            if (this._container == document.body) {
                 // If overflow style = hidden, there is no scrollingElement on document
                 if (document.scrollingElement) {
                     this.scrollHeight = document.scrollingElement.scrollHeight - window.innerHeight;
                 }
             }
             else {
-                this.scrollHeight = this._system.container.scrollHeight - this._system.container.clientHeight;
+                this.scrollHeight = this._container.scrollHeight - this._container.clientHeight;
             }
         }
         // On some browser or phone, you can have a small different even if page not scrollable
@@ -119,7 +119,7 @@ var ScrollCatcher = /** @class */ (function () {
     ScrollCatcher.prototype._setScrollEvent = function () {
         var _this = this;
         // Body use different evnet for scroll
-        if (this._system.container == document.body) {
+        if (this._container == document.body) {
             window.addEventListener("scroll", function (evt) {
                 if (!_this.followWindowScroll)
                     return;
@@ -132,24 +132,24 @@ var ScrollCatcher = /** @class */ (function () {
             });
         }
         else {
-            this._system.container.addEventListener("scroll", function (evt) {
+            this._container.addEventListener("scroll", function (evt) {
                 if (!_this.followWindowScroll)
                     return;
-                var top = _this._system.container.scrollTop;
+                var top = _this._container.scrollTop;
                 if (_this.catching)
                     _this.catchTop(top);
             });
         }
-        this._system.container.addEventListener("mousewheel", function (evt) {
+        this._container.addEventListener("mousewheel", function (evt) {
             var top = _this.scrollReal + evt.deltaY;
             _this.mouseWheel(evt, top);
         });
         // Firefox trigger this other event which we need to prevent to avoid body scroll when in Intale
-        this._system.container.addEventListener("MozMousePixelScroll", function (evt) {
+        this._container.addEventListener("MozMousePixelScroll", function (evt) {
             evt.preventDefault();
         });
         // Firefox use DOMMouseScroll
-        this._system.container.addEventListener("DOMMouseScroll", function (evt) {
+        this._container.addEventListener("DOMMouseScroll", function (evt) {
             var top = _this.scrollReal + evt.detail * 50;
             _this.mouseWheel(evt, top);
         });
@@ -161,12 +161,12 @@ var ScrollCatcher = /** @class */ (function () {
     ScrollCatcher.prototype._setMobileDragEvent = function () {
         var _this = this;
         var count = 0;
-        this._system.canvas.addEventListener("touchstart", function (evt) {
+        this._container.addEventListener("touchstart", function (evt) {
             _this.touchStart.x = evt.changedTouches[0].clientX;
             _this.touchStart.y = evt.changedTouches[0].clientY;
             count = 0;
         });
-        this._system.canvas.addEventListener("touchmove", function (evt) {
+        this._container.addEventListener("touchmove", function (evt) {
             if (_this.touchStart && _this.catching) {
                 var x = evt.changedTouches[0].clientX;
                 var y = evt.changedTouches[0].clientY;
@@ -199,14 +199,14 @@ var ScrollCatcher = /** @class */ (function () {
     ScrollCatcher.prototype.start = function () {
         this.catching = true;
         if (this.followWindowScroll) {
-            if (this._system.container == document.body) {
+            if (this._container == document.body) {
                 if (document.scrollingElement) {
                     var top_3 = document.scrollingElement.scrollTop;
                     this.catchTop(top_3);
                 }
             }
             else {
-                var top_4 = this._system.container.scrollTop;
+                var top_4 = this._container.scrollTop;
                 this.catchTop(top_4);
             }
         }
@@ -261,7 +261,7 @@ var ScrollCatcher = /** @class */ (function () {
     * @param top What is the new top position due to this mouseWheel event
     */
     ScrollCatcher.prototype.mouseWheel = function (evt, top) {
-        if (this._system.container != document.body) {
+        if (this._container != document.body) {
             evt.preventDefault();
             evt.stopPropagation();
         }

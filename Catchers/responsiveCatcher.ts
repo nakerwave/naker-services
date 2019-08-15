@@ -1,5 +1,6 @@
 
-import { System } from '../System/system';
+import { Engine } from '@babylonjs/core/Engines/engine';
+import { Scene } from '@babylonjs/core/scene';
 
 import remove from 'lodash/remove';
 import { el, mount } from 'redom';
@@ -19,30 +20,28 @@ export class ResponsiveCatcher {
     /**
      * @ignore
      */
-    _system: System;
+    _engine: Engine;
+
+    /**
+    * Max Hardware scaling of BabylonJS Engine
+    */
+    maxScaling = 1;
 
     /**
      * @param system System of the 3D scene
      */
-    constructor(system: System) {
-        this._system = system;
+    constructor(engine: Engine, scene: Scene) {
+        this._engine = engine;
         this._checkViewport();
-        this._addEngineEvent();
-    }
 
-    /**
-     * Listen to engine changes
-     * @ignore
-     */
-    _addEngineEvent() {
-        this._system.engine.onResizeObservable.add(() => {
+        this._engine.onResizeObservable.add(() => {
             this.checkSize();
         });
 
         // To avoid iphone flash on resize, we put resize here on every frame
         // Don't worry resize will be calculated only when needed
-        this._system.scene.registerBeforeRender(() => {
-            this._system.engine.resize();
+        scene.registerBeforeRender(() => {
+            this._engine.resize();
         });
 
         this.checkSize();
@@ -101,9 +100,9 @@ export class ResponsiveCatcher {
     renderScale = 1;
 
     checkSize() {
-        this.renderWidth = this._system.engine.getRenderWidth();
-        this.renderHeight = this._system.engine.getRenderHeight();
-        this.renderScale = 1 / this._system.engine.getHardwareScalingLevel();
+        this.renderWidth = this._engine.getRenderWidth();
+        this.renderHeight = this._engine.getRenderHeight();
+        this.renderScale = 1 / this._engine.getHardwareScalingLevel();
         // this.checkScaling();
         this.containerWidth = this.renderWidth / this.renderScale;
         this.containerHeight = this.renderHeight / this.renderScale;
@@ -117,7 +116,7 @@ export class ResponsiveCatcher {
 
     checkScaling() {
         const devicePixelRatio = window.devicePixelRatio;
-        let newScale = Math.min(this._system.maxScaling, devicePixelRatio);
+        let newScale = Math.min(this.maxScaling, devicePixelRatio);
         // We make sure scene stays fluid on big screen by forcing renderScale to 1
         // console.log(newScale)
         // console.log(this.renderWidth/newScale, this.renderHeight/newScale)
@@ -126,7 +125,7 @@ export class ResponsiveCatcher {
         // So we make sure something has change inorder to avoid infinite loop
         if (newScale != this.renderScale) {
             this.renderScale = newScale;
-            this._system.engine.setHardwareScalingLevel(1 / this.renderScale);
+            this._engine.setHardwareScalingLevel(1 / this.renderScale);
         }
     }
 

@@ -1,5 +1,4 @@
-import { System } from '../System/system';
-import { Animation } from '../Animation/animation';
+import { Animation, AnimationManager } from '../Animation/animation';
 import { ResponsiveCatcher } from './ResponsiveCatcher';
 import { Vector2 } from '@babylonjs/core/Maths/math';
 /**
@@ -9,7 +8,7 @@ export declare class ScrollCatcher {
     /**
      * @ignore
      */
-    _system: System;
+    _container: HTMLElement;
     /**
      * Current scroll position
      */
@@ -35,7 +34,7 @@ export declare class ScrollCatcher {
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
-    constructor(system: System, responsive: ResponsiveCatcher);
+    constructor(animationManager: AnimationManager, container: HTMLElement, responsive: ResponsiveCatcher);
     /**
      * Set the scrollable height
      * @param height The new scrollable height

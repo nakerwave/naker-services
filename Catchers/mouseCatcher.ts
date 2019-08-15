@@ -1,6 +1,5 @@
 
-import { System } from '../System/system';
-import { Animation } from '../Animation/animation';
+import { Animation, AnimationManager } from '../Animation/animation';
 
 import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
@@ -12,8 +11,8 @@ export class MouseCatcher {
     catching = true;
     animation: Animation;
 
-    constructor(System: System) {
-        this.animation = new Animation(System, 10);
+    constructor(animationManager: AnimationManager) {
+        this.animation = new Animation(animationManager, 10);
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });

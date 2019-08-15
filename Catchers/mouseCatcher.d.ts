@@ -1,11 +1,10 @@
-import { System } from '../System/system';
-import { Animation } from '../Animation/animation';
+import { Animation, AnimationManager } from '../Animation/animation';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 export declare class MouseCatcher {
     mousecatch: Vector2;
     catching: boolean;
     animation: Animation;
-    constructor(System: System);
+    constructor(animationManager: AnimationManager);
     screenQuaternion: Quaternion;
     constantTranform: Quaternion;
     orientationChanged(): void;
