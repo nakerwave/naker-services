@@ -8,13 +8,17 @@
   "typings": "index.d.ts",
   "main": "index.js",
   "module": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "keywords": [
     "3D",
     "service"
   ],
   "author": "Pichou",
+  "peerDependencies": {
+    "@babylonjs/core": "^4.1.0-alpha.14",
+    "lodash": "^4.17.11",
+    "redom": "^3.16.1"
+  },
   "dependencies": {
     "@babylonjs/core": "^4.1.0-alpha.14",
     "lodash": "^4.17.11",
