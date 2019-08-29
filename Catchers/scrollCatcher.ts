@@ -32,6 +32,11 @@ export class ScrollCatcher {
     scrollPercentage = 0;
 
     /**
+     * Distance left to be reached by scroll animation
+     */
+    scrollGap = 0;
+
+    /**
      * Scrollable height (Used to simulate real scroll in Intale)
      */
     scrollHeight = 1000;
@@ -196,6 +201,13 @@ export class ScrollCatcher {
      * Start catching scroll
      */
     start() {
+        this._start();
+    }
+
+    /**
+     * @ignore
+     */
+    _start() {
         this.catching = true;
         if (this.followWindowScroll) {
             if (this._container == document.body) {
@@ -228,9 +240,15 @@ export class ScrollCatcher {
      * Stop catching scroll
      */
     stop() {
+        this._stop();
+    }
+
+    /**
+     * @ignore
+     */
+    _stop() {
         this.animation.stop();
         this.catching = false;
-        this.movingToStep = false;
         this.sendStopToListeners();
     }
 
@@ -322,11 +340,11 @@ export class ScrollCatcher {
         if (top == this.scrollReal) return;
         this.scrollReal = top;
         this.animation.infinite(() => {
-            let gapscroll = this.scrollReal - this.scrollCatch;
-            let step = Math.sign(gapscroll) * Math.min(Math.abs(gapscroll) / 20, speed);
+            this.scrollGap = this.scrollReal - this.scrollCatch;
+            let step = Math.sign(this.scrollGap) * Math.min(Math.abs(this.scrollGap) / 20, speed);
             this.scrollCatch += step;
             this.scrollPercentage = this.scrollCatch / this.scrollHeight;
-            if (Math.abs(gapscroll) < 2) this.animation.running = false;
+            if (Math.abs(this.scrollGap) < 2) this.animation.running = false;
             this.sendToListsteners();
         });
     }
@@ -336,7 +354,7 @@ export class ScrollCatcher {
      */
     sendToListsteners() {
         for (let i = 0; i < this._listeners.length; i++) {
-            this._listeners[i](this.scrollCatch, this.scrollPercentage);
+            this._listeners[i](this.scrollCatch, this.scrollPercentage, this.scrollGap);
         }
     }
 

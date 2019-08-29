@@ -11,12 +11,17 @@ export class MouseCatcher {
     catching = true;
     animation: Animation;
 
-    constructor(animationManager: AnimationManager) {
+    constructor(animationManager: AnimationManager, rapidity?:number) {
         this.animation = new Animation(animationManager, 10);
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
+        if (rapidity) {
+            this.rapidity = rapidity;
+            this.rapidityVector = new Vector2(rapidity, rapidity);
+            this.finalPrecision = rapidity/10;
+        }
     }
 
     // Code copied from babylon: https://github.com/BabylonJS/Babylon.js/blob/master/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts
@@ -74,19 +79,20 @@ export class MouseCatcher {
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
     rapidity = 0.1;
+    rapidityVector = new Vector2(0.1, 0.1);
     finalPrecision = 0.01;
 
     catch(mouse: Vector2) {
         this.mouseReal = mouse;
         this.animation.infinite(() => {
             let gapmouse = this.mouseReal.subtract(this.mouseCatch);
-            this.step.x = gapmouse.x * this.rapidity;
-            this.step.y = gapmouse.y * this.rapidity;
-            this.mouseCatch.x += this.step.x;
-            this.mouseCatch.y += this.step.y;
+            this.step = gapmouse.clone();
+            this.step.multiplyInPlace(this.rapidityVector);
+            this.mouseCatch.addInPlace(this.step);
             if (Math.abs(gapmouse.x) < this.finalPrecision && Math.abs(gapmouse.y) < this.finalPrecision) this.animation.running = false;
             for (let i = 0; i < this.listeners.length; i++) {
-                this.listeners[i](this.mouseCatch);
+                // Clone to make sure there is not something which can alter real mouseCatch
+                this.listeners[i](this.mouseCatch.clone());
             }
         });
     }

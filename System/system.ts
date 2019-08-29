@@ -5,10 +5,10 @@ import '@babylonjs/core/Animations/animatable';
 
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
-import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
+import { Color3 } from '@babylonjs/core/Maths/math';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
-import { setStyle } from 'redom';
+import { el, mount, setStyle } from 'redom';
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -55,41 +55,33 @@ export class System {
     canvas: HTMLCanvasElement;
 
     /**
-     * Creates a new System, can't create Engine and Scene here or it won't include extensions
+     * Creates a new System
      * @param container Element where the scene will be drawn
-     * @param engine BabylonJS Engine
-     * @param scene BabylonJS Scene
      */
-    set(container: HTMLElement, engine:Engine, scene:Scene) {
+    constructor(containerEL: any) {
         if (!Engine.isSupported()) throw 'WebGL not supported';
-
-        this.container = container;
+        // Keep that variable def
+        this.container = containerEL;
         // -webkit-tap to avoid touch effect on iphone
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
 
-        this.engine = engine;
-        this.engine.enableOfflineSupport = false;
+        this.canvas = el('canvas', { style: { position: 'absolute', 'z-index': -1, top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        mount(this.container, this.canvas);
 
-        this.scene = scene;
-        this.scene.shadowsEnabled = false;
-        this.scene.ambientColor = new Color3(1, 1, 1);
-
+        // For now keep false as the last argument of the engine,
+        // We don't want the canvas to adapt to screen ratio as it slow down too much the scene
+        this.engine = new Engine(this.canvas, true, { limitDeviceRatio: this.maxScaling }, false);
         // NOTE to avoid request for manifest files because it can block loading on safari
+        this.engine.enableOfflineSupport = false;
+        
         this.animationManager = new AnimationManager();
+        this.buildScene();
     }
 
-    /**
-     * set a Camera to be used
-     */
-    setCamera(type: 'free' | 'arcrotate') {
-        if (type == 'free') {
-            this.freeCamera = new FreeCamera('main_freeCamera', new Vector3(0, 0, -10), this.scene);
-            this.freeCamera.minZ = 0;
-        } else if (type == 'arcrotate') {
-            this.arcRotateCamera = new ArcRotateCamera('main_arcRotateCamera', Math.PI / 2, Math.PI / 2, 10, new Vector3(0, 0, 0), this.scene);
-            this.arcRotateCamera.setTarget(new Vector3(0, 0, 0));
-            this.arcRotateCamera.minZ = 0;
-        }
+    buildScene() {
+        this.scene = new Scene(this.engine);
+        this.scene.shadowsEnabled = false;
+        this.scene.ambientColor = new Color3(1, 1, 1);
     }
 
     /**
@@ -104,6 +96,13 @@ export class System {
     }
 
     /**
+     * Stop scene rendering
+     */
+    stopRender() {
+        this.engine.stopRenderLoop();
+    }
+
+    /**
      * Optimize scene to make rendering faster
      * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
@@ -114,9 +113,12 @@ export class System {
     }
 
     /**
-     * Stop scene rendering
+     * UnOptimize scene rendering
+     * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
-    stopRender() {
-        this.engine.stopRenderLoop();
+    unOptimize() {
+        this.scene.blockMaterialDirtyMechanism = false;
+        this.scene.autoClear = true; // Color buffer
+        this.scene.autoClearDepthAndStencil = true; // Depth and stencil, obviously
     }
 }
