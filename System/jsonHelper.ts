@@ -1,5 +1,5 @@
 
-export let JsonHelper = {
+export class JsonHelper {
 
     recursiveJsonToObject(interfaceObject: Object, objectToTransale: Object) {
         let param: any = {};
@@ -16,7 +16,7 @@ export let JsonHelper = {
             }
         }
         return param;
-    },
+    }
 
     recursiveObjectToJson(interfaceObject: Object, objectToTransale: Object) {
         let json = {};
@@ -33,7 +33,7 @@ export let JsonHelper = {
             }
         }
         return json;
-    },
+    }
 
     recursiveObjectToObject(interfaceObject: Object, objectToTransale: Object) {
         let json = {};
@@ -50,11 +50,11 @@ export let JsonHelper = {
             }
         }
         return json;
-    },
+    }
 
     limitAccuracy(number: number, length: number) {
         if (length == 1) return Math.round(number);
         let powLength = Math.pow(10, length);
         return Math.round(number * powLength) / powLength;
-    },
+    }
 }
