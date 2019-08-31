@@ -1,35 +1,20 @@
 
 import { Animation, AnimationManager } from '../Animation/animation';
 import { ResponsiveCatcher } from './ResponsiveCatcher';
+import { ProgressCatcher } from './progressCatcher';
 
-import remove from 'lodash/remove';
 import { Vector2 } from '@babylonjs/core/Maths/math';
 
 /**
  * Detect scroll action of the user
  */
 
-export class ScrollCatcher {
+export class ScrollCatcher extends ProgressCatcher {
 
     /**
      * @ignore
      */
     _container: HTMLElement;
-
-    /**
-     * Current scroll position
-     */
-    scrollReal = 0;
-
-    /**
-     * Position of the scroll catching the real scroll due to animation
-     */
-    scrollCatch = 0;
-
-    /**
-     * Pourcentage of current scroll catch compare with the full scroll size
-     */
-    scrollPercentage = 0;
 
     /**
      * Distance left to be reached by scroll animation
@@ -52,7 +37,7 @@ export class ScrollCatcher {
      * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
     constructor(animationManager: AnimationManager, container:HTMLElement, responsive: ResponsiveCatcher) {
-        this.animation = new Animation(animationManager, 10);
+        super(animationManager);
         this._container = container;
         
         responsive.addListener(() => {
@@ -127,7 +112,7 @@ export class ScrollCatcher {
         }
 
         this._container.addEventListener("mousewheel", (evt) => {
-            let top = this.scrollReal + evt.deltaY;
+            let top = this.progressReal * this.scrollHeight + evt.deltaY;
             this.mouseWheel(evt, top);
         });
 
@@ -138,7 +123,7 @@ export class ScrollCatcher {
 
         // Firefox use DOMMouseScroll
         this._container.addEventListener("DOMMouseScroll", (evt: any) => {
-            let top = this.scrollReal + evt.detail * 50;
+            let top = this.progressReal * this.scrollHeight + evt.detail * 50;
             this.mouseWheel(evt, top);
         });
     }
@@ -171,7 +156,7 @@ export class ScrollCatcher {
                 this.touchGap.x = (this.touchStart.x - x);
                 this.touchGap.y = (this.touchStart.y - y);
                 if (Math.abs(this.touchGap.x) < Math.abs(this.touchGap.y)) {
-                    let top = this.scrollReal + this.touchGap.y;
+                    let top = this.progressReal + this.touchGap.y;
                     if (this.catching) this.catchTop(top);
                     count++;
                     if (count == 50) {
@@ -182,26 +167,6 @@ export class ScrollCatcher {
                 }
             }
         });
-    }
-
-    /**
-     * Restart scroll catcher
-     */
-    restart() {
-        this.stop();
-        this.start();
-    }
-
-    /**
-     * Is the scroll currently catched or not
-     */
-    catching = false;
-
-    /**
-     * Start catching scroll
-     */
-    start() {
-        this._start();
     }
 
     /**
@@ -220,58 +185,12 @@ export class ScrollCatcher {
                 this.catchTop(top);
             }
         } else {
-            let top = this.scrollReal;
+            let top = this.progressReal;
             this.catchTop(top);
         }
         this.sendToListsteners();
         this.sendStartToListeners();
     }
-
-    /**
-     * Send start event to listeners
-     */
-    sendStartToListeners() {
-        for (let i = 0; i < this._startListeners.length; i++) {
-            this._startListeners[i]();
-        }
-    }
-
-    /**
-     * Stop catching scroll
-     */
-    stop() {
-        this._stop();
-    }
-
-    /**
-     * @ignore
-     */
-    _stop() {
-        this.animation.stop();
-        this.catching = false;
-        this.sendStopToListeners();
-    }
-
-    /**
-     * Send stop event to listeners
-     */
-    sendStopToListeners() {
-        for (let i = 0; i < this._stopListeners.length; i++) {
-            this._stopListeners[i]();
-        }
-    }
-
-    /**
-     * List of scroll start listeners
-     * @ignore
-     */
-    _startListeners: Array<Function> = [];
-
-    /**
-     * List of scroll stop listeners
-     * @ignore
-     */
-    _stopListeners: Array<Function> = [];
 
     /**
     * Allow to add a listener on special events
@@ -308,15 +227,11 @@ export class ScrollCatcher {
     }
 
     /**
-    * Spped of the scroll used when mousewheel or drag on phone
+    * Catch the percentage of the scrollHeight
+    * @param perc What is the top position to be catched
     */
-    speed = 20;
-    /**
-    * Set the speed of the scrollCatcher
-    * @param speed The new speed
-    */
-    setSpeed(speed: number) {
-        this.speed = speed;
+    catchPercentage(perc: number) {
+        if (!this.followWindowScroll) this.catch(perc, this.speed);
     }
 
     /**
@@ -324,57 +239,6 @@ export class ScrollCatcher {
     * @param top What is the top position to be catched
     */
     catchTop(top: number) {
-        if (!this.followWindowScroll) this.catch(top, this.speed);
-    }
-
-    /**
-     * Catch the scroll
-     * @param top Top position to be catched
-     * @param speed At what speed should we catch the new position (used when accelarating to new step for instance)
-     */
-    catch(top: number, speed: number) {
-        // Sometimes on iphone, top can go below 0
-        if (!top) top = 0;
-        top = Math.max(0, top);
-        top = Math.min(this.scrollHeight, top);
-        if (top == this.scrollReal) return;
-        this.scrollReal = top;
-        this.animation.infinite(() => {
-            this.scrollGap = this.scrollReal - this.scrollCatch;
-            let step = Math.sign(this.scrollGap) * Math.min(Math.abs(this.scrollGap) / 20, speed);
-            this.scrollCatch += step;
-            this.scrollPercentage = this.scrollCatch / this.scrollHeight;
-            if (Math.abs(this.scrollGap) < 2) this.animation.running = false;
-            this.sendToListsteners();
-        });
-    }
-
-    /**
-      * Send scroll change data to listeners
-     */
-    sendToListsteners() {
-        for (let i = 0; i < this._listeners.length; i++) {
-            this._listeners[i](this.scrollCatch, this.scrollPercentage, this.scrollGap);
-        }
-    }
-
-    /**
-     * List of all functions following the scroll position
-     * @ignore
-     */
-    _listeners: Array<Function> = [];
-
-    /**
-     * Add a new listener which will get the catching scroll position
-     */
-    addListener(callback: Function) {
-        this._listeners.push(callback);
-    }
-
-    /**
-     * Remove a listener to stop following scroll
-     */
-    removeListener(callback: Function) {
-        remove(this._listeners, (c) => { c == callback });
+        if (!this.followWindowScroll) this.catch(top/this.scrollHeight, this.speed);
     }
 }
