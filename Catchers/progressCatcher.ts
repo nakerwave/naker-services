@@ -159,8 +159,9 @@ export class ProgressCatcher {
      * @param top Top position to be catched
      * @param speed At what speed should we catch the new position (used when accelarating to new step for instance)
      */
-    catch(perc: number, speed: number) {
+    catch(perc: number, speed?: number, callback?:Function) {
         // Sometimes on iphone, perc can go below 0
+        let catchSpeed = (speed)? speed : this.speed;
         if (!perc) perc = 0;
         perc = Math.max(0, perc);
         perc = Math.min(1, perc);
@@ -168,9 +169,14 @@ export class ProgressCatcher {
         this.progressReal = perc;
         this.animation.infinite(() => {
             this.progressGap = this.progressReal - this.progressCatch;
-            let step = Math.sign(this.progressGap) * Math.min(Math.abs(this.progressGap) * 0.02, speed);
+            let step = this.progressGap * catchSpeed;
             this.progressCatch += step;
-            if (Math.abs(this.progressGap) < this.accuracy) this.animation.running = false;
+            if (Math.abs(this.progressGap) < this.accuracy) {
+                // Don't force to reach last value or it makes a jump in the animation
+                // this.progressCatch = this.progressReal;
+                if (callback) callback();
+                this.animation.running = false;
+            }
             this.sendToListsteners();
         });
     }

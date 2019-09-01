@@ -156,7 +156,7 @@ export class ScrollCatcher extends ProgressCatcher {
                 this.touchGap.x = (this.touchStart.x - x);
                 this.touchGap.y = (this.touchStart.y - y);
                 if (Math.abs(this.touchGap.x) < Math.abs(this.touchGap.y)) {
-                    let top = this.progressReal + this.touchGap.y;
+                    let top = this.progressReal * this.scrollHeight + this.touchGap.y;
                     if (this.catching) this.catchTop(top);
                     count++;
                     if (count == 50) {
@@ -185,7 +185,7 @@ export class ScrollCatcher extends ProgressCatcher {
                 this.catchTop(top);
             }
         } else {
-            let top = this.progressReal;
+            let top = this.progressReal * this.scrollHeight;
             this.catchTop(top);
         }
         this.sendToListsteners();

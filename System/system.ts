@@ -6,8 +6,6 @@ import '@babylonjs/core/Animations/animatable';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
-import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
-import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { el, mount, setStyle } from 'redom';
 
 /**
@@ -32,12 +30,6 @@ export class System {
      * BabylonJS Scene
      */
     scene: Scene;
-
-    /**
-     * BabylonJS Cameras
-     */
-    freeCamera: FreeCamera;
-    arcRotateCamera: ArcRotateCamera;
 
     /**
      * Manage all the animations only for this 3D Scene
@@ -65,7 +57,8 @@ export class System {
         // -webkit-tap to avoid touch effect on iphone
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
 
-        this.canvas = el('canvas', { style: { position: 'absolute', 'z-index': -1, top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        //  'z-index': -1 not mandatory
+        this.canvas = el('canvas', { style: { position: 'absolute', top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
         mount(this.container, this.canvas);
 
         // For now keep false as the last argument of the engine,
