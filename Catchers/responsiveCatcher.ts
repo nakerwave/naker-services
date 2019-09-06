@@ -38,6 +38,10 @@ export class ResponsiveCatcher {
             this.checkSize();
         });
 
+        window.addEventListener('resize', () => {
+            this._engine.resize();
+        });
+
         // To avoid iphone flash on resize, we put resize here on every frame
         // Don't worry resize will be calculated only when needed
         scene.registerBeforeRender(() => {

@@ -33,7 +33,9 @@ export class MouseCatcher {
         this.screenQuaternion.copyFromFloats(0, Math.sin(screenOrientationAngle), 0, Math.cos(screenOrientationAngle));
     }
 
-    deviceMaxVector = new Vector2(Math.PI / 8, Math.PI / 8);
+    divideVector = new Vector2(Math.PI / 8, Math.PI / 8);
+    deviceMaxVector = new Vector2(Math.PI / 4, Math.PI / 4);
+    deviceMinVector = new Vector2(-Math.PI / 4, -Math.PI / 4);
     deviceOrientation(evt: DeviceOrientationEvent) {
         if (this.catching) {
             let gamma = evt.gamma !== null ? evt.gamma : 0;
@@ -48,10 +50,11 @@ export class MouseCatcher {
                 let angles = quaternion.toEulerAngles();
 
                 let pos = new Vector2(angles.y, angles.x);
-                // * 3 to make it match with mousemove
-                pos.divideInPlace(this.deviceMaxVector);
-                Vector2.Maximize(pos, this.deviceMaxVector);
-                this.catch(pos);
+
+                pos.divideInPlace(this.divideVector);
+                let posMax = Vector2.Minimize(pos, this.deviceMaxVector);
+                let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
+                this.catch(posMin);
             }
         }
     }
