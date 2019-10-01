@@ -11,16 +11,29 @@ export class MouseCatcher {
     catching = true;
     animation: Animation;
 
-    constructor(animationManager: AnimationManager, rapidity?:number) {
+    constructor(animationManager: AnimationManager, speed?:number) {
         this.animation = new Animation(animationManager, 10);
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
-        if (rapidity) {
-            this.rapidity = rapidity;
-            this.rapidityVector = new Vector2(rapidity, rapidity);
-            this.finalPrecision = rapidity/10;
+        if (speed) {
+            this.speed = speed;
+            this.speedVector = new Vector2(speed, speed);
+            this.accuracy = speed/10;
+        }
+
+        // Ask for device motion permission now mandatory on iphone since Safari 13 update
+        // https://medium.com/@leemartin/three-things-im-excited-about-in-safari-13-994107ac6295
+        if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
+            window.DeviceMotionEvent.requestPermission()
+                .then(response => {
+                    if (response == 'granted') {
+                        // permission granted
+                    } else {
+                        // permission not granted
+                    }
+                });
         }
     }
 
@@ -78,21 +91,43 @@ export class MouseCatcher {
         this.catching = false;
     }
 
+    /**
+    * Spped of the progress used when mousewheel or drag on phone
+    */
+    speed = 0.05;
+    speedVector = new Vector2(0.05, 0.05);
+    /**
+    * Set the speed of the progressCatcher
+    * @param speed The new speed
+    */
+    setSpeed(speed: number) {
+        this.speed = speed;
+        this.speedVector = new Vector2(speed, speed);
+    }
+
+    /**
+    * Spped of the progress used when mousewheel or drag on phone
+    */
+    accuracy = 0.002;
+    /**
+    * Set the speed of the progressCatcher
+    * @param speed The new speed
+    */
+    setAccuracy(accuracy: number) {
+        this.accuracy = accuracy;
+    }
+
     step = new Vector2(0, 0);
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
-    rapidity = 0.1;
-    rapidityVector = new Vector2(0.1, 0.1);
-    finalPrecision = 0.01;
-
     catch(mouse: Vector2) {
         this.mouseReal = mouse;
         this.animation.infinite(() => {
             let gapmouse = this.mouseReal.subtract(this.mouseCatch);
             this.step = gapmouse.clone();
-            this.step.multiplyInPlace(this.rapidityVector);
+            this.step.multiplyInPlace(this.speedVector);
             this.mouseCatch.addInPlace(this.step);
-            if (Math.abs(gapmouse.x) < this.finalPrecision && Math.abs(gapmouse.y) < this.finalPrecision) this.animation.running = false;
+            if (Math.abs(gapmouse.x) < this.accuracy && Math.abs(gapmouse.y) < this.accuracy) this.animation.running = false;
             for (let i = 0; i < this.listeners.length; i++) {
                 // Clone to make sure there is not something which can alter real mouseCatch
                 this.listeners[i](this.mouseCatch.clone());
