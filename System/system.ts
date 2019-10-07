@@ -6,7 +6,7 @@ import '@babylonjs/core/Animations/animatable';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
-import { el, mount, setStyle } from 'redom';
+import { el, mount, setStyle, setAttr } from 'redom';
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -59,6 +59,8 @@ export class System {
 
         //  'z-index': -1 not mandatory
         this.canvas = el('canvas', { style: { position: 'absolute', top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        // Add cool WaterMark in all naker Project
+        setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎'});
         mount(this.container, this.canvas);
 
         // For now keep false as the last argument of the engine,
