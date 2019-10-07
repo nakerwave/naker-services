@@ -59,7 +59,7 @@ export class System {
 
         //  'z-index': -1 not mandatory
         this.canvas = el('canvas', { style: { position: 'absolute', top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
-        // Add cool WaterMark in all naker Project
+        // Add cool WaterMark in all naker Projects
         setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎'});
         mount(this.container, this.canvas);
 
