@@ -71,8 +71,15 @@ export class System {
         
         this.animationManager = new AnimationManager();
         this.buildScene();
+
+        window.addEventListener("scroll", () => {
+            if (this.checkingScroll && this.started) this.checkScroll();
+        });
     }
 
+    /**
+    * @ignore
+    */
     buildScene() {
         this.scene = new Scene(this.engine);
         this.scene.shadowsEnabled = false;
@@ -80,21 +87,82 @@ export class System {
     }
 
     /**
+     * @ignore
+     */
+    checkingScroll = true;
+
+    /**
+    * Set if if have to check scroll to render
+    */
+    setCheckScroll(checkingScroll: boolean) {
+        this.checkingScroll = checkingScroll;
+        if (checkingScroll) this.checkScroll();
+        else this.launchRender();
+    }
+
+    /**
+     * @ignore
+     */
+    checkScroll() {
+        // If overflow style = hidden, there is no scrollingElement on document
+        let containerVisible = this.checkVisible(this.container);
+        if (containerVisible && !this.rendering) this.startRender();
+        else if (!containerVisible && this.rendering) this.pauseRender();
+    }
+
+    /**
+    * Check if element visible by the screen
+    */
+    checkVisible(elm: HTMLElement) {
+        var rect = elm.getBoundingClientRect();
+        var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+        return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+    }
+
+    /**
+    * Tell if system currently rendering scene
+    */
+    rendering = false;
+
+    /**
+    * Tell if scene needs to be render
+    */
+    started = false;
+
+    /**
      * Allow to launch scene rendering (when everything is loaded for instance)
      */
     launchRender() {
-        this.engine.stopRenderLoop();
-        this.engine.runRenderLoop(() => {
-            this.animationManager.runAnimations(this.engine.getFps());
-            this.scene.render();
-        });
+        this.started = true;
+        this.startRender();
     }
 
     /**
      * Stop scene rendering
      */
     stopRender() {
+        this.started = false;
+        this.pauseRender();
+    }
+
+    /**
+     * @ignore
+     */
+    pauseRender() {
+        this.rendering = false;
         this.engine.stopRenderLoop();
+    }
+
+    /**
+     * @ignore
+     */
+    startRender() {
+        this.rendering = true;
+        this.engine.stopRenderLoop();
+        this.engine.runRenderLoop(() => {
+            this.animationManager.runAnimations(this.engine.getFps());
+            this.scene.render();
+        });
     }
 
     /**
