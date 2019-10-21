@@ -23,6 +23,12 @@ export class ResponsiveCatcher {
     _engine: Engine;
 
     /**
+     * @ignore
+     */
+    _scene: Scene;
+
+
+    /**
     * Max Hardware scaling of BabylonJS Engine
     */
     maxScaling = 1;
@@ -30,8 +36,10 @@ export class ResponsiveCatcher {
     /**
      * @param system System of the 3D scene
      */
-    constructor(engine: Engine, scene: Scene) {
+    constructor(engine: Engine, scene: Scene, autoResponsive?: boolean) {
         this._engine = engine;
+        this._scene = scene;
+
         this._checkViewport();
 
         this._engine.onResizeObservable.add(() => {
@@ -44,11 +52,28 @@ export class ResponsiveCatcher {
 
         // To avoid iphone flash on resize, we put resize here on every frame
         // Don't worry resize will be calculated only when needed
-        scene.registerBeforeRender(() => {
-            this._engine.resize();
-        });
+        // Actually it is called on every frame so not very performant
+        // Temporarely removed it in cae it creates oter issues
+        // this._scene.registerBeforeRender(() => {
+        //     this._engine.resize();
+        // });
 
         this.checkSize();
+        if (autoResponsive) this.setAutoResponsive(autoResponsive);
+    }
+
+    /**
+     * Should the catcher change Scene field of view to adapt to screen size
+     */
+    autoResponsive = false;
+
+    /**
+     * Change autoResponsive option
+     */
+    setAutoResponsive(autoResponsive: boolean) {
+        this.autoResponsive = autoResponsive;
+        if (autoResponsive) this.adaptFieldOfView();
+        else this.setFieldOfView(0.8);
     }
 
     /**
@@ -115,6 +140,8 @@ export class ResponsiveCatcher {
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
+        if (this.autoResponsive) this.adaptFieldOfView();
+
         this.sendToListsteners();
     }
 
@@ -130,6 +157,43 @@ export class ResponsiveCatcher {
         if (newScale != this.renderScale) {
             this.renderScale = newScale;
             this._engine.setHardwareScalingLevel(1 / this.renderScale);
+        }
+    }
+
+    /**
+     * Change autoResponsive option
+     */
+    adaptFieldOfView() {
+        let fov: number;
+        // Test not working
+        // let ratio = 1 + this.containerRatio;
+        // fov = Math.pow(ratio, 2) * 1;
+        if (this.containerRatio > 0) fov = 0.8 - this.containerRatio / 2.3;
+        else fov = 0.8 - this.containerRatio / 0.8;
+        fov = Math.min(fov, 2);
+        fov = Math.max(fov, 0.1);
+        this.setFieldOfView(fov);
+    }
+
+
+    /**
+     * Scene field of view
+     */
+    fieldOfView = 0.8;
+
+
+    /**
+     * Set the field of view of all the scene cameras 
+     */
+    setFieldOfView(fieldOfView: number) {
+        this.fieldOfView = fieldOfView;
+        if (this._scene.activeCameras) {
+            for (let i = 0; i < this._scene.activeCameras.length; i++) {
+                const camera = this._scene.activeCameras[i];
+                camera.fov = fieldOfView;
+            }
+        } else {
+            this._scene.activeCamera.fov = fieldOfView;
         }
     }
 
