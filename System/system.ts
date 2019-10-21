@@ -184,4 +184,26 @@ export class System {
         this.scene.autoClear = true; // Color buffer
         this.scene.autoClearDepthAndStencil = true; // Depth and stencil, obviously
     }
+
+    /**
+     * Optimize scene to make rendering faster
+     * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
+     */
+    optimizeHard() {
+        this.optimize();
+        this.scene.freezeActiveMeshes();
+        this.scene.blockMaterialDirtyMechanism = true;
+        // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
+    }
+
+    /**
+     * UnOptimize scene rendering
+     * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
+     */
+    unOptimizeHard() {
+        this.unOptimize();
+        this.scene.unfreezeActiveMeshes();
+        this.scene.blockMaterialDirtyMechanism = false;
+        // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
+    }
 }
