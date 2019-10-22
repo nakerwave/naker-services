@@ -50,7 +50,7 @@ export class System {
      * Creates a new System
      * @param container Element where the scene will be drawn
      */
-    constructor(containerEL: any) {
+    constructor(containerEL: any, screenshot?: boolean) {
         if (!Engine.isSupported()) throw 'WebGL not supported';
         // Keep that variable def
         this.container = containerEL;
@@ -65,7 +65,11 @@ export class System {
 
         // For now keep false as the last argument of the engine,
         // We don't want the canvas to adapt to screen ratio as it slow down too much the scene
-        this.engine = new Engine(this.canvas, true, { limitDeviceRatio: this.maxScaling }, false);
+        // preserveDrawingBuffer and stencil needed for screenshot
+        let engineOption;
+        if (!screenshot) engineOption = { limitDeviceRatio: this.maxScaling };
+        else engineOption = { limitDeviceRatio: this.maxScaling, preserveDrawingBuffer: true, stencil: true };
+        this.engine = new Engine(this.canvas, true, engineOption, false);
         // NOTE to avoid request for manifest files because it can block loading on safari
         this.engine.enableOfflineSupport = false;
         

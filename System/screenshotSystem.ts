@@ -1,6 +1,6 @@
 
-import '@babylonjs/core/Misc/screenshotTools';
 import { Tools } from '@babylonjs/core/Misc/tools';
+import '@babylonjs/core/Misc/screenshotTools';
 import { VideoRecorder } from '@babylonjs/core/Misc/videoRecorder';
 
 import { System } from './system';
@@ -15,19 +15,23 @@ interface size {
  */
 export class screenshotSystem extends System {
 
+    constructor(containerEl:HTMLElement) {
+        super(containerEl, true);
+    }
+
     /**
      * Take a screenshot of the current scene generating an image buffer
      */
     takeScreenshot(size: size, callback: Function) {
-        Tools.CreateScreenshotUsingRenderTarget(this.engine, this.scene.activeCamera, size, (image) => {
-            // Keep that in order to test result image
+        Tools.CreateScreenshot(this.engine, this.scene.activeCamera, size, (image) => {
+            // // Keep that in order to test result image
             // var img = document.createElement('img');
             // img.src = image;
-            // img.style.position = 'absolute';
+            // img.style.position = 'fixed';
             // img.style.bottom = '100px';
             // img.style.right = '300px';
             // document.body.appendChild(img);
-            // img.innerHTML = "Image Element Added."; 
+            // console.log(img);
             callback(image);
         });
     }
