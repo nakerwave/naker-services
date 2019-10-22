@@ -20,6 +20,14 @@ export class screenshotSystem extends System {
      */
     takeScreenshot(size: size, callback: Function) {
         Tools.CreateScreenshotUsingRenderTarget(this.engine, this.scene.activeCamera, size, (image) => {
+            // Keep that in order to test result image
+            // var img = document.createElement('img');
+            // img.src = image;
+            // img.style.position = 'absolute';
+            // img.style.bottom = '100px';
+            // img.style.right = '300px';
+            // document.body.appendChild(img);
+            // img.innerHTML = "Image Element Added."; 
             callback(image);
         });
     }
