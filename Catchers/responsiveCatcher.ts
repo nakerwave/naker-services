@@ -73,7 +73,7 @@ export class ResponsiveCatcher {
     setAutoResponsive(autoResponsive: boolean) {
         this.autoResponsive = autoResponsive;
         if (autoResponsive) this.adaptFieldOfView();
-        else this.setFieldOfView(0.8);
+        else this.setFieldOfViewWithRatio(0.8);
     }
 
     /**
@@ -140,6 +140,7 @@ export class ResponsiveCatcher {
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
+        
         if (this.autoResponsive) this.adaptFieldOfView();
 
         this.sendToListsteners();
@@ -164,30 +165,37 @@ export class ResponsiveCatcher {
      * Change autoResponsive option
      */
     adaptFieldOfView() {
-        let fov: number;
+        let fovWithRatio: number;
         // Test not working
         // let ratio = 1 + this.containerRatio;
-        // fov = Math.pow(ratio, 2) * 1;
-        if (this.containerRatio > 0) fov = 0.8 - this.containerRatio / 2.3;
-        else fov = 0.8 - this.containerRatio / 0.8;
+        // fovWithRatio = Math.pow(ratio, 2) * 1;
+        if (this.containerRatio > 0) fovWithRatio = 0.8 - this.containerRatio / 2.3;
+        else fovWithRatio = 0.8 - this.containerRatio / 0.8;
+        let fov = fovWithRatio * this.fieldOfView;
         fov = Math.min(fov, 2);
         fov = Math.max(fov, 0.1);
-        this.setFieldOfView(fov);
+        this.setFieldOfViewWithRatio(fov);
     }
 
 
     /**
      * Scene field of view
      */
-    fieldOfView = 0.8;
-
+    fieldOfView = 1;
 
     /**
-     * Set the field of view of all the scene cameras 
-     */
+    * Set the field of view of all the scene cameras
+    */
     setFieldOfView(fieldOfView: number) {
         this.fieldOfView = fieldOfView;
-        if (this._scene.activeCameras) {
+        this.adaptFieldOfView();
+    }
+
+    /**
+     * @ignore
+     */
+    setFieldOfViewWithRatio(fieldOfView: number) {
+        if (this._scene.activeCameras.length) {
             for (let i = 0; i < this._scene.activeCameras.length; i++) {
                 const camera = this._scene.activeCameras[i];
                 camera.fov = fieldOfView;

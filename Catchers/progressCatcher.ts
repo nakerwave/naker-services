@@ -1,6 +1,5 @@
 
 import { Animation, AnimationManager } from '../Animation/animation';
-import { ResponsiveCatcher } from './ResponsiveCatcher';
 
 import remove from 'lodash/remove';
 
