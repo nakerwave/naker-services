@@ -53,7 +53,8 @@ export class GradientEnvironment {
         if (this.colorEnd) this.setBackStop(this.colorEnd);
 
         this.skyBox.material = this.sky;
-        this.skyBox.material.needDepthPrePass = true;
+        // Not useful optimization + it makes the scene bug on mobile
+        // this.skyBox.material.needDepthPrePass = true;
     }
 
     setBackStart(color: Array < number > ) {

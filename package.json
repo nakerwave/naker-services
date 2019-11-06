@@ -15,7 +15,7 @@
   ],
   "author": "Pichou",
   "dependencies": {
-    "@babylonjs/core": "^4.1.0-alpha.19",
+    "@babylonjs/core": "^4.1.0-beta.1",
     "lodash": "^4.17.11",
     "redom": "^3.16.1"
   },
