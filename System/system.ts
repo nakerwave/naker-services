@@ -90,6 +90,26 @@ export class System {
         this.scene.ambientColor = new Color3(1, 1, 1);
     }
 
+
+    /**
+    * Make sure there is a position on container
+    * @ignore
+    */
+    checkContainerPosition() {
+        // Due to a lot of user feedback having trouble when no position on parent
+        // .style returns only inline values (not useful)
+        // let containerStyle = this.container.style;
+        // getComputedStyle return all values so can be used to check if position already fixed
+        let containerStyle = window.getComputedStyle(this.container);
+        // Best way found to determine if there is already a position or not
+        // Seems like static is the default value (tested in edge, chrome and firefox)
+        if (containerStyle.position == 'static') {
+            // We set to relative because this is the default behavior
+            setStyle(this.container, { position: 'relative' });
+            this.engine.resize();
+        }
+    }
+
     /**
      * @ignore
      */
