@@ -3,8 +3,8 @@ import { ProgressCatcher } from '../Catchers/progressCatcher';
 import { MouseCatcher } from '../Catchers/mouseCatcher';
 import { System } from './system';
 
-import { Vector3, Vector2, Curve3 } from '@babylonjs/core/Maths/math'
-import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
+import { Vector3, Vector2, Curve3 } from '@babylonjs/core/Maths/math';
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import remove from 'lodash/remove';
 import find from 'lodash/find';
 

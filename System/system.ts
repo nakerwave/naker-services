@@ -72,7 +72,7 @@ export class System {
         this.engine = new Engine(this.canvas, true, engineOption, false);
         // NOTE to avoid request for manifest files because it can block loading on safari
         this.engine.enableOfflineSupport = false;
-        
+
         this.animationManager = new AnimationManager();
         this.buildScene();
 

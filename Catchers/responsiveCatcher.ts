@@ -2,6 +2,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 
+import { Camera } from '@babylonjs/core/Cameras/camera';
 import remove from 'lodash/remove';
 import { el, mount } from 'redom';
 
@@ -36,7 +37,7 @@ export class ResponsiveCatcher {
     /**
      * @param system System of the 3D scene
      */
-    constructor(engine: Engine, scene: Scene, autoResponsive?: boolean) {
+    constructor(engine: Engine, scene: Scene, horizontalFixed?: boolean) {
         this._engine = engine;
         this._scene = scene;
 
@@ -59,21 +60,28 @@ export class ResponsiveCatcher {
         // });
 
         this.checkSize();
-        if (autoResponsive) this.setAutoResponsive(autoResponsive);
+        if (horizontalFixed) this.setHorizontalFixed(horizontalFixed);
     }
 
     /**
      * Should the catcher change Scene field of view to adapt to screen size
      */
-    autoResponsive = false;
+    horizontalFixed = false;
 
     /**
-     * Change autoResponsive option
+     * Change horizontalFixed option
      */
-    setAutoResponsive(autoResponsive: boolean) {
-        this.autoResponsive = autoResponsive;
-        if (autoResponsive) this.adaptFieldOfView();
-        else this.setFieldOfViewWithRatio(0.8);
+    setHorizontalFixed(horizontalFixed: boolean) {
+        this.horizontalFixed = horizontalFixed;
+        let fovMode = (horizontalFixed) ? Camera.FOVMODE_HORIZONTAL_FIXED : Camera.FOVMODE_VERTICAL_FIXED;
+        if (this._scene.activeCameras.length) {
+            for (let i = 0; i < this._scene.activeCameras.length; i++) {
+                const camera = this._scene.activeCameras[i];
+                camera.fovMode = fovMode;
+            }
+        } else {
+            this._scene.activeCamera.fovMode = fovMode;
+        }
     }
 
     /**
@@ -140,9 +148,6 @@ export class ResponsiveCatcher {
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
-        
-        if (this.autoResponsive) this.adaptFieldOfView();
-
         this.sendToListsteners();
     }
 
@@ -162,23 +167,6 @@ export class ResponsiveCatcher {
     }
 
     /**
-     * Change autoResponsive option
-     */
-    adaptFieldOfView() {
-        let fovWithRatio: number;
-        // Test not working
-        // let ratio = 1 + this.containerRatio;
-        // fovWithRatio = Math.pow(ratio, 2) * 1;
-        if (this.containerRatio > 0) fovWithRatio = 0.8 - this.containerRatio / 2.3;
-        else fovWithRatio = 0.8 - this.containerRatio / 0.8;
-        let fov = fovWithRatio * this.fieldOfView;
-        fov = Math.min(fov, 2);
-        fov = Math.max(fov, 0.1);
-        this.setFieldOfViewWithRatio(fov);
-    }
-
-
-    /**
      * Scene field of view
      */
     fieldOfView = 1;
@@ -188,13 +176,6 @@ export class ResponsiveCatcher {
     */
     setFieldOfView(fieldOfView: number) {
         this.fieldOfView = fieldOfView;
-        this.adaptFieldOfView();
-    }
-
-    /**
-     * @ignore
-     */
-    setFieldOfViewWithRatio(fieldOfView: number) {
         if (this._scene.activeCameras.length) {
             for (let i = 0; i < this._scene.activeCameras.length; i++) {
                 const camera = this._scene.activeCameras[i];
