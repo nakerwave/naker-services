@@ -10,18 +10,17 @@ export class MouseCatcher {
     mousecatch = new Vector2(0, 0);
     catching = true;
     animation: Animation;
+    stopRendering = false;
 
-    constructor(animationManager: AnimationManager, speed?:number) {
+    constructor(animationManager: AnimationManager, stopRendering?:boolean) {
         this.animation = new Animation(animationManager, 10);
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
-        if (speed) {
-            this.speed = speed;
-            this.speedVector = new Vector2(speed, speed);
-            this.accuracy = speed/10;
-        }
+        // Want to add the possibility to stop the rendering when mouse is not moving
+        // But we will mostly still need the rendering
+        if (stopRendering !== undefined) this.stopRendering = this.stopRendering;
 
         // Ask for device motion permission now mandatory on iphone since Safari 13 update
         // https://medium.com/@leemartin/three-things-im-excited-about-in-safari-13-994107ac6295
