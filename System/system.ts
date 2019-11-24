@@ -45,9 +45,7 @@ export class System {
      * @param canvas Element where the scene will be drawn
      */
     constructor(canvas: HTMLCanvasElement, screenshot?) {
-        console.log(canvas);
-        
-        if (!Engine.isSupported()) throw 'WebGL not supported';
+        // if (!Engine.isSupported()) throw 'WebGL not supported';
         this.canvas = canvas;
         // For now keep false as the last argument of the engine,
         // We don't want the canvas to adapt to screen ratio as it slow down too much the scene

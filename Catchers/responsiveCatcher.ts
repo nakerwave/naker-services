@@ -41,8 +41,6 @@ export class ResponsiveCatcher {
         this._engine = engine;
         this._scene = scene;
 
-        this._checkViewport();
-
         this._engine.onResizeObservable.add(() => {
             this.checkSize();
         });
@@ -82,28 +80,6 @@ export class ResponsiveCatcher {
         } else {
             this._scene.activeCamera.fovMode = fovMode;
         }
-    }
-
-    /**
-     * Window viewport can be problematic for scale rendering, we check if one is present
-     * @ignore
-     */
-    _checkViewport() {
-        // In order to have good scale and text size, we need to check for the viewport meta in header
-        // This makes the scene a bit blurry on iphones, need to find a solution
-        let viewport = document.querySelector("meta[name=viewport]");
-        if (!viewport) {
-            let viewporttoadd = el('meta', { content: "width=device-width, initial-scale=1", name: "viewport" });
-            mount(document.getElementsByTagName('head')[0], viewporttoadd);
-        }
-        // Should check for the viewport and adapt to it.
-        // else {
-        //   let content = viewport.getAttribute("content");
-        //   if (content) {
-        //     let scalecheck = content.indexOf('initial-scale');
-        //     if (scalecheck == -1) this.ratio = window.devicePixelRatio;
-        //   }
-        // }
     }
 
     /**

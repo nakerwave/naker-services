@@ -1,6 +1,7 @@
 
 import { el, mount, setStyle, setAttr } from 'redom';
-import * as workerPath from "file-loader?name=[name].js!./test.worker";
+// import * as workerPath from "file-loader?name=[name].js!./worker";
+// import Worker from "worker-loader!./Worker";
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -15,6 +16,8 @@ export class NakerViewer {
      */
     container: HTMLElement;
 
+    offscreen: boolean;
+
     /**
      * Canvas used to draw the 3D scene
      */
@@ -24,9 +27,10 @@ export class NakerViewer {
      * Creates a new System
      * @param container Element where the scene will be drawn
      */
-    constructor(containerEL: any) {
+    constructor(containerEL: HTMLElement, offscreen?:boolean) {
         // Keep that variable def
         this.container = containerEL;
+        this.offscreen = offscreen;
         // -webkit-tap to avoid touch effect on iphone
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
 
@@ -36,23 +40,56 @@ export class NakerViewer {
         setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎' });
         mount(this.container, this.canvas);
 
-        console.log('this is a test message, wahoo!!');
-
-
-        const worker = new Worker(workerPath);
-
-        console.log(workerPath, worker);
-        worker.addEventListener('message', message => {
-            console.log(message);
-        });
-        worker.postMessage('this is a test message to the worker');
-
+        
         window.addEventListener("scroll", () => {
             // if (this.checkingScroll) this.checkScroll();
         });
 
+        this.checkContainerPosition();
+        this._checkViewport();
     }
 
+    /**
+     * Window viewport can be problematic for scale rendering, we check if one is present
+     * @ignore
+     */
+    _checkViewport() {
+        // In order to have good scale and text size, we need to check for the viewport meta in header
+        // This makes the scene a bit blurry on iphones, need to find a solution
+        let viewport = document.querySelector("meta[name=viewport]");
+        if (!viewport) {
+            let viewporttoadd = el('meta', { content: "width=device-width, initial-scale=1", name: "viewport" });
+            mount(document.getElementsByTagName('head')[0], viewporttoadd);
+        }
+        // Should check for the viewport and adapt to it.
+        // else {
+        //   let content = viewport.getAttribute("content");
+        //   if (content) {
+        //     let scalecheck = content.indexOf('initial-scale');
+        //     if (scalecheck == -1) this.ratio = window.devicePixelRatio;
+        //   }
+        // }
+    }
+    
+    load(scriptUrl: string, project: any, callback: Function) {
+        if ('OffscreenCanvas' in window && !this.offscreen) {
+            this.offScreen(scriptUrl, () => {
+                this.sendToEngine('build', project);
+                callback('offscreen mode');
+            });
+        } else {
+            this.inScreen(scriptUrl, () => {
+                project.container = this.canvas;
+                this.engine = this.buildProject(project);
+                callback(this.engine);
+            });
+        }
+        this.onResize();
+    }
+
+    buildProject(project: any) {
+
+    }
 
     /**
     * Make sure there is a position on container
@@ -69,7 +106,6 @@ export class NakerViewer {
         if (containerStyle.position == 'static') {
             // We set to relative because this is the default behavior
             setStyle(this.container, { position: 'relative' });
-            this.engine.resize();
         }
     }
 
@@ -84,7 +120,7 @@ export class NakerViewer {
     setCheckScroll(checkingScroll: boolean) {
         this.checkingScroll = checkingScroll;
         if (checkingScroll) this.checkScroll();
-        else this.launchRender();
+        else this.sen();
     }
 
     /**
@@ -104,6 +140,171 @@ export class NakerViewer {
         var rect = elm.getBoundingClientRect();
         var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
         return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+    }
+
+
+    // Events props to send to worker
+    mouseEventFields = [
+        'altKey',
+        'bubbles',
+        'button',
+        'buttons',
+        'cancelBubble',
+        'cancelable',
+        'clientX',
+        'clientY',
+        'composed',
+        'ctrlKey',
+        'defaultPrevented',
+        'detail',
+        'eventPhase',
+        'fromElement',
+        'isTrusted',
+        'layerX',
+        'layerY',
+        'metaKey',
+        'movementX',
+        'movementY',
+        'offsetX',
+        'offsetY',
+        'pageX',
+        'pageY',
+        'relatedTarget',
+        'returnValue',
+        'screenX',
+        'screenY',
+        'shiftKey',
+        'timeStamp',
+        'type',
+        'which',
+        'x',
+        'y',
+        'deltaX',
+        'deltaY',
+        'deltaZ',
+        'deltaMode',
+    ];
+
+    worker: Worker;
+    offScreen(scriptUrl: string, callback: Function) {
+        this.worker = new Worker(scriptUrl+'worker.js');
+
+        this.worker.onmessage = (mg) => {
+            this.workerToMain(mg)
+        };
+
+        const offscreenCanvas = this.canvas.transferControlToOffscreen();
+
+        window.addEventListener('resize', () => { this.onResize() }, false);
+
+        this.worker.postMessage({
+            type: 'init',
+            canvas: offscreenCanvas,
+        }, [offscreenCanvas]);
+        this.sendToEngine('load', {url: scriptUrl+'engine.js'});
+        this.onResize();
+        callback();
+    }
+
+    engine: any;
+    inScreen(scriptUrl: string, callback: Function) {
+        const script = document.createElement("script");
+        script.src = scriptUrl+'engine.js';
+        script.async = true;
+        document.body.appendChild(script);
+        script.addEventListener('load', () => {
+            callback();
+        });
+    }
+
+    workerToMain(msg) {
+        switch (msg.data.type) {
+            case 'event':
+                this.bindEvent(msg.data);
+                break;
+            case 'canvasMethod':
+                this.canvas[msg.data.method](...msg.data.args);
+                break;
+            case 'canvasStyle':
+                this.canvas.style[msg.data.name] = msg.data.value;
+                break;
+        }
+    }
+
+    /**
+     * Bind DOM element
+     * @param data
+     */
+    bindEvent(data) {
+
+        let target;
+
+        switch (data.targetName) {
+            case 'window':
+                target = window;
+                break;
+            case 'canvas':
+                target = this.canvas;
+                break;
+            case 'document':
+                target = document;
+                break;
+        }
+
+        if (!target) {
+            console.error('Unknown target: ' + data.targetName);
+            return;
+        }
+
+
+        target.addEventListener(data.eventName, (e) => {
+
+            // We can`t pass original event to the worker
+            const eventClone = this.cloneEvent(e);
+
+            this.worker.postMessage({
+                type: 'event',
+                targetName: data.targetName,
+                eventName: data.eventName,
+                eventClone: eventClone,
+            });
+
+        }, data.opt);
+
+    }
+
+    /**
+     * Cloning Event to plain object
+     * @param event
+     */
+    cloneEvent(event) {
+        event.preventDefault();
+        const eventClone = {};
+        for (let field of this.mouseEventFields) {
+            eventClone[field] = event[field];
+        }
+        return eventClone;
+    }
+
+    onResize() {
+        let orientation = (<any>window.orientation !== undefined ? +<any>window.orientation : ((<any>window.screen).orientation && ((<any>window.screen).orientation)['angle'] ? ((<any>window.screen).orientation).angle : 0))
+        
+        let data = {
+            canvas: this.canvas.getBoundingClientRect(),
+            window: {
+                innerWidth: window.innerWidth,
+                innerHeight: window.innerHeight,
+                devicePixelRatio: window.devicePixelRatio,
+                orientation: orientation,
+            },
+        };
+        this.sendToEngine('resize', data);
+    }
+
+    sendToEngine(type: string, data: any) {
+        data.type = type;
+        if (this.worker) this.worker.postMessage(data);
+        // else this.postMessage(data);
     }
 
 }
