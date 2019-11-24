@@ -54,6 +54,9 @@ export class NakerWorker {
             case 'event':
                 this.handleEvent(data);
                 break;
+            case 'visible':
+                this.engine.system.setVisible(data.visible);
+                break;
             case 'resize':
                 this.onResize(data);
                 break;

@@ -81,6 +81,15 @@ export class System {
     started = false;
 
     /**
+     * @ignore
+     */
+    setVisible(canvasVisible: boolean) {
+        // If overflow style = hidden, there is no scrollingElement on document
+        if (canvasVisible && !this.rendering) this.startRender();
+        else if (!canvasVisible && this.rendering) this.pauseRender();
+    }
+
+    /**
      * Allow to launch scene rendering (when everything is loaded for instance)
      */
     launchRender() {

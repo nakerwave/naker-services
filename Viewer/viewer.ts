@@ -39,10 +39,9 @@ export class NakerViewer {
         // Add cool WaterMark in all naker Projects
         setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎' });
         mount(this.container, this.canvas);
-
         
         window.addEventListener("scroll", () => {
-            // if (this.checkingScroll) this.checkScroll();
+            if (this.checkingScroll) this.checkScroll();
         });
 
         this.checkContainerPosition();
@@ -74,7 +73,7 @@ export class NakerViewer {
     load(scriptUrl: string, project: any, callback: Function) {
         if ('OffscreenCanvas' in window && !this.offscreen) {
             this.offScreen(scriptUrl, () => {
-                this.sendToEngine('build', project);
+                this.sendToWorker('build', project);
                 callback('offscreen mode');
             });
         } else {
@@ -99,7 +98,7 @@ export class NakerViewer {
         // Due to a lot of user feedback having trouble when no position on parent
         // .style returns only inline values (not useful)
         // let containerStyle = this.container.style;
-        // getComputedStyle return all values so can be used to check if position already fixed
+        // getComputedStyle return all values so can be used to check if position already setted
         let containerStyle = window.getComputedStyle(this.container);
         // Best way found to determine if there is already a position or not
         // Seems like static is the default value (tested in edge, chrome and firefox)
@@ -115,12 +114,12 @@ export class NakerViewer {
     checkingScroll = true;
 
     /**
-    * Set if if have to check scroll to render
+    * Set if we have to check scroll to render
     */
     setCheckScroll(checkingScroll: boolean) {
         this.checkingScroll = checkingScroll;
         if (checkingScroll) this.checkScroll();
-        else this.sen();
+        else this.startRender();
     }
 
     /**
@@ -129,8 +128,25 @@ export class NakerViewer {
     checkScroll() {
         // If overflow style = hidden, there is no scrollingElement on document
         let containerVisible = this.checkVisible(this.container);
-        if (containerVisible && !this.rendering) this.startRender();
-        else if (!containerVisible && this.rendering) this.pauseRender();
+        if (containerVisible) this.startRender();
+        else if (!containerVisible) this.pauseRender();
+    }
+
+
+    /**
+    * Say engine the canvas is visible and that we should render the scene
+    */
+    startRender() {
+        if (this.worker) this.sendToWorker('visible', { visible: true });
+        else this.engine.system.setVisible(true);
+    }
+
+    /**
+    * Say engine the canvas is not visible and that we should stop rendering the scene
+    */
+    pauseRender() {
+        if (this.worker) this.sendToWorker('visible', {visible:false});
+        else this.engine.system.setVisible(false);
     }
 
     /**
@@ -201,7 +217,7 @@ export class NakerViewer {
             type: 'init',
             canvas: offscreenCanvas,
         }, [offscreenCanvas]);
-        this.sendToEngine('load', {url: scriptUrl+'engine.js'});
+        this.sendToWorker('load', {url: scriptUrl+'engine.js'});
         this.onResize();
         callback();
     }
@@ -298,13 +314,12 @@ export class NakerViewer {
                 orientation: orientation,
             },
         };
-        this.sendToEngine('resize', data);
+        this.sendToWorker('resize', data);
     }
 
-    sendToEngine(type: string, data: any) {
+    sendToWorker(type: string, data: any) {
         data.type = type;
         if (this.worker) this.worker.postMessage(data);
-        // else this.postMessage(data);
     }
 
 }
