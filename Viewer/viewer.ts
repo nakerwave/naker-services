@@ -1,43 +1,8 @@
 
 import { el, mount, setStyle, setAttr } from 'redom';
-// import * as workerPath from "file-loader?name=[name].js!./worker";
-// import Worker from "worker-loader!./Worker";
+import { NakerScreen, BindEventMessage, EventMessage, ResizeEventMessage, WorkerMessage } from './screen';
 
-/**
- * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
- *
- * The system is really important as it is often sent in every other class created to manage core assets
- */
-
- export interface WorkerMessage {
-     data: any;
- }
-
-export interface EventMessage {
-    targetName: string;
-    eventName: string;
-    option: any;
-}
-
-export interface BindEventMessage {
-    targetName: string;
-    eventName: string;
-    eventClone: any;
-}
-
-export interface WindowData {
-    innerWidth: number,
-    innerHeight: number,
-    devicePixelRatio: number,
-    orientation: number,
-}
-
-export interface ResizeEventMessage {
-    canvas: DOMRect|ClientRect;
-    window: WindowData;
-}
-
-export class NakerViewer {
+export class NakerViewer extends NakerScreen {
 
     /**
      * Element where the 3D Scene will be drawn
@@ -47,16 +12,12 @@ export class NakerViewer {
     offscreen = true;
 
     /**
-     * Canvas used to draw the 3D scene
-     */
-    canvas: HTMLCanvasElement;
-
-    /**
      * Creates a new System
      * @param container Element where the scene will be drawn
      * @param offscreen if false, the viewer won't use offscreen canvas
      */
     constructor(containerEL: HTMLElement, offscreen?:boolean) {
+        super();
         // Keep that variable def
         this.container = containerEL;
         if (offscreen !== undefined) this.offscreen = offscreen;

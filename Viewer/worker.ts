@@ -1,5 +1,5 @@
 
-import { BindEventMessage, EventMessage, ResizeEventMessage } from './viewer';
+import { BindEventMessage, EventMessage, ResizeEventMessage } from './screen';
 
 export class NakerWorker {
     
