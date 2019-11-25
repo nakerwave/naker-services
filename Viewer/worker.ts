@@ -1,12 +1,14 @@
 
+import { BindEventMessage, EventMessage } from './viewer';
+
 export class NakerWorker {
     
     constructor() {
         self.importScripts('https://test.naker.io/back/viewer.js');
         
         self.window = {
-            addEventListener: (event, fn, opt) => {
-                this.bindHandler('window', event, fn, opt);
+            addEventListener: (event: string, fn: Function, option) => {
+                this.bindHandler('window', event, fn, option);
             },
             setTimeout: self.setTimeout.bind(self),
             PointerEvent: true,
@@ -15,8 +17,8 @@ export class NakerWorker {
         };
         
         self.document = {
-            addEventListener: (event, fn, opt) => {
-                this.bindHandler('document', event, fn, opt);
+            addEventListener: (event: string, fn: Function, option) => {
+                this.bindHandler('document', event, fn, option);
             },
             // Uses to detect wheel event like at src/Inputs/scene.inputManager.ts:797
             createElement: () => {
@@ -32,12 +34,6 @@ export class NakerWorker {
         
         // Listening events from Main thread
         self.onmessage = (msg) => { this.onMainMessage(msg); }
-        
-        /**
-         * All event handlers
-         * @type {Map<String, Function>} key as (documentcontextmenu, canvaspointerup...)
-         */
-        self.handlers = new Map();
         
         /**
          * @type {OffscreenCanvas}
@@ -64,7 +60,7 @@ export class NakerWorker {
                 self.importScripts(data.url);
                 break;
             case 'init':
-                this.prepareCanvas(data);
+                this.prepareCanvas(data.canvas);
                 break;
             case 'build':
                 data.container = this.canvas;
@@ -91,24 +87,21 @@ export class NakerWorker {
     };
     /**
      * Preparing and hooks canvas
-     * @param data
-     * @returns {OffscreenCanvas}
+     * @param canvas
      */
-    prepareCanvas(data) {
-        const canvas = data.canvas;
-        this.canvas = data.canvas;
+    prepareCanvas(canvas: HTMLCanvasElement) {
+        this.canvas = canvas;
         self.canvas = canvas;
 
         canvas.setAttribute = (name, value) => {
-            postMessage({
-                type: 'canvasMethod',
+            this.sendToScreen('canvasMethod', {
                 method: 'setAttribute',
                 args: [name, value],
-            })
+            });
         };
 
-        canvas.addEventListener = (event, fn, opt) => {
-            this.bindHandler('canvas', event, fn, opt);
+        canvas.addEventListener = (event: string, fn: Function, option) => {
+            this.bindHandler('canvas', event, fn, option);
         };
 
         canvas.getBoundingClientRect = () => {
@@ -116,11 +109,10 @@ export class NakerWorker {
         };
 
         canvas.focus = () => {
-            postMessage({
-                type: 'canvasMethod',
+            this.sendToScreen('canvasMethod', {
                 method: 'focus',
                 args: [],
-            })
+            });
         };
 
         // noinspection JSUnusedGlobalSymbols
@@ -130,7 +122,7 @@ export class NakerWorker {
                     type: 'canvasStyle',
                     name: 'touchAction',
                     value: value,
-                })
+                });
             }
         };
 
@@ -142,41 +134,48 @@ export class NakerWorker {
     }
 
     /**
+     * All event this.handlers
+     * @type {Map<String, Function>} key as (documentcontextmenu, canvaspointerup...)
+     */
+    handlers = new Map();
+
+    /**
      * addEventListener hooks
      * 1. Store callback in worker
      * 2. Send info to Main thread to bind to DOM elements
      * @param {String} targetName  ['canvas', 'document', 'window']
      * @param {String} eventName
      * @param {Function} fn
-     * @param {Boolean} opt third addEventListener argument
+     * @param {Boolean} option third addEventListener argument
      */
-    bindHandler(targetName, eventName, fn, opt) {
+    bindHandler(targetName: string, eventName: string, fn: Function, option) {
 
         const handlerId = targetName + eventName;
 
-        handlers.set(handlerId, fn);
+        this.handlers.set(handlerId, fn);
 
-        postMessage({
-            type: 'event',
+        let eventMessage: EventMessage = {
             targetName: targetName,
             eventName: eventName,
-            opt: opt,
-        });
+            option: option,
+        }
+
+        this.sendToScreen('event', eventMessage);
     }
 
     /**
      * Events from Main thread call this handler which calls right callback saved earlier
      * @param event
      */
-    handleEvent(event) {
+    handleEvent(event: BindEventMessage) {
         const handlerId = event.targetName + event.eventName;
         event.eventClone.preventDefault = () => {};
         event.eventClone.target = self.canvas;
         // Just in case
-        if (!handlers.has(handlerId)) {
+        if (!this.handlers.has(handlerId)) {
             throw new Error('Unknown handlerId: ' + handlerId);
         }
-        handlers.get(handlerId)(event.eventClone);
+        this.handlers.get(handlerId)(event.eventClone);
     }
 
     onResize(data) {
@@ -194,6 +193,11 @@ export class NakerWorker {
         self.window.innerHeight = data.window.innerHeight;
         self.window.devicePixelRatio = data.window.devicePixelRatio;
         self.window.orientation = data.window.orientation;
+    }
+
+    sendToScreen(type: string, data: any){
+        data.type = type;
+        postMessage(data);
     }
 }
 

@@ -9,6 +9,22 @@ import { el, mount, setStyle, setAttr } from 'redom';
  * The system is really important as it is often sent in every other class created to manage core assets
  */
 
+ export interface WorkerMessage {
+     data: any;
+ }
+
+export interface EventMessage {
+    targetName: string;
+    eventName: string;
+    option: any;
+}
+
+export interface BindEventMessage {
+    targetName: string;
+    eventName: string;
+    eventClone: any;
+}
+
 export class NakerViewer {
 
     /**
@@ -16,7 +32,7 @@ export class NakerViewer {
      */
     container: HTMLElement;
 
-    offscreen: boolean;
+    offscreen = true;
 
     /**
      * Canvas used to draw the 3D scene
@@ -30,7 +46,7 @@ export class NakerViewer {
     constructor(containerEL: HTMLElement, offscreen?:boolean) {
         // Keep that variable def
         this.container = containerEL;
-        this.offscreen = offscreen;
+        if (offscreen !== undefined) this.offscreen = offscreen;
         // -webkit-tap to avoid touch effect on iphone
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
 
@@ -71,7 +87,7 @@ export class NakerViewer {
     }
     
     load(scriptUrl: string, project: any, callback: Function) {
-        if ('OffscreenCanvas' in window && !this.offscreen) {
+        if ('OffscreenCanvas' in window && this.offscreen) {
             this.offScreen(scriptUrl, () => {
                 this.sendToWorker('build', project);
                 callback('offscreen mode');
@@ -233,7 +249,7 @@ export class NakerViewer {
         });
     }
 
-    workerToMain(msg) {
+    workerToMain(msg: WorkerMessage) {
         switch (msg.data.type) {
             case 'event':
                 this.bindEvent(msg.data);
@@ -251,7 +267,7 @@ export class NakerViewer {
      * Bind DOM element
      * @param data
      */
-    bindEvent(data) {
+    bindEvent(data: EventMessage) {
 
         let target;
 
@@ -272,20 +288,16 @@ export class NakerViewer {
             return;
         }
 
-
         target.addEventListener(data.eventName, (e) => {
-
             // We can`t pass original event to the worker
-            const eventClone = this.cloneEvent(e);
-
-            this.worker.postMessage({
-                type: 'event',
+            const eventClone = this.cloneMouseEvent(e);
+            let bindEventMessage: BindEventMessage = {
                 targetName: data.targetName,
                 eventName: data.eventName,
                 eventClone: eventClone,
-            });
-
-        }, data.opt);
+            };
+            this.sendToWorker('event', bindEventMessage);
+        }, data.option);
 
     }
 
@@ -293,7 +305,7 @@ export class NakerViewer {
      * Cloning Event to plain object
      * @param event
      */
-    cloneEvent(event) {
+    cloneMouseEvent(event: Event) {
         event.preventDefault();
         const eventClone = {};
         for (let field of this.mouseEventFields) {
