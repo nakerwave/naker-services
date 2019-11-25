@@ -25,6 +25,18 @@ export interface BindEventMessage {
     eventClone: any;
 }
 
+export interface WindowData {
+    innerWidth: number,
+    innerHeight: number,
+    devicePixelRatio: number,
+    orientation: number,
+}
+
+export interface ResizeEventMessage {
+    canvas: DOMRect|ClientRect;
+    window: WindowData;
+}
+
 export class NakerViewer {
 
     /**
@@ -42,6 +54,7 @@ export class NakerViewer {
     /**
      * Creates a new System
      * @param container Element where the scene will be drawn
+     * @param offscreen if false, the viewer won't use offscreen canvas
      */
     constructor(containerEL: HTMLElement, offscreen?:boolean) {
         // Keep that variable def
@@ -317,7 +330,7 @@ export class NakerViewer {
     onResize() {
         let orientation = (<any>window.orientation !== undefined ? +<any>window.orientation : ((<any>window.screen).orientation && ((<any>window.screen).orientation)['angle'] ? ((<any>window.screen).orientation).angle : 0))
         
-        let data = {
+        let data: ResizeEventMessage = {
             canvas: this.canvas.getBoundingClientRect(),
             window: {
                 innerWidth: window.innerWidth,

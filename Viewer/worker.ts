@@ -1,11 +1,9 @@
 
-import { BindEventMessage, EventMessage } from './viewer';
+import { BindEventMessage, EventMessage, ResizeEventMessage } from './viewer';
 
 export class NakerWorker {
     
     constructor() {
-        self.importScripts('https://test.naker.io/back/viewer.js');
-        
         self.window = {
             addEventListener: (event: string, fn: Function, option) => {
                 this.bindHandler('window', event, fn, option);
@@ -35,12 +33,7 @@ export class NakerWorker {
         // Listening events from Main thread
         self.onmessage = (msg) => { this.onMainMessage(msg); }
         
-        /**
-         * @type {OffscreenCanvas}
-         */
         self.canvas = null;
-        
-        // getBoundingInfo()
     }
     
     onMainMessage(msg) {
@@ -75,7 +68,7 @@ export class NakerWorker {
     }
     
     canvas: HTMLCanvasElement;
-    rect = {
+    canvasRect: DOMRect | ClientRect = {
         top: 0,
         left: 0,
         right: 0,
@@ -105,7 +98,7 @@ export class NakerWorker {
         };
 
         canvas.getBoundingClientRect = () => {
-            return this.rect;
+            return this.canvasRect;
         };
 
         canvas.focus = () => {
@@ -135,7 +128,6 @@ export class NakerWorker {
 
     /**
      * All event this.handlers
-     * @type {Map<String, Function>} key as (documentcontextmenu, canvaspointerup...)
      */
     handlers = new Map();
 
@@ -143,10 +135,10 @@ export class NakerWorker {
      * addEventListener hooks
      * 1. Store callback in worker
      * 2. Send info to Main thread to bind to DOM elements
-     * @param {String} targetName  ['canvas', 'document', 'window']
-     * @param {String} eventName
-     * @param {Function} fn
-     * @param {Boolean} option third addEventListener argument
+     * @param targetName  ['canvas', 'document', 'window']
+     * @param eventName
+     * @param fn
+     * @param option third addEventListener argument
      */
     bindHandler(targetName: string, eventName: string, fn: Function, option) {
 
@@ -178,16 +170,16 @@ export class NakerWorker {
         this.handlers.get(handlerId)(event.eventClone);
     }
 
-    onResize(data) {
-        for (let prop of Object.keys(this.rect)) {
-            this.rect[prop] = data.canvas[prop];
+    onResize(data: ResizeEventMessage) {
+        for (let prop of Object.keys(this.canvasRect)) {
+            this.canvasRect[prop] = data.canvas[prop];
         }
         
-        self.canvas.clientWidth = this.rect.width;
-        self.canvas.clientHeight = this.rect.height;
+        self.canvas.clientWidth = this.canvasRect.width;
+        self.canvas.clientHeight = this.canvasRect.height;
 
-        self.canvas.width = this.rect.width;
-        self.canvas.height = this.rect.height;
+        self.canvas.width = this.canvasRect.width;
+        self.canvas.height = this.canvasRect.height;
 
         self.window.innerWidth = data.window.innerWidth;
         self.window.innerHeight = data.window.innerHeight;
