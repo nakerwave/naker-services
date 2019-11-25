@@ -5,13 +5,13 @@
  }
 
 export interface EventMessage {
-    targetName: string;
+    targetName: 'document' | 'window' | 'canvas';
     eventName: string;
     option: any;
 }
 
 export interface BindEventMessage {
-    targetName: string;
+    targetName: 'document' | 'window' | 'canvas';
     eventName: string;
     eventClone: any;
 }

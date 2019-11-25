@@ -135,12 +135,12 @@ export class NakerWorker {
      * addEventListener hooks
      * 1. Store callback in worker
      * 2. Send info to Main thread to bind to DOM elements
-     * @param targetName  ['canvas', 'document', 'window']
+     * @param targetName
      * @param eventName
      * @param fn
      * @param option third addEventListener argument
      */
-    bindHandler(targetName: string, eventName: string, fn: Function, option) {
+    bindHandler(targetName: 'document' | 'window' | 'canvas', eventName: string, fn: Function, option) {
 
         const handlerId = targetName + eventName;
 
