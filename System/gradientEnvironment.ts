@@ -31,15 +31,15 @@ export class GradientEnvironment {
         // Be careful : cullingStrategy prevent Shader from working
         // this.skyBox.cullingStrategy = AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION;
         let sharedVextex = "precision mediump float;attribute vec3 position;attribute vec3 normal;attribute vec2 uv;uniform mat4 worldViewProjection;varying vec4 vPosition;varying vec3 vNormal;void main(){vec4 p = vec4(position,1.0);vPosition = p;vNormal = normal;gl_Position = worldViewProjection * p;}"
-        let sharedVar = "precision mediump float;uniform mat4 worldView;varying vec4 vPosition;varying vec3 vNormal;uniform vec4 topColor;uniform vec4 bottomColor;"
+        let sharedVar = "precision mediump float;uniform mat4 worldView;varying vec4 vPosition;varying vec3 vNormal;uniform vec4 topColor;uniform vec4 bottomColor; void main(void){float ba = bottomColor.a; vec4 vecba = vec4(ba, ba, ba, ba);float ta = topColor.a; vec4 vecta = vec4(ta, ta, ta, ta);"
         Effect.ShadersStore.verticalVertexShader = sharedVextex;
-        Effect.ShadersStore.verticalPixelShader = sharedVar + "void main(void){float h = normalize(vPosition).y + 0.5;float maxh = max(h,0.0); gl_FragColor = mix(bottomColor,topColor,maxh);}";
+        Effect.ShadersStore.verticalPixelShader = sharedVar + "float h = normalize(vPosition).y + 0.5;float maxh = max(h,0.0); gl_FragColor = mix(bottomColor*vecba,topColor*vecta,maxh);}";
 
         Effect.ShadersStore.horizontalVertexShader = sharedVextex;
-        Effect.ShadersStore.horizontalPixelShader = sharedVar + "void main(void){float h = normalize(vPosition).x + 0.5;float maxh = max(h,0.0); gl_FragColor = mix(bottomColor,topColor,maxh);}";
+        Effect.ShadersStore.horizontalPixelShader = sharedVar + "float h = normalize(vPosition).x + 0.5;float maxh = max(h,0.0); gl_FragColor = mix(bottomColor*vecba,topColor*vecta,maxh);}";
         
         Effect.ShadersStore.radialVertexShader = sharedVextex;
-        Effect.ShadersStore.radialPixelShader = sharedVar + "void main(void){float h = normalize(vPosition).z - 0.5;float maxh = max(2.0*h,0.0); gl_FragColor = mix(bottomColor,topColor,maxh);}";
+        Effect.ShadersStore.radialPixelShader = sharedVar + "float h = normalize(vPosition).z - 0.5;float maxh = max(2.0*h,0.0); gl_FragColor = mix(bottomColor*vecba,topColor*vecta,maxh);}";
     }
     
     setSkyGradient(gradient: 'vertical' | 'horizontal' | 'radial') {
