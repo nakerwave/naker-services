@@ -116,6 +116,11 @@ export class ScrollCatcher extends ProgressCatcher {
             this.mouseWheel(evt, top);
         });
 
+        this._container.addEventListener("wheel", (evt) => {
+            let top = this.progressReal * this.scrollHeight + evt.deltaY;
+            this.mouseWheel(evt, top);
+        });
+
         // Firefox trigger this other event which we need to prevent to avoid body scroll when in Intale
         this._container.addEventListener("MozMousePixelScroll", (evt) => {
             evt.preventDefault();
