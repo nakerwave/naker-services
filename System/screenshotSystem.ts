@@ -15,7 +15,7 @@ interface size {
  */
 export class screenshotSystem extends System {
 
-    constructor(containerEl:HTMLElement) {
+    constructor(containerEl:HTMLCanvasElement) {
         super(containerEl, true);
     }
 
