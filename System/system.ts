@@ -6,7 +6,6 @@ import '@babylonjs/core/Animations/animatable';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
-import { el, mount, setStyle, setAttr } from 'redom';
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -37,32 +36,17 @@ export class System {
     animationManager: AnimationManager;
 
     /**
-     * Element where the 3D Scene will be drawn
-     */
-    container: HTMLElement;
-
-    /**
      * Canvas used to draw the 3D scene
      */
     canvas: HTMLCanvasElement;
 
     /**
      * Creates a new System
-     * @param container Element where the scene will be drawn
+     * @param canvas Element where the scene will be drawn
      */
-    constructor(containerEL: any, screenshot?: boolean) {
-        if (!Engine.isSupported()) throw 'WebGL not supported';
-        // Keep that variable def
-        this.container = containerEL;
-        // -webkit-tap to avoid touch effect on iphone
-        setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
-
-        //  'z-index': -1 not mandatory
-        this.canvas = el('canvas', { style: { position: 'absolute', top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
-        // Add cool WaterMark in all naker Projects
-        setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎'});
-        mount(this.container, this.canvas);
-
+    constructor(canvas: HTMLCanvasElement, screenshot?) {
+        // if (!Engine.isSupported()) throw 'WebGL not supported';
+        this.canvas = canvas;
         // For now keep false as the last argument of the engine,
         // We don't want the canvas to adapt to screen ratio as it slow down too much the scene
         // preserveDrawingBuffer and stencil needed for screenshot
@@ -90,25 +74,15 @@ export class System {
         this.scene.ambientColor = new Color3(1, 1, 1);
     }
 
+    /**
+    * Tell if system currently rendering scene
+    */
+    rendering = false;
 
     /**
-    * Make sure there is a position on container
-    * @ignore
+    * Tell if scene needs to be render
     */
-    checkContainerPosition() {
-        // Due to a lot of user feedback having trouble when no position on parent
-        // .style returns only inline values (not useful)
-        // let containerStyle = this.container.style;
-        // getComputedStyle return all values so can be used to check if position already fixed
-        let containerStyle = window.getComputedStyle(this.container);
-        // Best way found to determine if there is already a position or not
-        // Seems like static is the default value (tested in edge, chrome and firefox)
-        if (containerStyle.position == 'static') {
-            // We set to relative because this is the default behavior
-            setStyle(this.container, { position: 'relative' });
-            this.engine.resize();
-        }
-    }
+    started = false;
 
     /**
      * @ignore
@@ -129,7 +103,7 @@ export class System {
      */
     checkScroll() {
         // If overflow style = hidden, there is no scrollingElement on document
-        let containerVisible = this.checkVisible(this.container);
+        let containerVisible = this.checkVisible();
         if (containerVisible && !this.rendering) this.startRender();
         else if (!containerVisible && this.rendering) this.pauseRender();
     }
@@ -137,21 +111,11 @@ export class System {
     /**
     * Check if element visible by the screen
     */
-    checkVisible(elm: HTMLElement) {
-        var rect = elm.getBoundingClientRect();
+    checkVisible() {
+        var rect = this.canvas.getBoundingClientRect();
         var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
         return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
     }
-
-    /**
-    * Tell if system currently rendering scene
-    */
-    rendering = false;
-
-    /**
-    * Tell if scene needs to be render
-    */
-    started = false;
 
     /**
      * Allow to launch scene rendering (when everything is loaded for instance)
@@ -173,6 +137,7 @@ export class System {
      * @ignore
      */
     pauseRender() {
+        console.log('stop');
         this.rendering = false;
         this.engine.stopRenderLoop();
     }
@@ -181,6 +146,7 @@ export class System {
      * @ignore
      */
     startRender() {
+        console.log('start');
         this.rendering = true;
         this.engine.stopRenderLoop();
         this.engine.runRenderLoop(() => {

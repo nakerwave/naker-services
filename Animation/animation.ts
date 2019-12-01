@@ -72,7 +72,8 @@ export class AnimationManager {
 	 */
     setFocusBack() {
         this.focusback = true;
-        localStorage.clear()
+        // In case in worker
+        // if (localStorage) localStorage.clear();
         setTimeout(() => {
             this.focusback = false;
         }, 200);
