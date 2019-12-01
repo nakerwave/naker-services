@@ -1,6 +1,6 @@
+import { NakerViewer } from './viewer';
 
-
- export interface WorkerMessage {
+export interface WorkerMessage {
      data: any;
  }
 
@@ -23,17 +23,19 @@ export interface WindowData {
     orientation: number,
 }
 
+export interface DocumentData {
+    documentElement: {
+        clientHeight: number;
+    },
+}
+
 export interface ResizeEventMessage {
     canvas: DOMRect|ClientRect;
     window: WindowData;
+    document: DocumentData;
 }
 
-export class NakerScreen {
-
-    /**
-     * Canvas used to draw the 3D scene
-     */
-    canvas: HTMLCanvasElement;
+export class NakerScreen extends NakerViewer {
 
     // Events props to send to worker
     mouseEventFields = [
@@ -88,6 +90,7 @@ export class NakerScreen {
         const offscreenCanvas = this.canvas.transferControlToOffscreen();
 
         window.addEventListener('resize', () => { this.onResize() }, false);
+        window.addEventListener('scroll', () => { this.onScroll() }, false);
 
         this.worker.postMessage({
             type: 'init',
@@ -98,7 +101,6 @@ export class NakerScreen {
         callback();
     }
 
-    engine: any;
     inScreen(scriptUrl: string, callback: Function) {
         const script = document.createElement("script");
         script.src = scriptUrl+'engine.js';
@@ -185,8 +187,20 @@ export class NakerScreen {
                 devicePixelRatio: window.devicePixelRatio,
                 orientation: orientation,
             },
+            document: {
+                documentElement: {
+                    clientHeight: document.documentElement.clientHeight
+                }
+            }
         };
         this.sendToWorker('resize', data);
+    }
+
+    onScroll() {
+        let data: ResizeEventMessage = {
+            canvas: this.canvas.getBoundingClientRect(),
+        };
+        this.sendToWorker('scroll', data);
     }
 
     sendToWorker(type: string, data: any) {

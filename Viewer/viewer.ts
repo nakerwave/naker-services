@@ -1,26 +1,28 @@
+import { System } from '../System/system';
 
 import { el, mount, setStyle, setAttr } from 'redom';
-import { NakerScreen } from './screen';
 
-export class NakerViewer extends NakerScreen {
+export class NakerViewer {
 
     /**
      * Element where the 3D Scene will be drawn
      */
     container: HTMLElement;
+    system: System;
 
-    offscreen = true;
+    /**
+     * Canvas used to draw the 3D scene
+     */
+    canvas: HTMLCanvasElement;
 
     /**
      * Creates a new System
      * @param container Element where the scene will be drawn
      * @param offscreen if false, the viewer won't use offscreen canvas
      */
-    constructor(containerEL: HTMLElement, offscreen?:boolean) {
-        super();
+    constructor(containerEL: HTMLElement) {
         // Keep that variable def
         this.container = containerEL;
-        if (offscreen !== undefined) this.offscreen = offscreen;
         // -webkit-tap to avoid touch effect on iphone
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
 
@@ -29,10 +31,6 @@ export class NakerViewer extends NakerScreen {
         // Add cool WaterMark in all naker Projects
         setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎' });
         mount(this.container, this.canvas);
-        
-        window.addEventListener("scroll", () => {
-            if (this.checkingScroll) this.checkScroll();
-        });
 
         this.checkContainerPosition();
         this._checkViewport();
@@ -59,26 +57,6 @@ export class NakerViewer extends NakerScreen {
         //   }
         // }
     }
-    
-    load(scriptUrl: string, project: any, callback: Function) {
-        if ('OffscreenCanvas' in window && this.offscreen) {
-            this.offScreen(scriptUrl, () => {
-                this.sendToWorker('build', project);
-                callback('offscreen mode');
-            });
-        } else {
-            this.inScreen(scriptUrl, () => {
-                project.container = this.canvas;
-                this.engine = this.buildProject(project);
-                callback(this.engine);
-            });
-        }
-        this.onResize();
-    }
-
-    buildProject(project: any) {
-
-    }
 
     /**
     * Make sure there is a position on container
@@ -96,55 +74,5 @@ export class NakerViewer extends NakerScreen {
             // We set to relative because this is the default behavior
             setStyle(this.container, { position: 'relative' });
         }
-    }
-
-    /**
-     * @ignore
-     */
-    checkingScroll = true;
-
-    /**
-    * Set if we have to check scroll to render
-    */
-    setCheckScroll(checkingScroll: boolean) {
-        this.checkingScroll = checkingScroll;
-        if (checkingScroll) this.checkScroll();
-        else this.startRender();
-    }
-
-    /**
-     * @ignore
-     */
-    checkScroll() {
-        // If overflow style = hidden, there is no scrollingElement on document
-        let containerVisible = this.checkVisible(this.container);
-        if (containerVisible) this.startRender();
-        else if (!containerVisible) this.pauseRender();
-    }
-
-
-    /**
-    * Say engine the canvas is visible and that we should render the scene
-    */
-    startRender() {
-        if (this.worker) this.sendToWorker('visible', { visible: true });
-        else this.engine.system.setVisible(true);
-    }
-
-    /**
-    * Say engine the canvas is not visible and that we should stop rendering the scene
-    */
-    pauseRender() {
-        if (this.worker) this.sendToWorker('visible', {visible:false});
-        else this.engine.system.setVisible(false);
-    }
-
-    /**
-    * Check if element visible by the screen
-    */
-    checkVisible(elm: HTMLElement) {
-        var rect = elm.getBoundingClientRect();
-        var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
-        return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
     }
 }

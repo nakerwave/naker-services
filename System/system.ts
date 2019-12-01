@@ -59,6 +59,10 @@ export class System {
 
         this.animationManager = new AnimationManager();
         this.buildScene();
+
+        window.addEventListener("scroll", () => {
+            if (this.checkingScroll && this.started) this.checkScroll();
+        });
     }
 
     /**
@@ -83,10 +87,34 @@ export class System {
     /**
      * @ignore
      */
-    setVisible(canvasVisible: boolean) {
+    checkingScroll = true;
+
+    /**
+    * Set if if have to check scroll to render
+    */
+    setCheckScroll(checkingScroll: boolean) {
+        this.checkingScroll = checkingScroll;
+        if (checkingScroll) this.checkScroll();
+        else this.launchRender();
+    }
+
+    /**
+     * @ignore
+     */
+    checkScroll() {
         // If overflow style = hidden, there is no scrollingElement on document
-        if (canvasVisible && !this.rendering) this.startRender();
-        else if (!canvasVisible && this.rendering) this.pauseRender();
+        let containerVisible = this.checkVisible();
+        if (containerVisible && !this.rendering) this.startRender();
+        else if (!containerVisible && this.rendering) this.pauseRender();
+    }
+
+    /**
+    * Check if element visible by the screen
+    */
+    checkVisible() {
+        var rect = this.canvas.getBoundingClientRect();
+        var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+        return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
     }
 
     /**
@@ -109,6 +137,7 @@ export class System {
      * @ignore
      */
     pauseRender() {
+        console.log('stop');
         this.rendering = false;
         this.engine.stopRenderLoop();
     }
@@ -117,6 +146,7 @@ export class System {
      * @ignore
      */
     startRender() {
+        console.log('start');
         this.rendering = true;
         this.engine.stopRenderLoop();
         this.engine.runRenderLoop(() => {

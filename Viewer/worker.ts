@@ -25,6 +25,7 @@ export class NakerWorker {
                 };
             },
             defaultView: self.window,
+            documentElement: {},
         };
         
         // Not works without it
@@ -48,6 +49,9 @@ export class NakerWorker {
                 break;
             case 'resize':
                 this.onResize(data);
+                break;
+            case 'scroll':
+                this.onScroll(data);
                 break;
             case 'load':
                 self.importScripts(data.url);
@@ -185,6 +189,14 @@ export class NakerWorker {
         self.window.innerHeight = data.window.innerHeight;
         self.window.devicePixelRatio = data.window.devicePixelRatio;
         self.window.orientation = data.window.orientation;
+
+        self.document.documentElement.clientHeight = data.document.documentElement.clientHeight;
+    }
+
+    onScroll(data: ResizeEventMessage) {
+        for (let prop of Object.keys(this.canvasRect)) {
+            if (this.canvasRect[prop] != data.canvas[prop]) this.canvasRect[prop] = data.canvas[prop];
+        }
     }
 
     sendToScreen(type: string, data: any){
