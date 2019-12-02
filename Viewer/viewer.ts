@@ -23,11 +23,22 @@ export class NakerViewer {
     constructor(containerEL: HTMLElement) {
         // Keep that variable def
         this.container = containerEL;
-        // -webkit-tap to avoid touch effect on iphone
-        setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
 
-        //  'z-index': -1 not mandatory
-        this.canvas = el('canvas', { style: { position: 'absolute', top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        // let browser = this.getBrowser();
+        //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';
+        setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
+        
+        this.canvas = el('canvas', { style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        let canvasposition = 'absolute';
+        if (this.container == document.body) canvasposition = 'fixed';
+        setStyle(this.canvas, { position: canvasposition });
+        // if (this.container == document.body) setStyle(this.container, {	'overflow-y': 'auto' });
+        // Problem with scroll and touch action with android, discussion here:
+        // https://forum.babylonjs.com/t/scroll-issues-with-touch-action/2135
+        // 'touch-action': 'none' Keep it to avoid refresh on android phones
+        // -webkit-tap to avoid touch effect on iphone
+       
+       
         // Add cool WaterMark in all naker Projects
         setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎' });
         mount(this.container, this.canvas);
