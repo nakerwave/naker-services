@@ -1,6 +1,16 @@
 import { System } from '../System/system';
 
-import { el, mount, setStyle, setAttr } from 'redom';
+import { el, mount, unmount, setStyle, setAttr } from 'redom';
+import icosphere from '../Asset/icosphere.svg';
+
+export interface ProjectInterface {
+    container: HTMLElement,
+    // engine: 'story' | 'form' | 'back',
+    name?: string,
+    assets?: Array<any>,
+    palette?: Array<any>,
+    waterMark?: boolean,
+}
 
 export class NakerViewer {
 
@@ -9,6 +19,7 @@ export class NakerViewer {
      */
     container: HTMLElement;
     system: System;
+    // engine: 'story' | 'form' | 'back';
 
     /**
      * Canvas used to draw the 3D scene
@@ -20,9 +31,11 @@ export class NakerViewer {
      * @param container Element where the scene will be drawn
      * @param offscreen if false, the viewer won't use offscreen canvas
      */
-    constructor(containerEL: HTMLElement) {
+    constructor(project: ProjectInterface) {
         // Keep that variable def
-        this.container = containerEL;
+        this.container = project.container;
+        // this.engine = project.engine;
+        if (project.waterMark !==  false) this.addWaterMark();
 
         // let browser = this.getBrowser();
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';
@@ -85,5 +98,94 @@ export class NakerViewer {
             // We set to relative because this is the default behavior
             setStyle(this.container, { position: 'relative' });
         }
+    }
+
+    setNoEvent() {
+        setStyle(this.canvas, { 'pointer-events': 'none', 'z-index': '-1' });
+    }
+
+    iconStyle = {
+        position: 'relative',
+        display: 'inline-block',
+        float: 'right',
+        padding: '3px',
+        cursor: 'pointer',
+        height: '24px',
+        width: '24px',
+        'border-radius': '5px',
+        'box-sizing': 'unset',
+        'webkit-box-sizing': 'unset',
+    };
+    
+    divStyle = {
+        position: 'absolute',
+        padding: '5px',
+        left: '5px',
+        cursor: 'pointer',
+        height: '20px',
+        width: '125px',
+        'box-sizing': 'unset',
+        'webkit-box-sizing': 'unset',
+        'font-family': 'Roboto, sans-serif',
+        color: '#6633ff',
+        opacity: 0,
+        transition: 'all ease 100ms',
+    };
+    
+    containerStyle = {
+        position: 'absolute',
+        bottom: '5px', 
+        right: '5px', 
+        height: '30px', 
+        width: '30px', 
+        cursor: 'pointer',
+        'border-radius': '5px',
+        background: 'rgba(255, 255, 255, 0.7)',
+        transition: 'all ease 100ms',
+    };
+
+    waterMark: HTMLElement;
+    icosphere: HTMLElement;
+    div: HTMLElement;
+    addWaterMark() {
+        if (this.waterMark) return mount(this.container, this.waterMark);
+
+        this.waterMark = el('div', {
+                style: this.containerStyle,
+                onclick: () => { window.open('https://naker.io?href=watermark', '_blank') },
+                onmouseleave: () => { this.iconNotHovered(); },
+                onmouseenter: () => { this.iconHovered(); },
+            },
+            [
+                this.icosphere = el('div', {
+                    style: this.iconStyle,
+                }),
+                this.div = el('div', 'Made with Naker', {
+                    style: this.divStyle,
+                }),
+            ]
+        );
+        mount(this.container, this.waterMark);
+
+        this.icosphere.innerHTML = icosphere;
+        let icosphereHTML = this.icosphere.childNodes[0];
+        setAttr(icosphereHTML, { width: '24px', height: '24px' });
+        setStyle(this.icosphere, { 'margin-left': '5px' });
+    }
+
+    removeWaterMark() {
+        if (this.waterMark) unmount(this.container, this.waterMark);
+    }
+
+    iconHovered() {
+        setStyle(this.waterMark, { width: '170px' });
+        setTimeout(() => {
+            setStyle(this.div, { opacity: '1' });
+        }, 100);
+    }
+
+    iconNotHovered() {
+        setStyle(this.waterMark, { width: '30px' });
+        setStyle(this.div, { opacity: '0' });
     }
 }

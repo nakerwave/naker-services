@@ -137,7 +137,6 @@ export class System {
      * @ignore
      */
     pauseRender() {
-        console.log('stop');
         this.rendering = false;
         this.engine.stopRenderLoop();
     }
@@ -146,7 +145,6 @@ export class System {
      * @ignore
      */
     startRender() {
-        console.log('start');
         this.rendering = true;
         this.engine.stopRenderLoop();
         this.engine.runRenderLoop(() => {
