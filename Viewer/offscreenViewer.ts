@@ -27,7 +27,7 @@ export class NakerOffscreenViewer extends NakerScreen {
     }
 
     load(scriptUrl: string, project: any, callback: Function) {
-        if ('OffscreenCanvas' in window && this.offscreen) {
+        if (this.isOffsreenAvailable() && this.offscreen) {
             this.offScreen(scriptUrl, () => {
                 this.sendToWorker('build', project);
                 callback('offscreen mode');
@@ -41,6 +41,11 @@ export class NakerOffscreenViewer extends NakerScreen {
             });
         }
         this.onResize();
+    }
+
+    // Offscreen canvas not compatible everywhere yet
+    isOffsreenAvailable() {
+        return 'transferControlToOffscreen' in this.canvas && 'OffscreenCanvas' in window;
     }
 
     buildProject(project: any) {

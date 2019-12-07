@@ -197,15 +197,19 @@ export class NakerViewer {
         if (this.waterMark) unmount(this.container, this.waterMark);
     }
 
+    timeout;
     iconHovered() {
         setStyle(this.waterMark, { width: '170px' });
-        setTimeout(() => {
+        if (this.timeout) clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
             setStyle(this.div, { opacity: '1' });
         }, 100);
     }
 
     iconNotHovered() {
-        setStyle(this.waterMark, { width: '30px' });
         setStyle(this.div, { opacity: '0' });
-    }
+        if (this.timeout) clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+            setStyle(this.waterMark, { width: '30px' });
+        }, 100);
 }
