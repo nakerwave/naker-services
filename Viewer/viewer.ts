@@ -4,12 +4,28 @@ import { el, mount, unmount, setStyle, setAttr } from 'redom';
 import icosphere from '../Asset/icosphere.svg';
 
 export interface ProjectInterface {
-    container: HTMLElement,
+    container?: HTMLElement,
     // engine: 'story' | 'form' | 'back',
     name?: string,
     assets?: Array<any>,
     palette?: Array<any>,
     waterMark?: boolean,
+}
+
+export interface ViewerOption {
+    waterMark?: boolean,
+}
+
+export let quotereplacement = 'nqt';
+
+export let removeQuote = (optionString) => {
+    let optionArray = optionString.split('"');
+    return optionArray.join(quotereplacement);
+}
+
+export let addQuote = (optionString) => {
+    let optionArray = optionString.split(quotereplacement);
+    return optionArray.join('"');
 }
 
 export class NakerViewer {
@@ -31,11 +47,12 @@ export class NakerViewer {
      * @param container Element where the scene will be drawn
      * @param offscreen if false, the viewer won't use offscreen canvas
      */
-    constructor(project: ProjectInterface) {
+    constructor(containerEL: HTMLElement, viewerOption?: ViewerOption) {
         // Keep that variable def
-        this.container = project.container;
+        this.container = containerEL;
         // this.engine = project.engine;
-        if (project.waterMark !==  false) this.addWaterMark();
+        this.addWaterMark();
+        if (viewerOption && viewerOption.waterMark === false) this.removeWaterMark();
 
         // let browser = this.getBrowser();
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';
@@ -124,6 +141,9 @@ export class NakerViewer {
         cursor: 'pointer',
         height: '20px',
         width: '125px',
+        'line-height': '20px',
+        'font- size': '15px',
+        'vertical-align': 'middle',
         'box-sizing': 'unset',
         'webkit-box-sizing': 'unset',
         'font-family': 'Roboto, sans-serif',
