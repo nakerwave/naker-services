@@ -10,11 +10,6 @@ import remove from 'lodash/remove';
 export class ProgressCatcher {
 
     /**
-     * @ignore
-     */
-    _container: HTMLElement;
-
-    /**
      * Current progress position to be catched
      */
     progressReal = 0;

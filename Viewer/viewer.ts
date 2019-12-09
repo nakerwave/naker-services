@@ -5,18 +5,21 @@ import icosphere from '../Asset/icosphere.svg';
 
 export interface ProjectInterface {
     container?: HTMLElement,
+    canvas?: HTMLCanvasElement,
     // engine: 'story' | 'form' | 'back',
     name?: string,
     assets?: Array<any>,
     palette?: Array<any>,
     waterMark?: boolean,
+    listenEvent?: boolean,
 }
 
 export interface ViewerOption {
     waterMark?: boolean,
+    listenEvent?: boolean,
 }
 
-export let quotereplacement = 'nqt';
+export let quotereplacement = '|';
 
 export let removeQuote = (optionString) => {
     let optionArray = optionString.split('"');
@@ -51,8 +54,6 @@ export class NakerViewer {
         // Keep that variable def
         this.container = containerEL;
         // this.engine = project.engine;
-        this.addWaterMark();
-        if (viewerOption && viewerOption.waterMark === false) this.removeWaterMark();
 
         // let browser = this.getBrowser();
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';
@@ -75,6 +76,10 @@ export class NakerViewer {
 
         this.checkContainerPosition();
         this._checkViewport();
+
+        this.addWaterMark();
+        if (viewerOption && viewerOption.waterMark === false) this.removeWaterMark();
+        if (viewerOption && viewerOption.listenEvent === false) this.setNoEvent();
     }
 
     /**
