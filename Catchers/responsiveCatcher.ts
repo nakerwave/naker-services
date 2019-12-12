@@ -1,10 +1,10 @@
 
+import { System } from '../System/system';
+
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
-
 import { Camera } from '@babylonjs/core/Cameras/camera';
 import remove from 'lodash/remove';
-import { el, mount } from 'redom';
 
 /*
   +------------------------------------------------------------------------+
@@ -17,6 +17,11 @@ import { el, mount } from 'redom';
  */
 
 export class ResponsiveCatcher {
+
+    /**
+     * @ignore
+     */
+    _system: System;
 
     /**
      * @ignore
@@ -37,9 +42,10 @@ export class ResponsiveCatcher {
     /**
      * @param system System of the 3D scene
      */
-    constructor(engine: Engine, scene: Scene, horizontalFixed?: boolean) {
-        this._engine = engine;
-        this._scene = scene;
+    constructor(system: System, horizontalFixed?: boolean) {
+        this._system = system;
+        this._engine = system.engine;
+        this._scene = system.scene;
 
         this._engine.onResizeObservable.add(() => {
             this.checkSize();
@@ -57,8 +63,37 @@ export class ResponsiveCatcher {
         //     this._engine.resize();
         // });
 
-        this.checkSize();
+        // Call to launch the loop, initialize with and height of canvas plus make a first resize check
+        this.setResizeContainerLoop();
         if (horizontalFixed) this.setHorizontalFixed(horizontalFixed);
+    }
+
+    /**
+     * Width of canvas
+     */
+    canvasWidth = 100;
+
+    /**
+     * Height of canvas
+     */
+    canvasHeight = 100;
+    
+    intervalLoop;
+    sizeCheckInterval = 100;
+
+    // Only way to make sure the scene is always fitted with the container is to have a timer checking for changes
+    // window resize does not always work in some specific cases
+    setResizeContainerLoop() {
+        this.intervalLoop = setInterval(() => {
+            let newHeight, newWidth;
+            newWidth = this._system.canvas.offsetWidth;
+            newHeight = this._system.canvas.offsetHeight;
+            if (newWidth !== this.canvasWidth || newHeight !== this.canvasHeight) {
+                this._engine.resize();
+                this.canvasWidth = newWidth;
+                this.canvasHeight = newHeight
+            }
+        }, this.sizeCheckInterval);
     }
 
     /**
