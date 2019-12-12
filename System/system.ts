@@ -63,6 +63,8 @@ export class System {
         window.addEventListener("scroll", () => {
             if (this.checkingScroll && this.started) this.checkScroll();
         });
+
+        // this.setLimitFPS(true);
     }
 
     /**
@@ -147,10 +149,18 @@ export class System {
     startRender() {
         this.rendering = true;
         this.engine.stopRenderLoop();
-        this.engine.runRenderLoop(() => {
-            this.animationManager.runAnimations(this.engine.getFps());
-            this.scene.render();
-        });
+        if (this.limitFPS) {
+            this.engine.runRenderLoop(() => {
+                this.animationManager.runAnimations(this.engine.getFps());
+                if (this.limitSwitch) this.scene.render();
+                this.limitSwitch = !this.limitSwitch;
+            });
+        } else {
+            this.engine.runRenderLoop(() => {
+                this.animationManager.runAnimations(this.engine.getFps());
+                this.scene.render();
+            });
+        }
     }
 
     /**
@@ -158,7 +168,6 @@ export class System {
      * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
     optimize() {
-        this.scene.blockMaterialDirtyMechanism = true;
         this.scene.autoClear = false; // Color buffer
         this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
     }
@@ -168,7 +177,6 @@ export class System {
      * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
     unOptimize() {
-        this.scene.blockMaterialDirtyMechanism = false;
         this.scene.autoClear = true; // Color buffer
         this.scene.autoClearDepthAndStencil = true; // Depth and stencil, obviously
     }
@@ -182,6 +190,9 @@ export class System {
         this.scene.freezeActiveMeshes();
         this.scene.blockMaterialDirtyMechanism = true;
         // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
+
+        this.engine.setHardwareScalingLevel(2);
+        this.setLimitFPS(true);
     }
 
     /**
@@ -193,5 +204,15 @@ export class System {
         this.scene.unfreezeActiveMeshes();
         this.scene.blockMaterialDirtyMechanism = false;
         // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
+
+        this.engine.setHardwareScalingLevel(1);
+        this.setLimitFPS(false);
+    }
+
+    limitFPS = false;
+    limitSwitch = false;
+    setLimitFPS(limitFPS: boolean) {
+        this.limitFPS = limitFPS;
+        this.checkScroll();
     }
 }
