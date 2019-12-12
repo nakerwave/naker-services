@@ -59,7 +59,7 @@ export class NakerViewer {
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
         
-        this.canvas = el('canvas', { style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden !important', 'overflow-x': 'hidden !important', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        this.canvas = el('canvas', { style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden', 'overflow-x': 'hidden', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
         let canvasposition = 'absolute';
         if (this.container == document.body) canvasposition = 'fixed';
         setStyle(this.canvas, { position: canvasposition });
@@ -145,16 +145,19 @@ export class NakerViewer {
         left: '5px',
         cursor: 'pointer',
         height: '20px',
-        width: '125px',
+        width: '0px',
+        color: '#6633ff',
+        opacity: '0',
+        transition: 'all ease 100ms',
         'line-height': '20px',
-        'font- size': '15px',
+        'font-size': '15px',
         'vertical-align': 'middle',
         'box-sizing': 'unset',
         'webkit-box-sizing': 'unset',
         'font-family': 'Roboto, sans-serif',
-        color: '#6633ff',
-        opacity: 0,
-        transition: 'all ease 100ms',
+        'z-index': '10000000000000000000',
+        'text-overflow': 'ellipsis',
+        'overflow': 'hidden',
     };
     
     containerStyle = {
@@ -164,9 +167,9 @@ export class NakerViewer {
         height: '30px', 
         width: '30px', 
         cursor: 'pointer',
-        'border-radius': '5px',
         background: 'rgba(255, 255, 255, 0.7)',
         transition: 'all ease 100ms',
+        'border-radius': '5px',
     };
 
     waterMark: HTMLElement;
@@ -190,12 +193,28 @@ export class NakerViewer {
                 }),
             ]
         );
+        this.addImportantCss();
+
         mount(this.container, this.waterMark);
 
         this.icosphere.innerHTML = icosphere;
         let icosphereHTML = this.icosphere.childNodes[0];
         setAttr(icosphereHTML, { width: '24px', height: '24px' });
         setStyle(this.icosphere, { 'margin-left': '5px' });
+    }
+
+    addImportantCss() {
+        if (this.icosphere.style && this.icosphere.style.setProperty) {
+            for (const key in this.iconStyle) {
+                this.icosphere.style.setProperty(key, this.iconStyle[key], 'important');
+            }
+            for (const key in this.divStyle) {
+                this.div.style.setProperty(key, this.divStyle[key], 'important');
+            }
+            for (const key in this.containerStyle) {
+                this.waterMark.style.setProperty(key, this.containerStyle[key], 'important');
+            }
+        }
     }
 
     removeWaterMark() {
@@ -205,6 +224,7 @@ export class NakerViewer {
     timeout;
     iconHovered() {
         setStyle(this.waterMark, { width: '170px' });
+        setStyle(this.div, { width: '170px' });
         if (this.timeout) clearTimeout(this.timeout);
         this.timeout = setTimeout(() => {
             setStyle(this.div, { opacity: '1' });
@@ -215,6 +235,7 @@ export class NakerViewer {
         setStyle(this.div, { opacity: '0' });
         if (this.timeout) clearTimeout(this.timeout);
         this.timeout = setTimeout(() => {
+            setStyle(this.div, { width: '0px' });
             setStyle(this.waterMark, { width: '30px' });
         }, 100);
 }
