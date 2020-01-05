@@ -1,5 +1,6 @@
 
-import { Animation, AnimationManager } from '../Animation/animation';
+import { Animation } from '../Animation/animation';
+import { System } from '../System/system';
 
 import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
@@ -9,18 +10,20 @@ export class MouseCatcher {
 
     mousecatch = new Vector2(0, 0);
     catching = true;
+    system: System;
     animation: Animation;
     stopRendering = false;
 
-    constructor(animationManager: AnimationManager, stopRendering?:boolean) {
-        this.animation = new Animation(animationManager, 10);
+    constructor(system: System, stopRendering?:boolean) {
+        this.system = system;
+        this.animation = new Animation(system.animationManager, 10);
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
         // Want to add the possibility to stop the rendering when mouse is not moving
         // But we will mostly still need the rendering
-        if (stopRendering !== undefined) this.stopRendering = this.stopRendering;
+        if (stopRendering !== undefined) this.stopRendering = stopRendering;
 
         // Ask for device motion permission now mandatory on iphone since Safari 13 update
         // https://medium.com/@leemartin/three-things-im-excited-about-in-safari-13-994107ac6295
@@ -120,18 +123,24 @@ export class MouseCatcher {
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
     catch(mouse: Vector2) {
+        if (this.stopRendering) this.system.addProcessNeedRendering('mouse');
         this.mouseReal = mouse;
         this.animation.infinite(() => {
             let gapmouse = this.mouseReal.subtract(this.mouseCatch);
             this.step = gapmouse.clone();
             this.step.multiplyInPlace(this.speedVector);
             this.mouseCatch.addInPlace(this.step);
-            if (Math.abs(gapmouse.x) < this.accuracy && Math.abs(gapmouse.y) < this.accuracy) this.animation.running = false;
-            for (let i = 0; i < this.listeners.length; i++) {
-                // Clone to make sure there is not something which can alter real mouseCatch
-                this.listeners[i](this.mouseCatch.clone());
-            }
+            this.checkStop(gapmouse);
+            this.sendToListener();
         });
+    }
+
+    checkStop(gapmouse: Vector2) {
+        if (Math.abs(gapmouse.x) < this.accuracy && Math.abs(gapmouse.y) < this.accuracy) {
+            if (this.stopRendering) this.system.removeProcessNeedRendering('mouse');
+            this.animation.stop();
+            // this.animation.running = false;
+        }
     }
 
     listeners: Array<Function> = [];
@@ -141,5 +150,12 @@ export class MouseCatcher {
 
     removeListener(callback: Function) {
         remove(this.listeners, (c) => { c == callback });
+    }
+
+    sendToListener() {
+        for (let i = 0; i < this.listeners.length; i++) {
+            // Clone to make sure there is not something which can alter real mouseCatch
+            this.listeners[i](this.mouseCatch.clone());
+        }
     }
 }

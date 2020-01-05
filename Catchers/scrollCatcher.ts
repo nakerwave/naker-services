@@ -1,7 +1,7 @@
 
-import { Animation, AnimationManager } from '../Animation/animation';
 import { ResponsiveCatcher } from './ResponsiveCatcher';
 import { ProgressCatcher } from './progressCatcher';
+import { System } from '../System/system';
 
 import { Vector2 } from '@babylonjs/core/Maths/math';
 
@@ -31,9 +31,10 @@ export class ScrollCatcher extends ProgressCatcher {
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
-    constructor(animationManager: AnimationManager, container:HTMLElement, responsive: ResponsiveCatcher) {
-        super(animationManager);
+    constructor(system: System, container: HTMLElement, responsive: ResponsiveCatcher, stopRendering?: boolean) {
+        super(system, stopRendering);
         this._container = container;
+        this.system = system;
         
         responsive.addListener(() => {
             this.checkHeight(this.scrollHeight);

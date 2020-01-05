@@ -1,5 +1,6 @@
 
 import { Animation, AnimationManager } from '../Animation/animation';
+import { System } from '../System/system';
 
 import remove from 'lodash/remove';
 
@@ -8,6 +9,21 @@ import remove from 'lodash/remove';
  */
 
 export class ProgressCatcher {
+
+    /**
+    * @ignore
+    */
+    key: string;
+
+    /**
+    * @ignore
+    */
+    system: System;
+
+    /**
+    * Tell this process will stop the rendering
+    */
+    stopRendering = false;
 
     /**
      * Current progress position to be catched
@@ -34,8 +50,10 @@ export class ProgressCatcher {
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt progress height
      */
-    constructor(animationManager: AnimationManager) {
-        this.animation = new Animation(animationManager, 10);
+    constructor(system: System, stopRendering?: boolean) {
+        this.key = Math.random().toString(36);
+        this.animation = new Animation(system.animationManager, 10);
+        if (stopRendering !== undefined) this.stopRendering = stopRendering;
     }
 
     /**
@@ -155,7 +173,8 @@ export class ProgressCatcher {
      */
     catch(perc: number, speed?: number, callback?:Function) {
         // Sometimes on iphone, perc can go below 0
-        let catchSpeed = (speed)? speed : this.speed;
+        if (this.stopRendering) this.system.addProcessNeedRendering(this.key);
+        let catchSpeed = (speed) ? speed : this.speed;
         if (!perc) perc = 0;
         perc = Math.max(0, perc);
         perc = Math.min(1, perc);
@@ -169,7 +188,9 @@ export class ProgressCatcher {
                 // Don't force to reach last value or it makes a jump in the animation
                 // this.progressCatch = this.progressReal;
                 if (callback) callback();
-                this.animation.running = false;
+                if (this.stopRendering) this.system.removeProcessNeedRendering(this.key);
+                this.animation.stop();
+                // this.animation.running = false;
             }
             this.sendToListsteners();
         });

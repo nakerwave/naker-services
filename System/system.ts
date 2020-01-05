@@ -97,7 +97,6 @@ export class System {
     setCheckScroll(checkingScroll: boolean) {
         this.checkingScroll = checkingScroll;
         if (checkingScroll) this.checkScroll();
-        else this.launchRender();
     }
 
     /**
@@ -106,8 +105,8 @@ export class System {
     checkScroll() {
         // If overflow style = hidden, there is no scrollingElement on document
         let containerVisible = this.checkVisible();
-        if (containerVisible && !this.rendering) this.startRender();
-        else if (!containerVisible && this.rendering) this.pauseRender();
+        if (containerVisible) this.startRender();
+        else this.pauseRender();
     }
 
     /**
@@ -118,6 +117,41 @@ export class System {
         var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
         return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
     }
+
+    /**
+    * List of all process which need rendering
+    * Allow to have engine stop if nothing need rendering
+    * Thus improving performance
+    */
+    processesNeedRendering:Array<string> = [];
+
+    /**
+    * Add a rendering process
+    */
+    addProcessNeedRendering(process: string) {
+        this.setCheckScroll(false);
+        let index = this.processesNeedRendering.indexOf(process);
+        if (index == -1) {
+            let containerVisible = this.checkVisible();
+            if (containerVisible) {
+                console.log('add');
+                this.processesNeedRendering.push(process);
+                this.startRender();
+            }
+        }
+    } 
+
+    /**
+    * Remove a rendering process
+    */
+    removeProcessNeedRendering(process: string) {
+        let index = this.processesNeedRendering.indexOf(process);
+        if (index != -1) {
+            console.log('remove');
+            this.processesNeedRendering.splice(index, 1);
+            if (this.processesNeedRendering.length == 0) this.pauseRender();
+        }
+    } 
 
     /**
      * Allow to launch scene rendering (when everything is loaded for instance)
@@ -139,6 +173,8 @@ export class System {
      * @ignore
      */
     pauseRender() {
+        console.log('stop');
+        if (!this.rendering) return;
         this.rendering = false;
         this.engine.stopRenderLoop();
     }
@@ -147,6 +183,8 @@ export class System {
      * @ignore
      */
     startRender() {
+        console.log('start');
+        if (this.rendering) return;
         this.rendering = true;
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
@@ -170,6 +208,16 @@ export class System {
     optimize() {
         this.scene.autoClear = false; // Color buffer
         this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
+
+        // let activeTest = 0;
+        // this.scene.registerBeforeRender(() => {
+        //     activeTest++;
+        //     this.scene.freezeActiveMeshes();
+        //     if (activeTest > 30) {
+        //         activeTest = 0;
+        //         this.scene.unfreezeActiveMeshes();
+        //     }
+        // });
     }
 
     /**
