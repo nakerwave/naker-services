@@ -1,6 +1,6 @@
 
-import { Animation } from '../Animation/animation';
-import { System } from '../System/system';
+import { Animation } from '../System/systemAnimation';
+import { SystemAnimation } from '../System/systemAnimation';
 
 import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
@@ -10,20 +10,18 @@ export class MouseCatcher {
 
     mousecatch = new Vector2(0, 0);
     catching = true;
-    system: System;
+    system: SystemAnimation;
     animation: Animation;
-    stopRendering = false;
 
-    constructor(system: System, stopRendering?:boolean) {
+    constructor(system: SystemAnimation) {
         this.system = system;
-        this.animation = new Animation(system.animationManager, 10);
+        this.animation = new Animation(system, 10);
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
         // Want to add the possibility to stop the rendering when mouse is not moving
         // But we will mostly still need the rendering
-        if (stopRendering !== undefined) this.stopRendering = stopRendering;
 
         // Ask for device motion permission now mandatory on iphone since Safari 13 update
         // https://medium.com/@leemartin/three-things-im-excited-about-in-safari-13-994107ac6295
@@ -123,7 +121,6 @@ export class MouseCatcher {
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
     catch(mouse: Vector2) {
-        if (this.stopRendering) this.system.addProcessNeedRendering('mouse');
         this.mouseReal = mouse;
         this.animation.infinite(() => {
             let gapmouse = this.mouseReal.subtract(this.mouseCatch);
@@ -137,7 +134,6 @@ export class MouseCatcher {
 
     checkStop(gapmouse: Vector2) {
         if (Math.abs(gapmouse.x) < this.accuracy && Math.abs(gapmouse.y) < this.accuracy) {
-            if (this.stopRendering) this.system.removeProcessNeedRendering('mouse');
             this.animation.stop();
             // this.animation.running = false;
         }

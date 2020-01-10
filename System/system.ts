@@ -1,7 +1,5 @@
 
-import { AnimationManager } from '../Animation/animation';
-
-import '@babylonjs/core/Animations/animatable';
+// import '@babylonjs/core/Animations/animatable';
 
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
@@ -31,11 +29,6 @@ export class System {
     scene: Scene;
 
     /**
-     * Manage all the animations only for this 3D Scene
-     */
-    animationManager: AnimationManager;
-
-    /**
      * Canvas used to draw the 3D scene
      */
     canvas: HTMLCanvasElement;
@@ -44,7 +37,7 @@ export class System {
      * Creates a new System
      * @param canvas Element where the scene will be drawn
      */
-    constructor(canvas: HTMLCanvasElement, screenshot?) {
+    constructor(canvas: HTMLCanvasElement, screenshot?:boolean) {
         // if (!Engine.isSupported()) throw 'WebGL not supported';
         this.canvas = canvas;
         // For now keep false as the last argument of the engine,
@@ -56,8 +49,6 @@ export class System {
         this.engine = new Engine(this.canvas, true, engineOption, false);
         // NOTE to avoid request for manifest files because it can block loading on safari
         this.engine.enableOfflineSupport = false;
-
-        this.animationManager = new AnimationManager();
         this.buildScene();
 
         window.addEventListener("scroll", () => {
@@ -119,41 +110,6 @@ export class System {
     }
 
     /**
-    * List of all process which need rendering
-    * Allow to have engine stop if nothing need rendering
-    * Thus improving performance
-    */
-    processesNeedRendering:Array<string> = [];
-
-    /**
-    * Add a rendering process
-    */
-    addProcessNeedRendering(process: string) {
-        this.setCheckScroll(false);
-        let index = this.processesNeedRendering.indexOf(process);
-        if (index == -1) {
-            let containerVisible = this.checkVisible();
-            if (containerVisible) {
-                console.log('add');
-                this.processesNeedRendering.push(process);
-                this.startRender();
-            }
-        }
-    } 
-
-    /**
-    * Remove a rendering process
-    */
-    removeProcessNeedRendering(process: string) {
-        let index = this.processesNeedRendering.indexOf(process);
-        if (index != -1) {
-            console.log('remove');
-            this.processesNeedRendering.splice(index, 1);
-            if (this.processesNeedRendering.length == 0) this.pauseRender();
-        }
-    } 
-
-    /**
      * Allow to launch scene rendering (when everything is loaded for instance)
      */
     launchRender() {
@@ -173,8 +129,8 @@ export class System {
      * @ignore
      */
     pauseRender() {
-        console.log('stop');
         if (!this.rendering) return;
+        console.log('stop');
         this.rendering = false;
         this.engine.stopRenderLoop();
     }
@@ -183,19 +139,17 @@ export class System {
      * @ignore
      */
     startRender() {
-        console.log('start');
         if (this.rendering) return;
+        console.log('start');
         this.rendering = true;
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
-                this.animationManager.runAnimations(this.engine.getFps());
                 if (this.limitSwitch) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
             });
         } else {
             this.engine.runRenderLoop(() => {
-                this.animationManager.runAnimations(this.engine.getFps());
                 this.scene.render();
             });
         }
@@ -261,6 +215,5 @@ export class System {
     limitSwitch = false;
     setLimitFPS(limitFPS: boolean) {
         this.limitFPS = limitFPS;
-        this.checkScroll();
     }
 }

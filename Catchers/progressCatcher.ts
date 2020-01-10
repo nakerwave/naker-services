@@ -1,6 +1,6 @@
 
-import { Animation, AnimationManager } from '../Animation/animation';
-import { System } from '../System/system';
+import { Animation } from '../System/systemAnimation';
+import { SystemAnimation } from '../System/systemAnimation';
 
 import remove from 'lodash/remove';
 
@@ -18,12 +18,7 @@ export class ProgressCatcher {
     /**
     * @ignore
     */
-    system: System;
-
-    /**
-    * Tell this process will stop the rendering
-    */
-    stopRendering = false;
+    system: SystemAnimation;
 
     /**
      * Current progress position to be catched
@@ -50,10 +45,9 @@ export class ProgressCatcher {
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt progress height
      */
-    constructor(system: System, stopRendering?: boolean) {
+    constructor(system: SystemAnimation) {
         this.key = Math.random().toString(36);
-        this.animation = new Animation(system.animationManager, 10);
-        if (stopRendering !== undefined) this.stopRendering = stopRendering;
+        this.animation = new Animation(system, 10);
     }
 
     /**
@@ -173,12 +167,11 @@ export class ProgressCatcher {
      */
     catch(perc: number, speed?: number, callback?:Function) {
         // Sometimes on iphone, perc can go below 0
-        if (this.stopRendering) this.system.addProcessNeedRendering(this.key);
-        let catchSpeed = (speed) ? speed : this.speed;
         if (!perc) perc = 0;
+        if (perc == this.progressReal) return;
+        let catchSpeed = (speed) ? speed : this.speed;
         perc = Math.max(0, perc);
         perc = Math.min(1, perc);
-        if (perc == this.progressReal) return;
         this.progressReal = perc;
         this.animation.infinite(() => {
             this.progressGap = this.progressReal - this.progressCatch;
@@ -188,7 +181,6 @@ export class ProgressCatcher {
                 // Don't force to reach last value or it makes a jump in the animation
                 // this.progressCatch = this.progressReal;
                 if (callback) callback();
-                if (this.stopRendering) this.system.removeProcessNeedRendering(this.key);
                 this.animation.stop();
                 // this.animation.running = false;
             }
