@@ -40,13 +40,8 @@ export class SystemAnimation extends System {
         this.needProcess = needProcess;
     }
 
-    /**
-     * @ignore
-     */
-    startRender() {
-        if (this.rendering) return;
-        console.log('start');
-        this.rendering = true;
+    forceRender() {
+        // console.log('start');
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
@@ -125,7 +120,7 @@ export class SystemAnimation extends System {
         this.setCheckScroll(false);
         if (this.list.indexOf(animation) == -1) {
             this.list.push(animation);
-            // console.log('add', process);
+            // console.log('add', animation);
             if (this.needProcess) {
                 let containerVisible = this.checkVisible();
                 if (containerVisible) {
@@ -140,9 +135,26 @@ export class SystemAnimation extends System {
     */
     removeAnimation(animation: Animation) {
         remove(this.list, (a: Animation) => { return a.key == animation.key });
-        // console.log('remove', process);
+        // console.log('remove', this.list);
+        this.checkStopRender();
+    }
+
+    /**
+    * Check if there is still a process which need renderong
+    */
+    checkStopRender() {
         if (this.list.length == 0 && this.needProcess) this.pauseRender();
-    } 
+    }
+
+    /**
+    * Make a quick render in order to update the scene
+    */
+    quickRender() {
+        this.startRender();
+        setTimeout(() => {
+            this.checkStopRender();
+        }, 20);
+    }
 }
 
 
@@ -311,7 +323,6 @@ export class Animation {
 	 * @param functend Function called when animation is over
 	 */
     simple(howmany: number, funct: Function, functend?: Function) {
-        if (this.running) this.stop();
         this.start = 0;
         this.count = 0;
         this.step = 1;
@@ -326,7 +337,7 @@ export class Animation {
 	 * @param functend Function called when animation is over
 	 */
     go(funct: Function, functend?: Function) {
-        this.pause();
+        this.resetVar();
         this.running = true;
         this.funct = funct;
         this.functend = functend;
@@ -344,19 +355,19 @@ export class Animation {
         }
     }
 
+    resetVar(arg?: boolean) {
+        this.count = this.start;
+        if (this.functend && this.running) this.functend(arg);
+    }
+
 	/**
 	 * Stop animation
 	 * @param arg Sent to functend so that it knows the stop can be forced and is not due to the end of the animation
 	 */
     stop(arg?: boolean) {
-        // console.log('animstop');
-        
+        this.resetVar(arg);
         this.system.removeAnimation(this);
-        this.count = this.start;
-        if (this.functend && this.running) {
-            this.running = false;
-            this.functend(arg);
-        }
+        this.running = false;
         return this;
     }
 

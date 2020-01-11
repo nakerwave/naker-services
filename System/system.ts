@@ -130,9 +130,10 @@ export class System {
      */
     pauseRender() {
         if (!this.rendering) return;
-        console.log('stop');
+        // console.log('stop');
         this.rendering = false;
         this.engine.stopRenderLoop();
+        this.scene.render();
     }
 
     /**
@@ -140,8 +141,12 @@ export class System {
      */
     startRender() {
         if (this.rendering) return;
-        console.log('start');
         this.rendering = true;
+        this.forceRender();
+    }
+    
+    forceRender() {
+        // console.log('start');
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
@@ -215,5 +220,6 @@ export class System {
     limitSwitch = false;
     setLimitFPS(limitFPS: boolean) {
         this.limitFPS = limitFPS;
+        if (this.rendering) this.forceRender();
     }
 }
