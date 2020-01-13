@@ -149,11 +149,11 @@ export class SystemAnimation extends System {
     /**
     * Make a quick render in order to update the scene
     */
-    quickRender() {
+    quickRender(time?: number) {
         this.startRender();
         setTimeout(() => {
             this.checkStopRender();
-        }, 20);
+        }, time? time : 20);
     }
 }
 

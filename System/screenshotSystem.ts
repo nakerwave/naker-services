@@ -3,7 +3,7 @@ import { Tools } from '@babylonjs/core/Misc/tools';
 import '@babylonjs/core/Misc/screenshotTools';
 import { VideoRecorder } from '@babylonjs/core/Misc/videoRecorder';
 
-import { System } from './system';
+import { SystemAnimation } from './systemAnimation';
 
 interface size {
     width: number,
@@ -13,7 +13,7 @@ interface size {
 /**
  * Allow to take image or video screenshot of the scene
  */
-export class screenshotSystem extends System {
+export class screenshotSystem extends SystemAnimation {
 
     constructor(containerEl:HTMLCanvasElement) {
         super(containerEl, true);
