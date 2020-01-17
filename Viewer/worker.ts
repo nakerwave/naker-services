@@ -53,9 +53,6 @@ export class NakerWorker {
             case 'scroll':
                 this.onScroll(data);
                 break;
-            case 'load':
-                self.importScripts(data.url);
-                break;
             case 'init':
                 this.prepareCanvas(data.canvas);
                 break;
@@ -204,5 +201,3 @@ export class NakerWorker {
         postMessage(data);
     }
 }
-
-new NakerWorker();

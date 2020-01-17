@@ -54,6 +54,12 @@ export class ProgressCatcher {
      * Restart progress catcher
      */
     restart() {
+        this._restart();
+    }
+    _restart() {
+        this.progressReal = 0;
+        this.progressCatch = 0;
+        this.progressGap = 0;
         this.stop();
         this.start();
     }

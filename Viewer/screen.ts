@@ -81,8 +81,10 @@ export class NakerScreen extends NakerViewer {
 
     worker: Worker;
     offScreen(scriptUrl: string, callback: Function) {
-        this.worker = new Worker(scriptUrl+'worker.js');
-
+        // this.worker = new Worker(scriptUrl + 'worker.js');
+        this.worker = this.createWorker(scriptUrl + 'worker.js');
+        // In case error creating the worker, we fallback to inscreen canvas
+        if (!this.worker) return this.inScreen(scriptUrl, callback);
         this.worker.onmessage = (mg) => {
             this.workerToMain(mg)
         };
@@ -96,9 +98,38 @@ export class NakerScreen extends NakerViewer {
             type: 'init',
             canvas: offscreenCanvas,
         }, [offscreenCanvas]);
-        this.sendToWorker('load', {url: scriptUrl+'engine.js'});
         this.onResize();
         callback();
+    }
+
+    createWorker(workerUrl:string) {
+        var worker = null;
+        try {
+            console.log(0);
+            
+            worker = new Worker(workerUrl);
+        } catch (e) {
+            console.log(1);
+            try {
+                var blob;
+                try {
+                    console.log(2);
+                    blob = new Blob(["importScripts('" + workerUrl + "');"], { "type": 'application/javascript' });
+                } catch (e1) {
+                    console.log(3);
+                    var blobBuilder = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder)();
+                    blobBuilder.append("importScripts('" + workerUrl + "');");
+                    blob = blobBuilder.getBlob('application/javascript');
+                }
+                var url = window.URL || window.webkitURL;
+                var blobUrl = url.createObjectURL(blob);
+                worker = new Worker(blobUrl);
+            } catch (e2) {
+                return false;
+                //if it still fails, there is nothing much we can do
+            }
+        }
+        return worker;
     }
 
     inScreen(scriptUrl: string, callback: Function) {
