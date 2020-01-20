@@ -140,7 +140,7 @@ export class System {
      * @ignore
      */
     startRender() {
-        if (this.rendering) return;
+        if (this.rendering || !this.started) return;
         this.rendering = true;
         this.forceRender();
     }

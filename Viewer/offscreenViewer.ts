@@ -34,7 +34,8 @@ export class NakerOffscreenViewer extends NakerScreen {
             });
         } else {
             this.inScreen(scriptUrl, () => {
-                project.container = this.canvas;
+                project.container = this.container;
+                project.canvas = this.canvas;
                 let engine = this.buildProject(project);
                 this.system = engine.system;
                 callback(engine);
