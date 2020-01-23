@@ -57,7 +57,14 @@ export class NakerViewer {
 
         // let browser = this.getBrowser();
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';
+        // setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent', 'background-color': 'rgba(0,0,0,0)' });
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
+        for (let i = 0; i < this.container.childNodes.length; i++) {
+            const child = this.container.childNodes[i];
+            // Some node like <script> can't change style
+            try {setStyle(child, { 'z-index': '2' });}
+            catch (e) {}
+        }
         
         this.canvas = el('canvas', { style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden', 'overflow-x': 'hidden', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
         let canvasposition = 'absolute';

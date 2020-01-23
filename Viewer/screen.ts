@@ -105,18 +105,13 @@ export class NakerScreen extends NakerViewer {
     createWorker(workerUrl:string) {
         var worker = null;
         try {
-            console.log(0);
-            
             worker = new Worker(workerUrl);
         } catch (e) {
-            console.log(1);
             try {
                 var blob;
                 try {
-                    console.log(2);
                     blob = new Blob(["importScripts('" + workerUrl + "');"], { "type": 'application/javascript' });
                 } catch (e1) {
-                    console.log(3);
                     var blobBuilder = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder)();
                     blobBuilder.append("importScripts('" + workerUrl + "');");
                     blob = blobBuilder.getBlob('application/javascript');
@@ -161,9 +156,7 @@ export class NakerScreen extends NakerViewer {
      * @param data
      */
     bindEvent(data: EventMessage) {
-
         let target;
-
         switch (data.targetName) {
             case 'window':
                 target = window;

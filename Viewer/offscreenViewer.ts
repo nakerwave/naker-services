@@ -29,6 +29,8 @@ export class NakerOffscreenViewer extends NakerScreen {
     load(scriptUrl: string, project: any, callback: Function) {
         if (this.isOffsreenAvailable() && this.offscreen) {
             this.offScreen(scriptUrl, () => {
+                console.log('Naker - offscreen');
+                
                 this.sendToWorker('build', project);
                 callback('offscreen mode');
             });
