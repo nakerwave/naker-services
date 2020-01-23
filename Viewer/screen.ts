@@ -1,4 +1,4 @@
-import { NakerViewer } from './viewer';
+import { NakerViewer, currentScript } from './viewer';
 
 export interface WorkerMessage {
      data: any;
@@ -80,7 +80,8 @@ export class NakerScreen extends NakerViewer {
     ];
 
     worker: Worker;
-    offScreen(scriptUrl: string, callback: Function) {
+    offScreen(callback: Function) {
+        let scriptUrl = this.getScriptUrl();
         // this.worker = new Worker(scriptUrl + 'worker.js');
         this.worker = this.createWorker(scriptUrl + 'worker.js');
         // In case error creating the worker, we fallback to inscreen canvas
@@ -100,6 +101,14 @@ export class NakerScreen extends NakerViewer {
         }, [offscreenCanvas]);
         this.onResize();
         callback();
+    }
+
+    getScriptUrl(): string {
+        let scriptUrlString = currentScript.src;
+        let scriptUrlArray = scriptUrlString.split('/');
+        scriptUrlArray.pop();
+        let scriptUrl = scriptUrlArray.join('/') + '/';
+        return scriptUrl;
     }
 
     createWorker(workerUrl:string) {
@@ -127,7 +136,8 @@ export class NakerScreen extends NakerViewer {
         return worker;
     }
 
-    inScreen(scriptUrl: string, callback: Function) {
+    inScreen(callback: Function) {
+        let scriptUrl = this.getScriptUrl();
         const script = document.createElement("script");
         script.src = scriptUrl+'engine.js';
         script.async = true;

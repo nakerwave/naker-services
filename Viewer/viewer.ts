@@ -78,7 +78,7 @@ export class NakerViewer {
        
        
         // Add cool WaterMark in all naker Projects
-        setAttr(this.canvas, { 'data-who': '💎 Made with naker.io 💎' });
+        setAttr(this.canvas, { 'data-who': 'Made with naker.io' });
         mount(this.container, this.canvas);
 
         this.checkContainerPosition();
@@ -245,4 +245,44 @@ export class NakerViewer {
             setStyle(this.div, { width: '0px' });
             setStyle(this.waterMark, { width: '30px' });
         }, 100);
+    }
+}
+
+export let currentScript: HTMLScriptElement;
+let getCurrentScript = () => {
+    currentScript = document.currentScript;
+    if (!currentScript) {
+        (function () {
+            var scripts = document.getElementsByTagName('script');
+            currentScript = scripts[scripts.length - 1];
+        })();
+    }
+}
+getCurrentScript();
+
+export let checkScript = (callback: Function) => {
+    getCurrentScript();
+    if (!currentScript) return;
+
+    var projectString = currentScript.dataset.option;
+    if (projectString) {
+        let projectJson = addQuote(projectString);
+        let projectOption: ProjectInterface;
+        try {
+            projectOption = JSON.parse(projectJson);
+        } catch {
+            return console.error('Naker: Bad Json');
+        }
+        if (currentScript.dataset.container) {
+            window.addEventListener('load', () => {
+                projectOption.container = document.getElementById(currentScript.dataset.container);
+                if (!projectOption.container) projectOption.container = document.querySelector(currentScript.dataset.container);
+                if (!projectOption.container) console.error('Naker: Bad id, not able to find your container');
+                else callback(projectOption);
+            });
+        } else {
+            projectOption.container = currentScript.parentNode;
+            callback(projectOption);
+        }
+    }
 }
