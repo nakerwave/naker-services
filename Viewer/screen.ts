@@ -239,6 +239,9 @@ export class NakerScreen extends NakerViewer {
 
     sendToWorker(type: string, data: any) {
         data.type = type;
+        // Make sure data object is clonable
+        // This will remove methods
+        data = JSON.parse(JSON.stringify(data));
         if (this.worker) this.worker.postMessage(data);
     }
 

@@ -3,18 +3,16 @@ import { System } from '../System/system';
 import { el, mount, unmount, setStyle, setAttr } from 'redom';
 import icosphere from '../Asset/icosphere.svg';
 
-export interface ProjectInterface {
-    container?: HTMLElement,
+export interface ProjectInterface extends ViewerOption {
     canvas?: HTMLCanvasElement,
     // engine: 'story' | 'form' | 'back',
     name?: string,
     assets?: Array<any>,
     palette?: Array<any>,
-    waterMark?: boolean,
-    listenEvent?: boolean,
 }
 
 export interface ViewerOption {
+    container?: HTMLElement,
     waterMark?: boolean,
     listenEvent?: boolean,
 }
@@ -50,9 +48,9 @@ export class NakerViewer {
      * @param container Element where the scene will be drawn
      * @param offscreen if false, the viewer won't use offscreen canvas
      */
-    constructor(containerEL: HTMLElement, viewerOption?: ViewerOption) {
+    constructor(viewerOption: ViewerOption) {
         // Keep that variable def
-        this.container = containerEL;
+        this.container = viewerOption.container;
         // this.engine = project.engine;
 
         // let browser = this.getBrowser();
@@ -61,9 +59,11 @@ export class NakerViewer {
         setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
         for (let i = 0; i < this.container.childNodes.length; i++) {
             const child = this.container.childNodes[i];
-            // Some node like <script> can't change style
-            try {setStyle(child, { 'z-index': '2' });}
-            catch (e) {}
+            if (this.checkElWithStyle(child)){
+                // Some node can't change style
+                try {setStyle(child, { 'z-index': '1' });}
+                catch (e) {}
+            }
         }
         
         this.canvas = el('canvas', { style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden', 'overflow-x': 'hidden', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
@@ -87,6 +87,10 @@ export class NakerViewer {
         this.addWaterMark();
         if (viewerOption && viewerOption.waterMark === false) this.removeWaterMark();
         if (viewerOption && viewerOption.listenEvent === false) this.setNoEvent();
+    }
+
+    checkElWithStyle(el: HTMLElement) {
+        return (el.style && !el.style.zIndex) && (el.tagName && el.tagName != 'SCRIPT')
     }
 
     /**
@@ -130,7 +134,7 @@ export class NakerViewer {
     }
 
     setNoEvent() {
-        setStyle(this.canvas, { 'pointer-events': 'none', 'z-index': '-1' });
+        setStyle(this.canvas, { 'pointer-events': 'none' });
     }
 
     iconStyle = {
@@ -249,7 +253,7 @@ export class NakerViewer {
 }
 
 export let currentScript: HTMLScriptElement;
-let getCurrentScript = () => {
+export let getCurrentScript = () => {
     currentScript = document.currentScript;
     if (!currentScript) {
         (function () {
