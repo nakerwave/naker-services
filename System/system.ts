@@ -55,7 +55,9 @@ export class System {
             if (this.checkingScroll && this.started) this.checkScroll();
         });
 
-        // this.setLimitFPS(true);
+        window.addEventListener("focus", () => {
+            if (this.checkingScroll) this.checkScroll();
+        });
     }
 
     /**

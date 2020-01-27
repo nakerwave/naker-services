@@ -55,11 +55,12 @@ export class NakerViewer {
 
         // let browser = this.getBrowser();
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';
+        // overflow hidden can break some website
         // setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent', 'background-color': 'rgba(0,0,0,0)' });
-        setStyle(this.container, { 'overflow-x': 'hidden', '-webkit-tap-highlight-color': 'transparent' });
+        setStyle(this.container, { '-webkit-tap-highlight-color': 'transparent' });
         for (let i = 0; i < this.container.childNodes.length; i++) {
             const child = this.container.childNodes[i];
-            if (this.checkElWithStyle(child)){
+            if (this.checkElWithStyle(child)) {
                 // Some node can't change style
                 try {setStyle(child, { 'z-index': '1' });}
                 catch (e) {}

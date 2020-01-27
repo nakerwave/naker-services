@@ -90,6 +90,7 @@ export class ResponsiveCatcher {
             newHeight = this._system.canvas.offsetHeight;
             if (newWidth !== this.canvasWidth || newHeight !== this.canvasHeight) {
                 this._engine.resize();
+                this._scene.render();
                 this.canvasWidth = newWidth;
                 this.canvasHeight = newHeight
             }

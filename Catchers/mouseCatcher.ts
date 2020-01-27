@@ -35,11 +35,17 @@ export class MouseCatcher {
                     }
                 });
         }
+
+        window.addEventListener("focus", () => {
+            if (this.catching) {
+                this.catch(this.mouseReal);
+            }
+        });
     }
 
     // Code copied from babylon: https://github.com/BabylonJS/Babylon.js/blob/master/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts
     screenQuaternion: Quaternion = new Quaternion();
-    constantTranform = new Quaternion(- Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+    constantTranform = new Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
     orientationChanged() {
         let screenOrientationAngle = (<any>window.orientation !== undefined ? +<any>window.orientation : ((<any>window.screen).orientation && ((<any>window.screen).orientation)['angle'] ? ((<any>window.screen).orientation).angle : 0));
         screenOrientationAngle = -Tools.ToRadians(screenOrientationAngle / 2);
