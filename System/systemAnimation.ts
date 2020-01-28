@@ -118,12 +118,13 @@ export class SystemAnimation extends System {
     */
     addAnimation(animation: Animation) {
         this.setCheckScroll(false);
-        if (this.list.indexOf(animation) == -1) {
-            this.list.push(animation);
-            // console.log('add', animation);
-            if (this.needProcess) {
-                let containerVisible = this.checkVisible();
-                if (containerVisible) {
+        if (this.needProcess) {
+            let containerVisible = this.checkVisible();
+            // console.log(containerVisible);
+            if (containerVisible) {
+                if (this.list.indexOf(animation) == -1) {
+                    // console.log('add', animation);
+                    this.list.push(animation);
                     this.startRender();
                 }
             }

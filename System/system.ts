@@ -116,7 +116,8 @@ export class System {
      */
     launchRender() {
         this.started = true;
-        this.startRender();
+        this.scene.render();
+        this.checkScroll();
     }
 
     /**
@@ -199,8 +200,6 @@ export class System {
         this.scene.freezeActiveMeshes();
         this.scene.blockMaterialDirtyMechanism = true;
         // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
-
-        this.engine.setHardwareScalingLevel(2);
         this.setLimitFPS(true);
     }
 
@@ -213,8 +212,6 @@ export class System {
         this.scene.unfreezeActiveMeshes();
         this.scene.blockMaterialDirtyMechanism = false;
         // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
-
-        this.engine.setHardwareScalingLevel(1);
         this.setLimitFPS(false);
     }
 

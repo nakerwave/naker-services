@@ -114,7 +114,7 @@ export class MouseCatcher {
     /**
     * Spped of the progress used when mousewheel or drag on phone
     */
-    accuracy = 0.002;
+    accuracy = 0.02;
     /**
     * Set the speed of the progressCatcher
     * @param speed The new speed
