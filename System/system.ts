@@ -89,7 +89,7 @@ export class System {
     */
     setCheckScroll(checkingScroll: boolean) {
         this.checkingScroll = checkingScroll;
-        if (checkingScroll) this.checkScroll();
+        if (checkingScroll && this.started) this.checkScroll();
     }
 
     /**
@@ -216,7 +216,9 @@ export class System {
     }
 
     limitFPS = false;
-    limitSwitch = false;
+    // Keep first value as true so that render function is called straight away
+    // Otherwise you could have a flash 
+    limitSwitch = true;
     setLimitFPS(limitFPS: boolean) {
         this.limitFPS = limitFPS;
         if (this.rendering) this.forceRender();
