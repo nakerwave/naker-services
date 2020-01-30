@@ -117,9 +117,9 @@ export class ScrollCatcher extends ProgressCatcher {
             this.mouseWheel(evt, top);
         });
 
-        // Firefox trigger this other event which we need to prevent to avoid body scroll when in Intale
+        // Firefox trigger this other event which we need to prevent to avoid body scroll when in Stpry
         this._container.addEventListener("MozMousePixelScroll", (evt) => {
-            evt.preventDefault();
+            this.checkPreventBodyScroll(evt);
         });
 
         // Firefox use DOMMouseScroll
@@ -216,15 +216,21 @@ export class ScrollCatcher extends ProgressCatcher {
     * @param top What is the new top position due to this mouseWheel event
     */
     mouseWheel(evt: MouseEvent, top: number) {
-        if (this._container != document.body) {
-            evt.preventDefault();
-            evt.stopPropagation();
-        }
+        this.checkPreventBodyScroll(evt);
         for (let i = 0; i < this._mouseWheelListeners.length; i++) {
             this._mouseWheelListeners[i]();
         }
         if (this.followWindowScroll) return;
         if (this.catching) this.catchTop(top);
+    }
+
+    checkPreventBodyScroll(evt: MouseEvent) {
+        // If scroll reach start or end we stop preventing page scroll
+        let progressTest = this.progressCatch + this.accuracy > 0 && this.progressCatch + this.accuracy < 1;
+        if (this._container != document.body && progressTest) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        }
     }
 
     /**

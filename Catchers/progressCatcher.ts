@@ -188,6 +188,9 @@ export class ProgressCatcher {
         this.animation.infinite((count, perc) => {
             this.progressGap = this.progressReal - this.progressCatch;
             let step = this.progressGap * catchSpeed * Math.min(count/20, 1);
+            // Need to guarantee a minimum step
+            // Otherwise it can be too tiny and the animation never ends
+            step = Math.sign(step) * Math.max(Math.abs(step), this.accuracy/5);
             this.progressCatch += step;
             if (Math.abs(this.progressGap) < this.accuracy) {
                 // Don't force to reach last value or it makes a jump in the animation
