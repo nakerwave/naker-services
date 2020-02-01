@@ -52,11 +52,11 @@ export class System {
         this.buildScene();
 
         window.addEventListener("scroll", () => {
-            if (this.checkingScroll && this.started) this.checkScroll();
+            this.checkScroll();
         });
 
         window.addEventListener("focus", () => {
-            if (this.checkingScroll) this.checkScroll();
+            this.checkScroll();
         });
     }
 
@@ -93,13 +93,27 @@ export class System {
     }
 
     /**
+    * @ignore
+    */
+    needProcess = true;
+
+    /**
+    * @ignore
+    */
+    setNeedProcess(needProcess: boolean) {
+        this.needProcess = needProcess;
+    }
+
+    /**
      * @ignore
      */
     checkScroll() {
-        // If overflow style = hidden, there is no scrollingElement on document
-        let containerVisible = this.checkVisible();
-        if (containerVisible) this.startRender();
-        else this.pauseRender();
+        if (this.started && (this.checkingScroll || !this.needProcess)) {
+            // If overflow style = hidden, there is no scrollingElement on document
+            let containerVisible = this.checkVisible();
+            if (containerVisible) this.startRender();
+            else this.pauseRender();
+        }
     }
 
     /**
@@ -198,7 +212,8 @@ export class System {
     optimizeHard() {
         this.optimize();
         this.scene.freezeActiveMeshes();
-        this.scene.blockMaterialDirtyMechanism = true;
+        // Can not use blockMaterial or imageProcessing does't work in pipeline
+        // this.scene.blockMaterialDirtyMechanism = true;
         // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
         this.setLimitFPS(true);
     }
@@ -210,7 +225,8 @@ export class System {
     unOptimizeHard() {
         this.unOptimize();
         this.scene.unfreezeActiveMeshes();
-        this.scene.blockMaterialDirtyMechanism = false;
+        // Can not use blockMaterial or imageProcessing does't work in pipeline
+        // this.scene.blockMaterialDirtyMechanism = false;
         // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
         this.setLimitFPS(false);
     }

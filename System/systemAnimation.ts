@@ -35,11 +35,6 @@ export class SystemAnimation extends System {
         });
     }
 
-    needProcess = true;
-    setNeedProcess(needProcess: boolean) {
-        this.needProcess = needProcess;
-    }
-
     forceRender() {
         // console.log('start');
         this.engine.stopRenderLoop();
