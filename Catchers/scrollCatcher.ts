@@ -1,9 +1,9 @@
-
 import { ResponsiveCatcher } from './ResponsiveCatcher';
 import { ProgressCatcher } from './progressCatcher';
 import { SystemAnimation } from '../System/systemAnimation';
 
 import { Vector2 } from '@babylonjs/core/Maths/math';
+import { setStyle } from 'redom';
 
 /**
  * Detect scroll action of the user
@@ -119,7 +119,7 @@ export class ScrollCatcher extends ProgressCatcher {
 
         // Firefox trigger this other event which we need to prevent to avoid body scroll when in Stpry
         this._container.addEventListener("MozMousePixelScroll", (evt) => {
-            this.checkPreventBodyScroll(evt);
+            this.checkPreventComputerScroll(evt);
         });
 
         // Firefox use DOMMouseScroll
@@ -156,6 +156,7 @@ export class ScrollCatcher extends ProgressCatcher {
                 let y = evt.changedTouches[0].clientY;
                 this.touchGap.x = (this.touchStart.x - x);
                 this.touchGap.y = (this.touchStart.y - y);
+                this.checkPreventBodyScroll(evt, this.touchGap.y);
                 if (Math.abs(this.touchGap.x) < Math.abs(this.touchGap.y)) {
                     let top = this.progressReal * this.scrollHeight + this.touchGap.y;
                     if (this.catching) this.catchTop(top);
@@ -216,7 +217,7 @@ export class ScrollCatcher extends ProgressCatcher {
     * @param top What is the new top position due to this mouseWheel event
     */
     mouseWheel(evt: MouseEvent, top: number) {
-        this.checkPreventBodyScroll(evt);
+        this.checkPreventComputerScroll(evt);
         for (let i = 0; i < this._mouseWheelListeners.length; i++) {
             this._mouseWheelListeners[i]();
         }
@@ -224,12 +225,36 @@ export class ScrollCatcher extends ProgressCatcher {
         if (this.catching) this.catchTop(top);
     }
 
-    checkPreventBodyScroll(evt: MouseEvent) {
+    checkPreventComputerScroll(evt: MouseEvent) {
+        let delta = evt.deltaY;
+        if (delta === undefined) delta = evt.detail;
+        if (delta === undefined) delta = 0;
+        this.checkPreventBodyScroll(evt, delta);
+    }
+
+    checkPreventBodyScroll(evt: MouseEvent | TouchEvent, move: number) {
+        // Try to have different sensitivity when leaving or entering
+        // Should be easy to leave and fast to enter
+        // let topTest =false, bottomTest =false;
+        // if (move >= 0) {
+        //     if (this.progressCatch - this.accuracy > 0) topTest = true;
+        //     else if (this.progressCatch + 10 * this.accuracy < 1) bottomTest = true;
+        // } else {
+        //     if (this.progressCatch + this.accuracy > 0) bottomTest = true;
+        //     else if (this.progressCatch - 10 * this.accuracy < 1) topTest = true;
+        // }
+        // console.log(topTest, bottomTest);
+
         // If scroll reach start or end we stop preventing page scroll
-        let progressTest = this.progressCatch + this.accuracy > 0 && this.progressCatch + this.accuracy < 1;
-        if (this._container != document.body && progressTest) {
+        let topTest = this.progressCatch + 10 * this.accuracy < 1 && move >= 0;
+        let bottomTest = this.progressCatch - 10 * this.accuracy > 0 && move <= 0;
+        
+        if (this._container != document.body && (topTest || bottomTest)) {
             evt.preventDefault();
             evt.stopPropagation();
+            setStyle(this.system.canvas, { 'touch-action': 'none' });
+        } else {
+            setStyle(this.system.canvas, { 'touch-action': 'auto' });
         }
     }
 

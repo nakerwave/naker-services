@@ -13,7 +13,7 @@ export class MouseCatcher {
     system: SystemAnimation;
     animation: Animation;
 
-    constructor(system: SystemAnimation) {
+    constructor(system: SystemAnimation, container?: HTMLElement) {
         this.system = system;
         this.animation = new Animation(system, 10);
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
@@ -25,16 +25,23 @@ export class MouseCatcher {
 
         // Ask for device motion permission now mandatory on iphone since Safari 13 update
         // https://medium.com/@leemartin/three-things-im-excited-about-in-safari-13-994107ac6295
-        if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
-            window.DeviceMotionEvent.requestPermission()
-                .then(response => {
-                    if (response == 'granted') {
-                        // permission granted
-                    } else {
-                        // permission not granted
-                    }
-                });
-        }
+        // Can't make that work ;/
+        // let motionTest = false;
+        // container.addEventListener("touchstart", (evt) => {
+        //     if (motionTest) return;
+        //     motionTest = true;
+        //     if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
+        //         window.DeviceMotionEvent.requestPermission()
+        //             .then(response => {
+        //                 console.log(response);
+        //                 if (response == 'granted') {
+        //                     // permission granted
+        //                 } else {
+        //                     // permission not granted
+        //                 }
+        //             });
+        //     }
+        // });
 
         window.addEventListener("focus", () => {
             if (this.catching) {
