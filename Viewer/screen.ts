@@ -85,7 +85,7 @@ export class NakerScreen extends NakerViewer {
         // this.worker = new Worker(scriptUrl + 'worker.js');
         this.worker = this.createWorker(scriptUrl + 'worker.js');
         // In case error creating the worker, we fallback to inscreen canvas
-        if (!this.worker) return this.inScreen(scriptUrl, callback);
+        if (!this.worker) return this.inScreen(callback);
         this.worker.onmessage = (mg) => {
             this.workerToMain(mg)
         };
@@ -237,12 +237,27 @@ export class NakerScreen extends NakerViewer {
         this.sendToWorker('scroll', data);
     }
 
-    sendToWorker(type: string, data: any) {
+    sendToWorker(type: string, data: Object) {
         data.type = type;
+
+        // Avoid HTML Element to be used
+        // Ths can create error: Converting circular structure to JSON
+        let serializer = (key, value) => {
+            if ( this.isElement(value) ) return null;
+            else return value;
+        }
+
         // Make sure data object is clonable
         // This will remove methods
-        data = JSON.parse(JSON.stringify(data));
+        data = JSON.parse(JSON.stringify(data, serializer));
         if (this.worker) this.worker.postMessage(data);
     }
 
+    //Returns true if it is a DOM element    
+    isElement(o) {
+        return (
+            typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
+                o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName === "string"
+        );
+    }
 }
