@@ -112,6 +112,8 @@ export class ScrollCatcher extends ProgressCatcher {
             this.mouseWheel(evt, top);
         });
 
+        // Wheel is continuously called when on a pad
+        // Unfortunately can not find an event to trigger real end of scroll
         this._container.addEventListener("wheel", (evt) => {
             let top = this.progressReal * this.scrollHeight + evt.deltaY;
             this.mouseWheel(evt, top);
@@ -150,6 +152,11 @@ export class ScrollCatcher extends ProgressCatcher {
             this.touchStart.y = evt.changedTouches[0].clientY;
             count = 0;
         });
+        // Need test
+        // this._container.addEventListener("touchend", (evt) => {
+        //     this.touchStart = null;
+        //     count = 0;
+        // });
         this._container.addEventListener("touchmove", (evt) => {
             if (this.touchStart && this.catching) {
                 let x = evt.changedTouches[0].clientX;
