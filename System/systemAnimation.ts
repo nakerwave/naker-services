@@ -16,7 +16,6 @@ export class SystemAnimation extends System {
     focusback = false;
     fpsnode: HTMLElement;
 
-
     /**
     * List of all process which need rendering
     * Allow to have engine stop if nothing need rendering
@@ -37,6 +36,8 @@ export class SystemAnimation extends System {
 
     forceRender() {
         // console.log('start');
+        this.engine.setHardwareScalingLevel(1);
+        if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1;
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {

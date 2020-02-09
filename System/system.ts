@@ -34,6 +34,11 @@ export class System {
     canvas: HTMLCanvasElement;
 
     /**
+     * Texture which contains all UI Assets (Text, Bar, Label, etc)
+     */
+    sceneAdvancedTexture: any;
+
+    /**
      * Creates a new System
      * @param canvas Element where the scene will be drawn
      */
@@ -142,6 +147,11 @@ export class System {
         this.pauseRender();
     }
 
+    qualityAtBreak = false;
+    setQualityAtBreak(qualityAtBreak: boolean) {
+        this.qualityAtBreak = qualityAtBreak;
+    }
+
     /**
      * @ignore
      */
@@ -149,8 +159,19 @@ export class System {
         if (!this.rendering) return;
         // console.log('stop');
         this.rendering = false;
-        this.engine.stopRenderLoop();
-        this.scene.render();
+        if (this.qualityAtBreak) {
+            let i = 1;
+            this.engine.runRenderLoop(() => {
+                this.engine.setHardwareScalingLevel(1 - i / 10);
+                if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1 - i / 10;
+                this.scene.render();
+                i++;
+                if (i == 6) this.engine.stopRenderLoop();
+            });
+        } else {
+            this.engine.stopRenderLoop();
+            this.scene.render();
+        }
     }
 
     /**
@@ -164,7 +185,9 @@ export class System {
     
     forceRender() {
         // console.log('start');
-        this.engine.stopRenderLoop();
+        this.engine.setHardwareScalingLevel(1);
+        if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1;
+        this.engine.stopRenderLoop();        
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
                 if (this.limitSwitch) this.scene.render();
