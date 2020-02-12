@@ -158,15 +158,16 @@ export class System {
     pauseRender() {
         if (!this.rendering) return;
         // console.log('stop');
+        this.sendToStopListener();
         this.rendering = false;
         if (this.qualityAtBreak) {
             let i = 1;
             this.engine.runRenderLoop(() => {
-                this.engine.setHardwareScalingLevel(1 - i / 10);
-                if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1 - i / 10;
+                this.engine.setHardwareScalingLevel(1 - i / 4);
+                if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1 - i / 4;
                 this.scene.render();
                 i++;
-                if (i == 6) this.engine.stopRenderLoop();
+                if (i == 3) this.engine.stopRenderLoop();
             });
         } else {
             this.engine.stopRenderLoop();
@@ -186,6 +187,7 @@ export class System {
     forceRender() {
         // console.log('start');
         this.engine.setHardwareScalingLevel(1);
+        this.sendToStartListener();
         if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1;
         this.engine.stopRenderLoop();        
         if (this.limitFPS) {
@@ -261,5 +263,36 @@ export class System {
     setLimitFPS(limitFPS: boolean) {
         this.limitFPS = limitFPS;
         if (this.rendering) this.forceRender();
+    }
+
+    /**
+    * Allow to add a listener on special events
+    * @ignore
+    */
+    _startListeners: Array<Function> = [];
+    _stopListeners: Array<Function> = [];
+
+    /**
+     * Allow to add a listener on special events
+     * @param what the event: start or stop
+     * @param funct the function to be called at the event
+     */
+    on(what: 'start' | 'stop', funct: Function) {
+        if (what == 'start') this._startListeners.push(funct);
+        else if (what == 'stop') this._stopListeners.push(funct);
+    }
+
+    sendToStartListener() {
+        for (let i = 0; i < this._startListeners.length; i++) {
+            // Clone to make sure there is not something which can alter real mouseCatch
+            this._startListeners[i]();
+        }
+    }
+
+    sendToStopListener() {
+        for (let i = 0; i < this._stopListeners.length; i++) {
+            // Clone to make sure there is not something which can alter real mouseCatch
+            this._stopListeners[i]();
+        }
     }
 }

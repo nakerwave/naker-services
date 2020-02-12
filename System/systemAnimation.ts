@@ -37,6 +37,7 @@ export class SystemAnimation extends System {
     forceRender() {
         // console.log('start');
         this.engine.setHardwareScalingLevel(1);
+        this.sendToStartListener();
         if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1;
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
