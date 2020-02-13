@@ -1,6 +1,7 @@
 
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
+import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
 
 import remove from 'lodash/remove';
 
@@ -41,6 +42,11 @@ export class ProgressCatcher {
     animation: Animation;
 
     /**
+    * Ease catch function
+    */
+    curve: IEasingFunction;
+
+    /**
      * Use to animate the catching
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt progress height
@@ -48,6 +54,8 @@ export class ProgressCatcher {
     constructor(system: SystemAnimation) {
         this.key = Math.random().toString(36);
         this.animation = new Animation(system, 10);
+        this.curve = new CircleEase();
+        this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
     }
 
     /**
@@ -183,22 +191,18 @@ export class ProgressCatcher {
         if (perc == this.progressReal && catchSpeed == this.lastSpeed) return;
         perc = Math.max(0, perc);
         perc = Math.min(1, perc);
+        let progressStart = this.progressCatch;
+        let progressChange = perc - progressStart;
         this.progressReal = perc;
         this.lastSpeed = catchSpeed;
-        this.animation.infinite((count, perc) => {
+        let howmany = 5 / catchSpeed;
+        this.animation.simple(howmany, (count, perc) => {
+            let percEased = this.curve.ease(perc);
+            this.progressCatch = progressStart + progressChange * percEased;
             this.progressGap = this.progressReal - this.progressCatch;
-            let step = this.progressGap * catchSpeed * Math.min(count/20, 1);
-            // Need to guarantee a minimum step
-            // Otherwise it can be too tiny and the animation never ends
-            step = Math.sign(step) * Math.max(Math.abs(step), this.accuracy/5);
-            this.progressCatch += step;
-            if (Math.abs(this.progressGap) < this.accuracy) {
-                // Don't force to reach last value or it makes a jump in the animation
-                // this.progressCatch = this.progressReal;
-                if (callback) callback();
-                this.animation.stop();
-            }
             this.sendToListsteners();
+        }, () => {
+            if (callback) callback();
         });
     }
 

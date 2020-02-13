@@ -5,6 +5,7 @@ import { SystemAnimation } from '../System/systemAnimation';
 import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
+import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
 
 export class MouseCatcher {
 
@@ -13,6 +14,11 @@ export class MouseCatcher {
     system: SystemAnimation;
     animation: Animation;
 
+    /**
+    * Ease catch function
+    */
+    curve: IEasingFunction;
+
     constructor(system: SystemAnimation, container?: HTMLElement) {
         this.system = system;
         this.animation = new Animation(system, 10);
@@ -20,6 +26,9 @@ export class MouseCatcher {
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
+
+        this.curve = new CircleEase();
+        this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
         // Want to add the possibility to stop the rendering when mouse is not moving
         // But we will mostly still need the rendering
 
@@ -108,14 +117,12 @@ export class MouseCatcher {
     * Spped of the progress used when mousewheel or drag on phone
     */
     speed = 0.05;
-    speedVector = new Vector2(0.05, 0.05);
     /**
     * Set the speed of the progressCatcher
     * @param speed The new speed
     */
     setSpeed(speed: number) {
         this.speed = speed;
-        this.speedVector = new Vector2(speed, speed);
     }
 
     /**
@@ -134,22 +141,17 @@ export class MouseCatcher {
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
     catch(mouse: Vector2) {
+        let mouseStart = this.mouseCatch;
+        let mouseChange = mouse.subtract(mouseStart);
         this.mouseReal = mouse;
-        this.animation.infinite(() => {
-            let gapmouse = this.mouseReal.subtract(this.mouseCatch);
-            this.step = gapmouse.clone();
-            this.step.multiplyInPlace(this.speedVector);
-            this.mouseCatch.addInPlace(this.step);
-            this.checkStop(gapmouse);
+        let howmany = 5 / this.speed;
+        this.animation.simple(howmany, (count, perc) => {
+            // if (perc == 0) return this.sendToListener();
+            let percEased = this.speed + this.curve.ease(perc - this.speed);
+            let mouseProgress = mouseChange.multiply(new Vector2(percEased, percEased));
+            this.mouseCatch = mouseStart.add(mouseProgress);
             this.sendToListener();
         });
-    }
-
-    checkStop(gapmouse: Vector2) {
-        if (Math.abs(gapmouse.x) < this.accuracy && Math.abs(gapmouse.y) < this.accuracy) {
-            this.animation.stop();
-            // this.animation.running = false;
-        }
     }
 
     listeners: Array<Function> = [];
