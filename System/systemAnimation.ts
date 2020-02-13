@@ -1,4 +1,3 @@
-
 import { System } from './system';
 
 import remove from 'lodash/remove';
@@ -15,6 +14,8 @@ export class SystemAnimation extends System {
     fpsratio = 1;
     focusback = false;
     fpsnode: HTMLElement;
+    frameLeft = 0;
+    frameSinceStarted = 0;
 
     /**
     * List of all process which need rendering
@@ -36,9 +37,8 @@ export class SystemAnimation extends System {
 
     forceRender() {
         // console.log('start');
-        this.engine.setHardwareScalingLevel(1);
+        this.frameSinceStarted = 0;
         this.sendToStartListener();
-        if (this.sceneAdvancedTexture) this.sceneAdvancedTexture.renderScale = 1;
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
@@ -62,6 +62,8 @@ export class SystemAnimation extends System {
         // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
         this.fps = fps;
         this.fpsratio = 60 / this.fps;
+        this.frameLeft = 0;
+        this.frameSinceStarted++;
 
         // if (this.focusback) return;
         // To avoid acceleration when focus back
@@ -72,8 +74,9 @@ export class SystemAnimation extends System {
                 anim.funct(anim.count, anim.count / anim.howmany);
                 if (anim.count >= anim.howmany) anim.stop(true);
                 anim.count += anim.step * fpsratio;
+                if (anim.howmany - anim.count > this.frameLeft) this.frameLeft = anim.howmany - anim.count;
             }
-        }
+        }        
     }
 
 	/**
