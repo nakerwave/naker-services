@@ -96,7 +96,8 @@ export class ScrollCatcher extends ProgressCatcher {
                 // If overflow style = hidden, there is no scrollingElement on document
                 if (document.scrollingElement) {
                     let top = document.scrollingElement.scrollTop;
-                    if (this.catching) this.catchTop(top);
+                    let height = document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight;
+                    if (this.catching) this.catch(top/height);
                 }
             });
         } else {

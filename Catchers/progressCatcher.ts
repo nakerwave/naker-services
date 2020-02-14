@@ -197,7 +197,7 @@ export class ProgressCatcher {
         this.lastSpeed = catchSpeed;
         let howmany = 5 / catchSpeed;
         this.animation.simple(howmany, (count, perc) => {
-            let percEased = this.curve.ease(perc);
+            let percEased = catchSpeed + this.curve.ease(perc - catchSpeed);
             this.progressCatch = progressStart + progressChange * percEased;
             this.progressGap = this.progressReal - this.progressCatch;
             this.sendToListsteners();

@@ -74,7 +74,7 @@ export class SystemAnimation extends System {
                 anim.funct(anim.count, anim.count / anim.howmany);
                 if (anim.count >= anim.howmany) anim.stop(true);
                 anim.count += anim.step * fpsratio;
-                if (anim.howmany - anim.count > this.frameLeft) this.frameLeft = anim.howmany - anim.count;
+                if (anim.howmany - anim.count > this.frameLeft) this.frameLeft = Math.round(anim.howmany - anim.count + 1);
             }
         }        
     }
