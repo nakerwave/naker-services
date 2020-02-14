@@ -188,7 +188,8 @@ export class ScrollCatcher extends ProgressCatcher {
             if (this._container == document.body) {
                 if (document.scrollingElement) {
                     let top = document.scrollingElement.scrollTop;
-                    this.catchTop(top);
+                    let height = document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight;
+                    if (this.catching) this.catch(top / height);
                 }
             } else {
                 let top = this._container.scrollTop;
