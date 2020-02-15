@@ -62,8 +62,6 @@ export class SystemAnimation extends System {
         // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
         this.fps = fps;
         this.fpsratio = 60 / this.fps;
-        if (this.frameSinceStarted < 10) this.sendToBeginListener(this.frameSinceStarted);
-        this.frameSinceStarted++;
         
         this.frameBeforeEnd = 0;
         // if (this.focusback) return;
@@ -78,8 +76,11 @@ export class SystemAnimation extends System {
                 if (anim.howmany - anim.count > this.frameBeforeEnd) this.frameBeforeEnd = Math.round(anim.howmany - anim.count + 1);
             }
         }
-        if (this.frameBeforeEnd < 10) this.sendToEndListener(this.frameBeforeEnd);
 
+        // We avoid sending start and end at the same time
+        if (this.frameBeforeEnd < 10) this.sendToEndListener(this.frameBeforeEnd);
+        else if (this.frameSinceStarted < 10) this.sendToBeginListener(this.frameSinceStarted);
+        this.frameSinceStarted++;
     }
 
 	/**
