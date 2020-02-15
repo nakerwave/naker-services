@@ -184,20 +184,21 @@ export class ProgressCatcher {
      * @param top Top position to be catched
      * @param speed At what speed should we catch the new position (used when accelarating to new step for instance)
      */
-    catch(perc: number, speed?: number, callback?:Function) {
+    catch(progress: number, speed?: number, callback?:Function) {
         // Sometimes on iphone, perc can go below 0
-        if (!perc) perc = 0;
+        if (this.listeners.length == 0) return;
+        if (!progress) progress = 0;
         let catchSpeed = (speed) ? speed : this.speed;
-        if (perc == this.progressReal && catchSpeed == this.lastSpeed) return;
-        perc = Math.max(0, perc);
-        perc = Math.min(1, perc);
+        if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
+        progress = Math.max(0, progress);
+        progress = Math.min(1, progress);
         let progressStart = this.progressCatch;
-        let progressChange = perc - progressStart;
-        this.progressReal = perc;
+        let progressChange = progress - progressStart;
+        this.progressReal = progress;
         this.lastSpeed = catchSpeed;
         let howmany = 5 / catchSpeed;
         this.animation.simple(howmany, (count, perc) => {
-            let percEased = catchSpeed + this.curve.ease(perc - catchSpeed);
+            let percEased = catchSpeed + (1 - catchSpeed) * this.curve.ease(perc);
             this.progressCatch = progressStart + progressChange * percEased;
             this.progressGap = this.progressReal - this.progressCatch;
             this.sendToListsteners();
@@ -210,8 +211,8 @@ export class ProgressCatcher {
       * Send progress change data to listeners
      */
     sendToListsteners() {
-        for (let i = 0; i < this._listeners.length; i++) {
-            this._listeners[i](this.progressCatch, this.progressGap);
+        for (let i = 0; i < this.listeners.length; i++) {
+            this.listeners[i](this.progressCatch, this.progressGap);
         }
     }
 
@@ -219,19 +220,19 @@ export class ProgressCatcher {
      * List of all functions following the progress position
      * @ignore
      */
-    _listeners: Array<Function> = [];
+    listeners: Array<Function> = [];
 
     /**
      * Add a new listener which will get the catching progress position
      */
     addListener(callback: Function) {
-        this._listeners.push(callback);
+        this.listeners.push(callback);
     }
 
     /**
      * Remove a listener to stop following progress
      */
     removeListener(callback: Function) {
-        remove(this._listeners, (c) => { c == callback });
+        remove(this.listeners, (c) => { c == callback });
     }
 }

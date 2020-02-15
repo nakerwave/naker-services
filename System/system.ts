@@ -272,7 +272,7 @@ export class System {
      * @param what the event: start or stop
      * @param funct the function to be called at the event
      */
-    on(what: 'start' | 'stop', funct: Function) {
+    on(what: 'start' | 'stop' | 'begin' | 'end', funct: Function) {
         if (what == 'start') this._startListeners.push(funct);
         else if (what == 'stop') this._stopListeners.push(funct);
         else if (what == 'begin') this._beginListeners.push(funct);

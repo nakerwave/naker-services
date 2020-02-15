@@ -141,13 +141,14 @@ export class MouseCatcher {
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
     catch(mouse: Vector2) {
+        if (this.listeners.length == 0) return;
         let mouseStart = this.mouseCatch;
         let mouseChange = mouse.subtract(mouseStart);
         this.mouseReal = mouse;
         let howmany = 5 / this.speed;
         this.animation.simple(howmany, (count, perc) => {
             // if (perc == 0) return this.sendToListener();
-            let percEased = this.speed + this.curve.ease(perc - this.speed);
+            let percEased = this.speed + (1 - this.speed) * this.curve.ease(perc);
             let mouseProgress = mouseChange.multiply(new Vector2(percEased, percEased));
             this.mouseCatch = mouseStart.add(mouseProgress);
             this.sendToListener();
@@ -157,10 +158,12 @@ export class MouseCatcher {
     listeners: Array<Function> = [];
     addListener(callback: Function) {
         this.listeners.push(callback);
+        
     }
 
     removeListener(callback: Function) {
         remove(this.listeners, (c) => { c == callback });
+        
     }
 
     sendToListener() {
