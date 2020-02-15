@@ -1,6 +1,3 @@
-
-// import '@babylonjs/core/Animations/animatable';
-
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
@@ -267,6 +264,8 @@ export class System {
     */
     _startListeners: Array<Function> = [];
     _stopListeners: Array<Function> = [];
+    _beginListeners: Array<Function> = [];
+    _endListeners: Array<Function> = [];
 
     /**
      * Allow to add a listener on special events
@@ -276,6 +275,8 @@ export class System {
     on(what: 'start' | 'stop', funct: Function) {
         if (what == 'start') this._startListeners.push(funct);
         else if (what == 'stop') this._stopListeners.push(funct);
+        else if (what == 'begin') this._beginListeners.push(funct);
+        else if (what == 'end') this._endListeners.push(funct);
     }
 
     sendToStartListener() {
@@ -289,6 +290,20 @@ export class System {
         for (let i = 0; i < this._stopListeners.length; i++) {
             // Clone to make sure there is not something which can alter real mouseCatch
             this._stopListeners[i]();
+        }
+    }
+
+    sendToBeginListener(frameSinceStarted: number) {
+        for (let i = 0; i < this._beginListeners.length; i++) {
+            // Clone to make sure there is not something which can alter real mouseCatch
+            this._beginListeners[i](frameSinceStarted);
+        }
+    }
+
+    sendToEndListener(frameBeforeEnd: number) {
+        for (let i = 0; i < this._endListeners.length; i++) {
+            // Clone to make sure there is not something which can alter real mouseCatch
+            this._endListeners[i](frameBeforeEnd);
         }
     }
 }

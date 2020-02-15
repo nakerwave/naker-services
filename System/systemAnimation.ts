@@ -14,7 +14,7 @@ export class SystemAnimation extends System {
     fpsratio = 1;
     focusback = false;
     fpsnode: HTMLElement;
-    frameLeft = 0;
+    frameBeforeEnd = 0;
     frameSinceStarted = 0;
 
     /**
@@ -62,9 +62,10 @@ export class SystemAnimation extends System {
         // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
         this.fps = fps;
         this.fpsratio = 60 / this.fps;
-        this.frameLeft = 0;
+        if (this.frameSinceStarted < 10) this.sendToBeginListener(this.frameSinceStarted);
         this.frameSinceStarted++;
-
+        
+        this.frameBeforeEnd = 0;
         // if (this.focusback) return;
         // To avoid acceleration when focus back
         let fpsratio = Math.min(this.fpsratio, 2);
@@ -74,9 +75,11 @@ export class SystemAnimation extends System {
                 anim.funct(anim.count, anim.count / anim.howmany);
                 if (anim.count >= anim.howmany) anim.stop(true);
                 anim.count += anim.step * fpsratio;
-                if (anim.howmany - anim.count > this.frameLeft) this.frameLeft = Math.round(anim.howmany - anim.count + 1);
+                if (anim.howmany - anim.count > this.frameBeforeEnd) this.frameBeforeEnd = Math.round(anim.howmany - anim.count + 1);
             }
-        }        
+        }
+        if (this.frameBeforeEnd < 10) this.sendToEndListener(this.frameBeforeEnd);
+
     }
 
 	/**
