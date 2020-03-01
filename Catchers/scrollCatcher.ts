@@ -4,6 +4,7 @@ import { SystemAnimation } from '../System/systemAnimation';
 
 import { Vector2 } from '@babylonjs/core/Maths/math';
 import { setStyle } from 'redom';
+import { TouchCatcher } from './touchCatcher';
 
 /**
  * Detect scroll action of the user
@@ -31,7 +32,7 @@ export class ScrollCatcher extends ProgressCatcher {
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
-    constructor(system: SystemAnimation, container: HTMLElement, responsive: ResponsiveCatcher) {
+    constructor(system: SystemAnimation, container: HTMLElement, responsive: ResponsiveCatcher, touchCatcher: TouchCatcher) {
         super(system);
         this._container = container;
         this.system = system;
@@ -41,7 +42,7 @@ export class ScrollCatcher extends ProgressCatcher {
         });
 
         this._setScrollEvent();
-        this._setMobileDragEvent();
+        this._setMobileDragEvent(touchCatcher);
     }
 
     /**
@@ -135,48 +136,56 @@ export class ScrollCatcher extends ProgressCatcher {
     /**
      * The position of drag start when on smartphone
      */
-    touchStart = Vector2.Zero();
+    // touchStart = Vector2.Zero();
 
-    /**
-     * The gap of drag between start and current touch when on smartphone
-     */
-    touchGap = Vector2.Zero();
+    // /**
+    //  * The gap of drag between start and current touch when on smartphone
+    //  */
+    // touchGap = Vector2.Zero();
 
     /**
      * On smartphone, we use the touch events to simulate scroll
      * @ignore
      */
-    _setMobileDragEvent() {
-        let count = 0;
-        this._container.addEventListener("touchstart", (evt) => {
-            this.touchStart.x = evt.changedTouches[0].clientX;
-            this.touchStart.y = evt.changedTouches[0].clientY;
-            count = 0;
-        });
-        // Need test
-        // this._container.addEventListener("touchend", (evt) => {
-        //     this.touchStart = null;
-        //     count = 0;
-        // });
-        this._container.addEventListener("touchmove", (evt) => {
-            if (this.touchStart && this.catching) {
-                let x = evt.changedTouches[0].clientX;
-                let y = evt.changedTouches[0].clientY;
-                this.touchGap.x = (this.touchStart.x - x);
-                this.touchGap.y = (this.touchStart.y - y);
-                this.checkPreventBodyScroll(evt, this.touchGap.y);
-                if (Math.abs(this.touchGap.x) < Math.abs(this.touchGap.y)) {
-                    let top = this.progressReal * this.scrollHeight + this.touchGap.y;
-                    if (this.catching) this.catchTop(top);
-                    count++;
-                    if (count == 50) {
-                        this.touchStart.x = x;
-                        this.touchStart.y = y;
-                        count = 0;
-                    }
-                }
+    _setMobileDragEvent(touchCatcher: TouchCatcher) {
+        touchCatcher.addListener((change: Vector2, evt) => {
+            this.checkPreventBodyScroll(evt, change.y);
+            if (Math.abs(change.x) < Math.abs(change.y)) {
+                let top = this.progressReal * this.scrollHeight + change.y/100;
+                if (this.catching) this.catchTop(top);
             }
         });
+
+        // let count = 0;
+        // this._container.addEventListener("touchstart", (evt) => {
+        //     this.touchStart.x = evt.changedTouches[0].clientX;
+        //     this.touchStart.y = evt.changedTouches[0].clientY;
+        //     count = 0;
+        // });
+        // // Need test
+        // // this._container.addEventListener("touchend", (evt) => {
+        // //     this.touchStart = null;
+        // //     count = 0;
+        // // });
+        // this._container.addEventListener("touchmove", (evt) => {
+        //     if (this.touchStart && this.catching) {
+        //         let x = evt.changedTouches[0].clientX;
+        //         let y = evt.changedTouches[0].clientY;
+        //         this.touchGap.x = (this.touchStart.x - x);
+        //         this.touchGap.y = (this.touchStart.y - y);
+        //         this.checkPreventBodyScroll(evt, this.touchGap.y);
+        //         if (Math.abs(this.touchGap.x) < Math.abs(this.touchGap.y)) {
+        //             let top = this.progressReal * this.scrollHeight + this.touchGap.y;
+        //             if (this.catching) this.catchTop(top);
+        //             count++;
+        //             if (count == 50) {
+        //                 this.touchStart.x = x;
+        //                 this.touchStart.y = y;
+        //                 count = 0;
+        //             }
+        //         }
+        //     }
+        // });
     }
 
     /**

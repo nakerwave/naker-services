@@ -6,6 +6,7 @@ import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
 import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
+import { TouchCatcher } from './touchCatcher';
 
 export class MouseCatcher {
 
@@ -13,19 +14,22 @@ export class MouseCatcher {
     catching = true;
     system: SystemAnimation;
     animation: Animation;
+    accelerometerAvailable = true;
 
     /**
     * Ease catch function
     */
     curve: IEasingFunction;
 
-    constructor(system: SystemAnimation, container?: HTMLElement) {
+    constructor(system: SystemAnimation, touchCatcher: TouchCatcher) {
         this.system = system;
         this.animation = new Animation(system, 10);
+
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
+        this._setMobileDragEvent(touchCatcher);
 
         this.curve = new CircleEase();
         this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
@@ -52,9 +56,28 @@ export class MouseCatcher {
         //     }
         // });
 
+        if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) this.accelerometerAvailable = false;
+
         window.addEventListener("focus", () => {
             if (this.catching) {
                 this.catch(this.mouseReal);
+            }
+        });
+    }
+
+    touchVector: Vector2 = new Vector2(0.01, 0.01);
+    setTouchVector(touchVector: Vector2) {
+        this.touchVector = touchVector;
+    }
+
+    _setMobileDragEvent(touchCatcher: TouchCatcher) {
+        touchCatcher.addListener((change: Vector2) => {
+            if (this.catching) {
+                let mouseChange = change.multiply(this.touchVector);
+                let posMax = Vector2.Minimize(mouseChange, this.deviceMaxVector);
+                let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
+                posMin.x = -posMin.x;
+                this.catch(posMin);
             }
         });
     }
