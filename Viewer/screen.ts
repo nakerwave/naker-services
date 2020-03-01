@@ -77,6 +77,7 @@ export class NakerScreen extends NakerViewer {
         'deltaY',
         'deltaZ',
         'deltaMode',
+        'changedTouches',
     ];
 
     worker: Worker;
@@ -203,9 +204,18 @@ export class NakerScreen extends NakerViewer {
      */
     cloneMouseEvent(event: Event) {
         event.preventDefault();
+        return this.cloneMouseEventProperties(event);
+    }
+
+    cloneMouseEventProperties(event: Event) {
         const eventClone = {};
         for (let field of this.mouseEventFields) {
-            eventClone[field] = event[field];
+            if (field == 'changedTouches' && event.changedTouches) {
+                eventClone.changedTouches = [];
+                eventClone.changedTouches[0] = this.cloneMouseEventProperties(event.changedTouches[0]);
+            } else {
+                eventClone[field] = event[field];
+            }
         }
         return eventClone;
     }

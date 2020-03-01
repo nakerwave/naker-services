@@ -65,8 +65,6 @@ export class TouchCatcher {
                 let y = evt.changedTouches[0].clientY;
                 this.touchGap.x = (this.touchStart.x - x);
                 this.touchGap.y = (this.touchStart.y - y);
-                console.log(y, this.touchStart.y);
-                
                 count++;
                 // if (count == 50) {
                 //     this.touchStart.x = x;
