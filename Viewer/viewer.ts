@@ -14,6 +14,7 @@ export interface ProjectInterface extends ViewerOption {
 export interface ViewerOption {
     container?: HTMLElement,
     waterMark?: boolean,
+    website?: string,
     listenEvent?: boolean,
 }
 
@@ -36,7 +37,6 @@ export class NakerViewer {
      */
     container: HTMLElement;
     system: System;
-    // engine: 'story' | 'form' | 'back';
 
     /**
      * Canvas used to draw the 3D scene
@@ -51,7 +51,6 @@ export class NakerViewer {
     constructor(viewerOption: ViewerOption) {
         // Keep that variable def
         this.container = viewerOption.container;
-        // this.engine = project.engine;
 
         // let browser = this.getBrowser();
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';

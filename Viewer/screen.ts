@@ -203,7 +203,10 @@ export class NakerScreen extends NakerViewer {
      * @param event
      */
     cloneMouseEvent(event: Event) {
-        event.preventDefault();
+        // Sometimes can't preventDefault like with touch events
+        try {
+            event.preventDefault();
+        } catch {}
         return this.cloneMouseEventProperties(event);
     }
 

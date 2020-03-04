@@ -254,6 +254,7 @@ export class System {
     // Otherwise you could have a flash 
     limitSwitch = true;
     setLimitFPS(limitFPS: boolean) {
+        if (limitFPS == this.limitFPS) return;
         this.limitFPS = limitFPS;
         if (this.rendering) this.forceRender();
     }
