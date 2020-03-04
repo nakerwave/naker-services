@@ -66,6 +66,18 @@ export class ResponsiveCatcher {
         // Call to launch the loop, initialize with and height of canvas plus make a first resize check
         this.setResizeContainerLoop();
         if (horizontalFixed) this.setHorizontalFixed(horizontalFixed);
+        this.checkPlatform();
+    }
+
+    isOnMobile = false;
+    checkPlatform() {
+        let isMobile = navigator.userAgent.toLowerCase().match(/mobile/i),
+        isTablet = navigator.userAgent.toLowerCase().match(/tablet/i),
+        isAndroid = navigator.userAgent.toLowerCase().match(/android/i),
+        isiPhone = navigator.userAgent.toLowerCase().match(/iphone/i),
+        isiPad = navigator.userAgent.toLowerCase().match(/ipad/i);
+        if (isMobile || isTablet || isAndroid || isiPhone || isiPad) this.isOnMobile = true;
+        else this.isOnMobile = false;
     }
 
     /**
