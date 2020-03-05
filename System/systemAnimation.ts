@@ -110,6 +110,7 @@ export class SystemAnimation extends System {
         this.sceneAdvancedTexture.renderScale = 1;
         this.defaultPipeline.samples = 1;
         this.defaultPipeline.fxaaEnabled = true;
+        if (!this.limitSwitch) this.scene.render();
     }
 
     checkEndQuality(frameBeforEnd: number) {
@@ -122,7 +123,7 @@ export class SystemAnimation extends System {
         this.defaultPipeline.samples = sample;
         this.defaultPipeline.fxaaEnabled = true;
         // Make sure last frame use the best rendering quality
-        if (frameBeforEnd == 0 && this.limitSwitch) this.scene.render();
+        if (!this.limitSwitch) this.scene.render();
         // console.log(frameBeforEnd, scaling, sample);
     }
 
