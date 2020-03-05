@@ -42,13 +42,13 @@ export class SystemAnimation extends System {
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
-                this.runAnimations(this.engine.getFps());
+                this.runAnimations();
                 if (this.limitSwitch) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
             });
         } else {
             this.engine.runRenderLoop(() => {
-                this.runAnimations(this.engine.getFps());
+                this.runAnimations();
                 this.scene.render();
             });
         }
@@ -58,9 +58,9 @@ export class SystemAnimation extends System {
 	 * Make one step forward for all animations
 	 * @param fps Frame per second of the engine
 	 */
-    runAnimations(fps: number) {
+    runAnimations() {
         // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
-        this.fps = fps;
+        this.fps = this.engine.getFps();
         this.fpsratio = 60 / this.fps;
         
         this.frameBeforeEnd = 0;
@@ -78,9 +78,52 @@ export class SystemAnimation extends System {
         }
 
         // We avoid sending start and end at the same time
-        if (this.frameBeforeEnd < 10) this.sendToEndListener(this.frameBeforeEnd);
-        else if (this.frameSinceStarted < 10) this.sendToBeginListener(this.frameSinceStarted);
         this.frameSinceStarted++;
+        if (this.frameBeforeEnd < this.lastFrameNumberCheck && this.qualityAtBreak) this.checkEndQuality(this.frameBeforeEnd);
+        else if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.checkStartQuality(this.frameSinceStarted);
+    }
+
+    qualityAtBreak = false;
+    improveQualityAtBreak(qualityAtBreak: boolean) {
+        this.qualityAtBreak = qualityAtBreak;
+    }
+
+    lastFrameNumberCheck = 8;
+    firstFrameNumberCheck = 2;
+    scaleAccuracy = 10;
+
+    // Create false sceneAdvancedTexture and defaultPipeline so that it will also improve in story
+    sceneAdvancedTexture = { renderScale: 1 };
+    defaultPipeline = { samples: 1, fxaaEnabled: false };
+    checkStartQuality(frameSinceStarted: number) {
+        // let scaling = 1 - (this.firstFrameNumberCheck - frameSinceStarted) / (2 * this.firstFrameNumberCheck);
+        // scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
+        // this.engine.setHardwareScalingLevel(scaling);
+        // this.sceneAdvancedTexture.renderScale = scaling;
+        
+        // let sample = Math.round(4 - (frameSinceStarted + 1) * 3 / this.firstFrameNumberCheck);
+        // console.log(frameSinceStarted, scaling, sample);
+        // this.defaultPipeline.samples = sample;
+        // if (this.limitSwitch) this.scene.render();
+
+        this.engine.setHardwareScalingLevel(1);
+        this.sceneAdvancedTexture.renderScale = 1;
+        this.defaultPipeline.samples = 1;
+        this.defaultPipeline.fxaaEnabled = true;
+    }
+
+    checkEndQuality(frameBeforEnd: number) {
+        let scaling = 1 - (this.lastFrameNumberCheck - frameBeforEnd) / (2 * this.lastFrameNumberCheck);
+        scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
+        this.engine.setHardwareScalingLevel(scaling);
+        this.sceneAdvancedTexture.renderScale = scaling;
+
+        let sample = Math.round(4 - frameBeforEnd * 3 / this.lastFrameNumberCheck);
+        this.defaultPipeline.samples = sample;
+        this.defaultPipeline.fxaaEnabled = true;
+        // Make sure last frame use the best rendering quality
+        if (frameBeforEnd == 0 && this.limitSwitch) this.scene.render();
+        // console.log(frameBeforEnd, scaling, sample);
     }
 
 	/**

@@ -139,11 +139,6 @@ export class System {
         this.pauseRender();
     }
 
-    qualityAtBreak = false;
-    setQualityAtBreak(qualityAtBreak: boolean) {
-        this.qualityAtBreak = qualityAtBreak;
-    }
-
     /**
      * @ignore
      */
@@ -152,22 +147,8 @@ export class System {
         // console.log('stop');
         this.sendToStopListener();
         this.rendering = false;
-        if (this.qualityAtBreak) {
-            this.pauseWithQuality();
-        } else {
-            this.engine.stopRenderLoop();
-            this.scene.render();
-        }
-    }
-
-    pauseWithQuality() {
-        let i = 1;
-        this.engine.runRenderLoop(() => {
-            this.engine.setHardwareScalingLevel(1 - i / 4);
-            this.scene.render();
-            i++;
-            if (i == 3) this.engine.stopRenderLoop();
-        });
+        this.engine.stopRenderLoop();
+        this.scene.render();
     }
 
     /**
