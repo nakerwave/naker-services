@@ -281,7 +281,7 @@ export class ScrollCatcher extends ProgressCatcher {
     * @param perc What is the top position to be catched
     */
     catchPercentage(perc: number) {
-        if (!this.followWindowScroll) this.catch(perc, this.speed);
+        if (!this.followWindowScroll) this.catch(perc);
     }
 
     /**
@@ -289,6 +289,6 @@ export class ScrollCatcher extends ProgressCatcher {
     * @param top What is the top position to be catched
     */
     catchTop(top: number) {
-        if (!this.followWindowScroll) this.catch(top/this.scrollHeight, this.speed);
+        if (!this.followWindowScroll) this.catch(top/this.scrollHeight);
     }
 }

@@ -160,6 +160,7 @@ export class ProgressCatcher {
     */
     setSpeed(speed: number) {
         this.speed = speed;
+        this.lastSpeed = speed;
     }
 
     /**
@@ -189,16 +190,16 @@ export class ProgressCatcher {
         if (this.listeners.length == 0) return;
         if (!progress) progress = 0;
         let catchSpeed = (speed) ? speed : this.speed;
+        
         if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
         progress = Math.max(0, progress);
         progress = Math.min(1, progress);
-        if (this.progressReal == progress) return;
         this.progressReal = progress;
+        this.lastSpeed = catchSpeed;
         
         let progressStart = this.progressCatch;
         let progressChange = progress - progressStart;
         
-        this.lastSpeed = catchSpeed;
         let howmany = 5 / catchSpeed;
         
         this.animation.simple(howmany, (count, perc) => {
