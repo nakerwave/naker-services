@@ -192,11 +192,15 @@ export class ProgressCatcher {
         if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
         progress = Math.max(0, progress);
         progress = Math.min(1, progress);
+        if (this.progressReal == progress) return;
+        this.progressReal = progress;
+        
         let progressStart = this.progressCatch;
         let progressChange = progress - progressStart;
-        this.progressReal = progress;
+        
         this.lastSpeed = catchSpeed;
         let howmany = 5 / catchSpeed;
+        
         this.animation.simple(howmany, (count, perc) => {
             let percEased = catchSpeed + (1 - catchSpeed) * this.curve.ease(perc);
             this.progressCatch = progressStart + progressChange * percEased;
