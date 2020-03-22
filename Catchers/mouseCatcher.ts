@@ -1,12 +1,11 @@
-
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
+import { TouchCatcher } from './touchCatcher';
 
 import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
 import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
-import { TouchCatcher } from './touchCatcher';
 
 export class MouseCatcher {
 

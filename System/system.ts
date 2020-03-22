@@ -127,6 +127,7 @@ export class System {
      */
     launchRender() {
         this.started = true;
+        // console.log('launch');
         this.scene.render();
         this.checkScroll();
     }

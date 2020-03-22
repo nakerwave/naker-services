@@ -1,8 +1,7 @@
-
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
-import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
 
+import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
 import remove from 'lodash/remove';
 
 /**

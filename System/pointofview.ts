@@ -1,4 +1,3 @@
-
 import { Vector3 } from '@babylonjs/core/Maths/math'
 
 export interface PointOfViewOptions {

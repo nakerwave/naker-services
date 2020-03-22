@@ -1,4 +1,3 @@
-
 export class JsonHelper {
 
     recursiveJsonToObject(interfaceObject: Object, objectToTransale: Object) {

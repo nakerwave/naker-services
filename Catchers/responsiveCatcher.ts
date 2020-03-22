@@ -1,4 +1,3 @@
-
 import { System } from '../System/system';
 
 import { Engine } from '@babylonjs/core/Engines/engine';

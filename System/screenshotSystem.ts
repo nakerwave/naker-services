@@ -1,4 +1,3 @@
-
 import { Tools } from '@babylonjs/core/Misc/tools';
 import '@babylonjs/core/Misc/screenshotTools';
 import { VideoRecorder } from '@babylonjs/core/Misc/videoRecorder';
