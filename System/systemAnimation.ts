@@ -1,5 +1,13 @@
 import { System } from './system';
 
+import { Tools } from '@babylonjs/core/Misc/tools';
+// import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilityLayerRenderer';
+import { Layer } from '@babylonjs/core/Layers/layer';
+import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilitylayerRenderer';
+import '@babylonjs/core/Misc/screenshotTools';
+import { Vector3, Color4 } from '@babylonjs/core/Maths/math';
+import { Scene } from '@babylonjs/core/scene';
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import remove from 'lodash/remove';
 
 /**
@@ -23,9 +31,12 @@ export class SystemAnimation extends System {
     * Thus improving performance
     */
     list: Array<Animation> = [];
+    screenshotCamera: FreeCamera;
+    qualityLayer: UtilityLayerRenderer;
+    qualityScene: Scene;
 
     constructor(canvas: HTMLCanvasElement, screenshot?: boolean) {
-        super(canvas, screenshot);
+        super(canvas, true);
         window.addEventListener("focus", () => {
             this.setFocusBack();
         });
@@ -33,17 +44,26 @@ export class SystemAnimation extends System {
         window.addEventListener("blur", () => {
             this.setFocusBack();
         });
+
+        // this.screenshotCamera = new FreeCamera("cameraScreenshot", Vector3.Zero(), this.scene);
+        
+        this.qualityLayer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer;
+        // this.qualityLayer = new UtilityLayerRenderer(this.scene);
+        this.qualityScene = this.qualityLayer.utilityLayerScene;
+        this.qualityScene.autoClearDepthAndStencil = true;
+        // this.qualityScene.autoClear = true;
     }
 
     forceRender() {
-        // console.log('start');
+        console.log('start');
         this.frameSinceStarted = 0;
         this.sendToStartListener();
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
                 this.runAnimations();
-                if (this.limitSwitch) this.scene.render();
+        console.log('run');
+                if (this.limitSwitch && this.rendering) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
             });
         } else {
@@ -88,7 +108,7 @@ export class SystemAnimation extends System {
         this.qualityAtBreak = qualityAtBreak;
     }
 
-    lastFrameNumberCheck = 8;
+    lastFrameNumberCheck = 20;
     firstFrameNumberCheck = 2;
     scaleAccuracy = 10;
 
@@ -111,21 +131,95 @@ export class SystemAnimation extends System {
         this.defaultPipeline.samples = 1;
         this.defaultPipeline.fxaaEnabled = true;
         if (!this.limitSwitch) this.scene.render();
+
+        // if (this.qualityLayer) this.qualityLayer.dispose();
+        // this.qualityLayer = null;
     }
+
+    // checkEndQuality(frameBeforEnd: number) {
+    //     let scaling = 1 - (this.lastFrameNumberCheck - frameBeforEnd) / (2 * this.lastFrameNumberCheck);
+    //     scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
+    //     this.engine.setHardwareScalingLevel(scaling);
+    //     this.sceneAdvancedTexture.renderScale = scaling;
+
+    //     let sample = Math.round(4 - frameBeforEnd * 3 / this.lastFrameNumberCheck);
+    //     this.defaultPipeline.samples = sample;
+    //     this.defaultPipeline.fxaaEnabled = true;
+    //     // Make sure last frame use the best rendering quality
+    //     if (!this.limitSwitch) this.scene.render();
+    //     // console.log(frameBeforEnd, scaling, sample);
+    // }
+
+    // qualityLayer: Layer;
+    // checkEndQuality(frameBeforEnd: number) {
+    //     if (!this.qualityLayer) {
+    //         this.defaultPipeline.samples = 4;
+    //         this.defaultPipeline.fxaaEnabled = true;
+    //         this.engine.setHardwareScalingLevel(0.5);
+    //         this.scene.render();
+            
+    //         Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: this.engine.getRenderWidth(), height: this.engine.getRenderHeight(), precision: 0.5 }, (image) => {
+    //             this.qualityLayer = new Layer('', image, this.scene, false);
+    //             this.qualityLayer.color.a = 0;
+    //             // this.engine.setHardwareScalingLevel(1); 
+    //             console.log(this.scene.customRenderTargets);
+    //             // this.scene.render();
+    //             // let img = document.createElement('img');
+    //             // document.body.append(img);
+    //             // img.setAttribute('src', image);
+    //         });
+    //     } else {
+    //         let perc = 1 - ( frameBeforEnd / this.lastFrameNumberCheck)
+    //         let a = Math.max(perc, 0)
+    //         a = Math.min(a, 1)
+    //         this.qualityLayer.color.a = a/1.2;
+    //     }
+    // }
 
     checkEndQuality(frameBeforEnd: number) {
-        let scaling = 1 - (this.lastFrameNumberCheck - frameBeforEnd) / (2 * this.lastFrameNumberCheck);
-        scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
-        this.engine.setHardwareScalingLevel(scaling);
-        this.sceneAdvancedTexture.renderScale = scaling;
 
-        let sample = Math.round(4 - frameBeforEnd * 3 / this.lastFrameNumberCheck);
-        this.defaultPipeline.samples = sample;
-        this.defaultPipeline.fxaaEnabled = true;
-        // Make sure last frame use the best rendering quality
-        if (!this.limitSwitch) this.scene.render();
-        // console.log(frameBeforEnd, scaling, sample);
+        // var layer1, layer2;
+        if (frameBeforEnd != 0) return;
+        this.pauseRender();
+console.log('stop');
+
+        // this.screenshotCamera.position = this.scene.activeCamera.position.clone();
+        // this.screenshotCamera.rotationQuaternion = this.scene.activeCamera.rotationQuaternion.clone();
+        this.engine.stopRenderLoop();
+        let width = this.engine.getRenderWidth();
+        let height = this.engine.getRenderHeight();
+        Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image1) => {
+            this.engine.setHardwareScalingLevel(0.5);
+            // this.scene.render();
+            var layer1 = new Layer('', image1, this.qualityScene, false);
+            layer1.color = new Color4(1, 1, 1, 1);
+            // layer1.layerMask = 0x0FFFFFFF | 0x20000000;
+                
+            let img = document.createElement('img');
+            document.body.append(img);
+            img.setAttribute('src', image1);
+
+            Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image2) => {
+                var layer2 = new Layer('', image2, this.qualityScene, false);
+                layer2.color = new Color4(1, 1, 1, 0);
+                // layer2.layerMask = 0x0FFFFFFF | 0x20000000;
+
+                var t = 0, change = 0.02;
+                this.engine.runRenderLoop(() => {
+                    t += change;
+                    let a = Math.max(t, 0)
+                    a = Math.min(a, 1)
+                    layer1.color.a = 1 - a;
+                    layer2.color.a = a;
+                    this.qualityScene.render();
+                    if (a == 1) this.engine.stopRenderLoop();
+                });
+            });
+
+        });
     }
+
+
 
 	/**
 	 * Stop all the scene animation
