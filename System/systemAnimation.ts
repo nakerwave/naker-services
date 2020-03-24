@@ -48,10 +48,8 @@ export class SystemAnimation extends System {
         // this.screenshotCamera = new FreeCamera("cameraScreenshot", Vector3.Zero(), this.scene);
         
         this.qualityLayer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer;
-        // this.qualityLayer = new UtilityLayerRenderer(this.scene);
         this.qualityScene = this.qualityLayer.utilityLayerScene;
         this.qualityScene.autoClearDepthAndStencil = false;
-        // this.qualityScene.autoClear = true;
     }
 
     forceRender() {
@@ -62,7 +60,6 @@ export class SystemAnimation extends System {
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
                 this.runAnimations();
-        console.log('run11');
                 if (this.limitSwitch && this.rendering) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
             });
@@ -136,9 +133,21 @@ export class SystemAnimation extends System {
         // this.qualityLayer = null;
     }
 
-    checkEndQuality(frameBeforEnd: number) {
+    // checkEndQuality(frameBeforEnd: number) {
+    //     let scaling = 1 - (this.lastFrameNumberCheck - frameBeforEnd) / (2 * this.lastFrameNumberCheck);
+    //     scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
+    //     this.engine.setHardwareScalingLevel(scaling);
+    //     this.sceneAdvancedTexture.renderScale = scaling;
 
-        // var layer1, layer2;
+    //     let sample = Math.round(4 - frameBeforEnd * 3 / this.lastFrameNumberCheck);
+    //     this.defaultPipeline.samples = sample;
+    //     this.defaultPipeline.fxaaEnabled = true;
+    //     // Make sure last frame use the best rendering quality
+    //     if (!this.limitSwitch) this.scene.render();
+    //     // console.log(frameBeforEnd, scaling, sample);
+    // }
+
+    checkEndQuality(frameBeforEnd: number) {
         if (frameBeforEnd != 0) return;
         this.pauseRender();
         // this.screenshotCamera.position = this.scene.activeCamera.position.clone();
@@ -148,32 +157,42 @@ export class SystemAnimation extends System {
 
         // FIXME: Need timeout otherwise renderLoop will be called
         setTimeout(() => {
-            Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image1) => {
+            Tools.CreateScreenshot(this.engine, this.scene.activeCameras[0], { width: width, height: height }, (image1) => {
                 this.engine.setHardwareScalingLevel(0.5);
+                this.sceneAdvancedTexture.renderScale = 0.5;
+                this.defaultPipeline.samples = 4;
                 this.scene.render();
-
-                // let img = document.createElement('img');
-                // document.body.append(img);
-                // img.setAttribute('src', image1);
-
-                Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image2) => {
+                
+                console.log(this.scene.activeCameras[0]);
+                
+                Tools.CreateScreenshot(this.engine, this.scene.activeCameras[0], { width: width, height: height }, (image2) => {
                     var layer1 = new Layer('', image1, this.qualityScene, false);
                     layer1.color = new Color4(1, 1, 1, 1);
-                    // layer1.layerMask = 0x0FFFFFFF | 0x20000000;
                     var layer2 = new Layer('', image2, this.qualityScene, false);
                     layer2.color = new Color4(1, 1, 1, 0);
-                    // layer2.layerMask = 0x0FFFFFFF | 0x20000000;
 
-                    var t = 0, change = 0.02;
+                    // let img1 = document.createElement('img');
+                    // document.body.append(img1);
+                    // img1.setAttribute('src', image1);
+                    // let img2 = document.createElement('img');
+                    // document.body.append(img2);
+                    // img2.setAttribute('src', image2);
+
+                    var t = 0, change = 0.01;
                     console.log('stop');
                     this.engine.runRenderLoop(() => {
                         t += change;
                         let a = Math.max(t, 0)
                         a = Math.min(a, 1)
-                        layer1.color.a = 1 - a;
-                        layer2.color.a = a;
+                        layer1.color.a = 2 - a * 2;
+                        layer2.color.a = a * 2;
+                        
                         this.qualityScene.render();
-                        if (a == 1) this.engine.stopRenderLoop();
+                        if (a == 1) {
+                            layer1.dispose();
+                            layer2.dispose();
+                            this.engine.stopRenderLoop();
+                        }
                     });
                 });
 

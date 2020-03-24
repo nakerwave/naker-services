@@ -42,7 +42,7 @@ export class System {
         // preserveDrawingBuffer and stencil needed for screenshot
         let engineOption;
         if (!screenshot) engineOption = { limitDeviceRatio: this.maxScaling };
-        else engineOption = { limitDeviceRatio: this.maxScaling, preserveDrawingBuffer: true, stencil: true };
+        else engineOption = { limitDeviceRatio: this.maxScaling, preserveDrawingBuffer: false, stencil: true };
         this.engine = new Engine(this.canvas, true, engineOption, false);
         // NOTE to avoid request for manifest files because it can block loading on safari
         this.engine.enableOfflineSupport = false;
