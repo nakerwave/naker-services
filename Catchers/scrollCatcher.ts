@@ -193,6 +193,9 @@ export class ScrollCatcher extends ProgressCatcher {
      */
     _start() {
         this.catching = true;
+        this.progressCatch = 0; 
+        this.progressGap = 0;
+        
         if (this.followWindowScroll) {
             if (this._container == document.body) {
                 if (document.scrollingElement) {

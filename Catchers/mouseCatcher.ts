@@ -10,7 +10,7 @@ import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Ani
 export class MouseCatcher {
 
     mousecatch = new Vector2(0, 0);
-    catching = true;
+    catching = false;
     system: SystemAnimation;
     animation: Animation;
     accelerometerAvailable = true;
