@@ -165,9 +165,9 @@ export class SystemAnimation extends System {
     * Add a rendering process
     */
     addAnimation(animation: Animation) {
+        if (!this.started) return;
         this.setCheckScroll(false);
         let containerVisible = this.checkVisible();
-        // console.log(containerVisible);
         if (containerVisible) {
             if (this.list.indexOf(animation) == -1) {
                 // console.log('add', animation);

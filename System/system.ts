@@ -85,7 +85,7 @@ export class System {
     * Set if if have to check scroll to render
     */
     setCheckScroll(checkingScroll: boolean) {
-        this.checkingScroll = checkingScroll;
+        this.checkingScroll = checkingScroll;        
         if (checkingScroll && this.started) this.checkScroll();
     }
 
