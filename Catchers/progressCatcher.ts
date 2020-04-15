@@ -1,7 +1,7 @@
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
 
-import { IEasingFunction, EasingFunction, CubicEase } from '@babylonjs/core/Animations/easing';
+import { EasingFunction, CubicEase } from '@babylonjs/core/Animations/easing';
 import remove from 'lodash/remove';
 
 /**
@@ -43,7 +43,7 @@ export class ProgressCatcher {
     /**
     * Ease catch function
     */
-    curve: IEasingFunction;
+    curve: EasingFunction;
 
     /**
      * Use to animate the catching

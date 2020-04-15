@@ -5,7 +5,7 @@ import { TouchCatcher } from './touchCatcher';
 import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
-import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
+import { EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
 
 export class MouseCatcher {
 
@@ -18,7 +18,7 @@ export class MouseCatcher {
     /**
     * Ease catch function
     */
-    curve: IEasingFunction;
+    curve: EasingFunction;
 
     constructor(system: SystemAnimation, touchCatcher: TouchCatcher) {
         this.system = system;
