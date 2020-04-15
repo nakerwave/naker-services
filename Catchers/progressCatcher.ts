@@ -1,7 +1,7 @@
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
 
-import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
+import { IEasingFunction, EasingFunction, CubicEase } from '@babylonjs/core/Animations/easing';
 import remove from 'lodash/remove';
 
 /**
@@ -53,7 +53,7 @@ export class ProgressCatcher {
     constructor(system: SystemAnimation) {
         this.key = Math.random().toString(36);
         this.animation = new Animation(system, 10);
-        this.curve = new CircleEase();
+        this.curve = new CubicEase();
         this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
     }
 
@@ -190,7 +190,7 @@ export class ProgressCatcher {
         if (!progress) progress = 0;
         let catchSpeed = (speed) ? speed : this.speed;
         // Bigger speed will make percentage go behind 100%
-        catchSpeed = Math.min(0.1, catchSpeed);
+        catchSpeed = Math.min(0.05, catchSpeed);
 
         if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
         progress = Math.max(0, progress);
@@ -201,7 +201,7 @@ export class ProgressCatcher {
         let progressStart = this.progressCatch;
         let progressChange = progress - progressStart;
         
-        let howmany = 5 / catchSpeed;
+        let howmany = Math.round(5 / catchSpeed);
         
         this.animation.simple(howmany, (count, perc) => {
             let percEased = catchSpeed + (1 - catchSpeed) * this.curve.ease(perc);

@@ -291,6 +291,15 @@ export class ScrollCatcher extends ProgressCatcher {
     * @param top What is the top position to be catched
     */
     catchTop(top: number) {
-        if (!this.followWindowScroll) this.catch(top/this.scrollHeight);
+        this._catchTop(top);
+    }
+
+    _catchTop(top: number) {
+        if (!this.followWindowScroll) {
+            let progress = top / this.scrollHeight;
+            let change = 100 * Math.abs(progress - this.progressCatch);
+            // The furthest, the fatest
+            this.catch(top / this.scrollHeight, change * this.speed);
+        }
     }
 }
