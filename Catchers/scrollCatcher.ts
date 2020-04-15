@@ -50,7 +50,6 @@ export class ScrollCatcher extends ProgressCatcher {
      * @param height The new scrollable height
      */
     setScrollHeight(height: number) {
-        if (!this.scrollHeight) this.followWindowScroll = false;
         this.checkHeight(height);
     }
 
@@ -69,7 +68,7 @@ export class ScrollCatcher extends ProgressCatcher {
             if (this._container == document.body) {
                 // If overflow style = hidden, there is no scrollingElement on document
                 if (document.scrollingElement) {
-                    this.scrollHeight = document.scrollingElement.scrollHeight - window.innerHeight;
+                    this.scrollHeight = document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight;
                 }
             } else {
                 this.scrollHeight = this._container.scrollHeight - this._container.clientHeight;
@@ -94,31 +93,27 @@ export class ScrollCatcher extends ProgressCatcher {
         if (this._container == document.body) {
             window.addEventListener("scroll", (evt) => {
                 if (!this.followWindowScroll) return;
-                // If overflow style = hidden, there is no scrollingElement on document
-                if (document.scrollingElement) {
-                    let top = document.scrollingElement.scrollTop;
-                    let height = document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight;
-                    if (this.catching) this.catch(top/height);
-                }
+                let top = document.scrollingElement.scrollTop;
+                this.scrollEvent(top);
             });
         } else {
             this._container.addEventListener("scroll", (evt) => {
                 if (!this.followWindowScroll) return;
                 let top = this._container.scrollTop;
-                if (this.catching) this.catchTop(top);
+                this.scrollEvent(top);
             });
         }
 
         this._container.addEventListener("mousewheel", (evt) => {
             let top = this.progressReal * this.scrollHeight + evt.deltaY;
-            this.mouseWheel(evt, top);
+            this.mouseWheelEvent(evt, top);
         });
 
         // Wheel is continuously called when on a pad
         // Unfortunately can not find an event to trigger real end of scroll
         this._container.addEventListener("wheel", (evt) => {
             let top = this.progressReal * this.scrollHeight + evt.deltaY;
-            this.mouseWheel(evt, top);
+            this.mouseWheelEvent(evt, top);
         });
 
         // Firefox trigger this other event which we need to prevent to avoid body scroll when in Stpry
@@ -129,7 +124,7 @@ export class ScrollCatcher extends ProgressCatcher {
         // Firefox use DOMMouseScroll
         this._container.addEventListener("DOMMouseScroll", (evt: any) => {
             let top = this.progressReal * this.scrollHeight + evt.detail * 50;
-            this.mouseWheel(evt, top);
+            this.mouseWheelEvent(evt, top);
         });
     }
 
@@ -232,17 +227,21 @@ export class ScrollCatcher extends ProgressCatcher {
         else if (what == 'mouseWheel') this._mouseWheelListeners.push(funct);
     }
 
+    scrollEvent(top: number) {
+        if (this.catching) this.catchTop(top);
+    }
+
     /**
     * Called when a mousewheel event occur
     * @param evt Event of the mouse wheel
     * @param top What is the new top position due to this mouseWheel event
     */
-    mouseWheel(evt: MouseEvent, top: number) {
+    mouseWheelEvent(evt: MouseEvent, top: number) {
+        if (this.followWindowScroll) return;
         this.checkPreventComputerScroll(evt);
         for (let i = 0; i < this._mouseWheelListeners.length; i++) {
             this._mouseWheelListeners[i]();
         }
-        if (this.followWindowScroll) return;
         if (this.catching) this.catchTop(top);
     }
 

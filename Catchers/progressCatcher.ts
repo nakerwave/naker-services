@@ -189,7 +189,9 @@ export class ProgressCatcher {
         if (this.listeners.length == 0) return;
         if (!progress) progress = 0;
         let catchSpeed = (speed) ? speed : this.speed;
-        
+        // Bigger speed will make percentage go behind 100%
+        catchSpeed = Math.min(0.1, catchSpeed);
+
         if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
         progress = Math.max(0, progress);
         progress = Math.min(1, progress);
