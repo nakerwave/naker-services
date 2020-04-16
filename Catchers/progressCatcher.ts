@@ -163,18 +163,6 @@ export class ProgressCatcher {
     }
 
     /**
-    * Spped of the progress used when mousewheel or drag on phone
-    */
-    accuracy = 0.002;
-    /**
-    * Set the speed of the progressCatcher
-    * @param speed The new speed
-    */
-    setAccuracy(accuracy: number) {
-        this.accuracy = accuracy;
-    }
-
-    /**
     * @ignore
     */
     lastSpeed = 0.02;
@@ -190,11 +178,10 @@ export class ProgressCatcher {
         if (!progress) progress = 0;
         let catchSpeed = (speed) ? speed : this.speed;
         // Bigger speed will make percentage go behind 100%
-        catchSpeed = Math.min(0.05, catchSpeed);
+        catchSpeed = Math.min(0.1, catchSpeed);
 
         if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
-        progress = Math.max(0, progress);
-        progress = Math.min(1, progress);
+        progress = this.checkBorderProgress(progress);
         this.progressReal = progress;
         this.lastSpeed = catchSpeed;
         
@@ -202,15 +189,23 @@ export class ProgressCatcher {
         let progressChange = progress - progressStart;
         
         let howmany = Math.round(5 / catchSpeed);
+        howmany = Math.min(howmany, 500);
         
         this.animation.simple(howmany, (count, perc) => {
             let percEased = catchSpeed + (1 - catchSpeed) * this.curve.ease(perc);
+            percEased = this.checkBorderProgress(percEased);
             this.progressCatch = progressStart + progressChange * percEased;
             this.progressGap = this.progressReal - this.progressCatch;
             this.sendToListsteners();
         }, () => {
             if (callback) callback();
         });
+    }
+
+    checkBorderProgress(progress: number): number {
+        progress = Math.max(0, progress);
+        progress = Math.min(1, progress);
+        return progress;
     }
 
     /**

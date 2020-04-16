@@ -147,18 +147,6 @@ export class MouseCatcher {
         this.speed = speed;
     }
 
-    /**
-    * Spped of the progress used when mousewheel or drag on phone
-    */
-    accuracy = 0.02;
-    /**
-    * Set the speed of the progressCatcher
-    * @param speed The new speed
-    */
-    setAccuracy(accuracy: number) {
-        this.accuracy = accuracy;
-    }
-
     step = new Vector2(0, 0);
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
