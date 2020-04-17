@@ -150,22 +150,23 @@ export class ProgressCatcher {
     }
 
     /**
-    * Spped of the progress used when mousewheel or drag on phone
+    * Speed of the progress used when mousewheel or drag on phone
     */
     speed = 0.02;
-    /**
-    * Set the speed of the progressCatcher
-    * @param speed The new speed
-    */
-    setSpeed(speed: number) {
-        this.speed = speed;
-        this.lastSpeed = speed;
-    }
 
     /**
     * @ignore
     */
     lastSpeed = 0.02;
+
+    /**
+    * Set the catch speed of the progressCatcher
+    * @param speed The new speed
+    */
+    setCatchSpeed(speed: number) {
+        this.speed = speed;
+        this.lastSpeed = speed;
+    }
 
     /**
      * Catch the progress

@@ -38,7 +38,7 @@ export class ScrollCatcher extends ProgressCatcher {
         this.system = system;
         
         responsive.addListener(() => {
-            this.checkHeight(this.scrollHeight);
+            this.checkHeight();
         });
 
         this._setScrollEvent();
@@ -46,11 +46,18 @@ export class ScrollCatcher extends ProgressCatcher {
     }
 
     /**
-     * Set the scrollable height
-     * @param height The new scrollable height
-     */
-    setScrollHeight(height: number) {
-        this.checkHeight(height);
+    * Speed of the progress used when mousewheel or drag on phone
+    */
+    scrollSpeed = 0.02;
+    speedHeight = 1000;
+
+    /**
+    * Set the speed of the scrollCatcher
+    * @param scrollSpeed The new speed
+    */
+    setScrollSpeed(scrollSpeed: number) {
+        this.scrollSpeed = scrollSpeed;
+        this.speedHeight = 1000/this.scrollSpeed;
     }
 
     /**
@@ -63,23 +70,25 @@ export class ScrollCatcher extends ProgressCatcher {
      * Check if all condition are present in order to have a correct scroll
      * @param height On what height should be base the test
      */
-    checkHeight(height: number) {
+    checkHeight() {
+        let height: number;
         if (this._container) {
             if (this._container == document.body) {
                 // If overflow style = hidden, there is no scrollingElement on document
                 if (document.scrollingElement) {
-                    this.scrollHeight = document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight;
+                    height = document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight;
                 }
             } else {
-                this.scrollHeight = this._container.scrollHeight - this._container.clientHeight;
+                height = this._container.scrollHeight - this._container.clientHeight;
             }
         }
         // On some browser or phone, you can have a small different even if page not scrollable
         // Plus 50 is way too short to make et scene scroll
-        if (this.scrollHeight <= 50) {
-            this.scrollHeight = height;
+        if (height <= 50) {
+            this.scrollHeight = this.speedHeight;
             this.followWindowScroll = false;
         } else {
+            this.scrollHeight = height;
             this.followWindowScroll = true;
         }
     }
@@ -252,22 +261,23 @@ export class ScrollCatcher extends ProgressCatcher {
         this.checkPreventBodyScroll(evt, delta);
     }
 
+    borderCheck = 0.01;
     checkPreventBodyScroll(evt: MouseEvent | TouchEvent, move: number) {
         // Try to have different sensitivity when leaving or entering
         // Should be easy to leave and fast to enter
         // let topTest =false, bottomTest =false;
         // if (move >= 0) {
         //     if (this.progressCatch - this.accuracy > 0) topTest = true;
-        //     else if (this.progressCatch + 10 * this.accuracy < 1) bottomTest = true;
+        //     else if (this.progressCatch + this.borderCheck < 1) bottomTest = true;
         // } else {
         //     if (this.progressCatch + this.accuracy > 0) bottomTest = true;
-        //     else if (this.progressCatch - 10 * this.accuracy < 1) topTest = true;
+        //     else if (this.progressCatch - this.borderCheck < 1) topTest = true;
         // }
         // console.log(topTest, bottomTest);
 
         // If scroll reach start or end we stop preventing page scroll
-        let topTest = this.progressCatch + 10 * this.accuracy < 1 && move >= 0;
-        let bottomTest = this.progressCatch - 10 * this.accuracy > 0 && move <= 0;
+        let topTest = this.progressCatch + this.borderCheck < 1 && move >= 0;
+        let bottomTest = this.progressCatch - this.borderCheck > 0 && move <= 0;
         
         if (this._container != document.body && (topTest || bottomTest)) {
             evt.preventDefault();
