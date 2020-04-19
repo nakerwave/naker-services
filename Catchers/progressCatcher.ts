@@ -1,7 +1,7 @@
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
 
-import { IEasingFunction, EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
+import { EasingFunction, CubicEase } from '@babylonjs/core/Animations/easing';
 import remove from 'lodash/remove';
 
 /**
@@ -43,7 +43,7 @@ export class ProgressCatcher {
     /**
     * Ease catch function
     */
-    curve: IEasingFunction;
+    curve: EasingFunction;
 
     /**
      * Use to animate the catching
@@ -53,7 +53,7 @@ export class ProgressCatcher {
     constructor(system: SystemAnimation) {
         this.key = Math.random().toString(36);
         this.animation = new Animation(system, 10);
-        this.curve = new CircleEase();
+        this.curve = new CubicEase();
         this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
     }
 
@@ -150,34 +150,23 @@ export class ProgressCatcher {
     }
 
     /**
-    * Spped of the progress used when mousewheel or drag on phone
+    * Speed of the progress used when mousewheel or drag on phone
     */
     speed = 0.02;
-    /**
-    * Set the speed of the progressCatcher
-    * @param speed The new speed
-    */
-    setSpeed(speed: number) {
-        this.speed = speed;
-        this.lastSpeed = speed;
-    }
-
-    /**
-    * Spped of the progress used when mousewheel or drag on phone
-    */
-    accuracy = 0.002;
-    /**
-    * Set the speed of the progressCatcher
-    * @param speed The new speed
-    */
-    setAccuracy(accuracy: number) {
-        this.accuracy = accuracy;
-    }
 
     /**
     * @ignore
     */
     lastSpeed = 0.02;
+
+    /**
+    * Set the catch speed of the progressCatcher
+    * @param speed The new speed
+    */
+    setCatchSpeed(speed: number) {
+        this.speed = speed;
+        this.lastSpeed = speed;
+    }
 
     /**
      * Catch the progress
@@ -189,26 +178,35 @@ export class ProgressCatcher {
         if (this.listeners.length == 0) return;
         if (!progress) progress = 0;
         let catchSpeed = (speed) ? speed : this.speed;
-        
+        // Bigger speed will make percentage go behind 100%
+        catchSpeed = Math.min(0.1, catchSpeed);
+
         if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
-        progress = Math.max(0, progress);
-        progress = Math.min(1, progress);
+        progress = this.checkBorderProgress(progress);
         this.progressReal = progress;
         this.lastSpeed = catchSpeed;
         
         let progressStart = this.progressCatch;
         let progressChange = progress - progressStart;
         
-        let howmany = 5 / catchSpeed;
+        let howmany = Math.round(5 / catchSpeed);
+        howmany = Math.min(howmany, 500);
         
         this.animation.simple(howmany, (count, perc) => {
             let percEased = catchSpeed + (1 - catchSpeed) * this.curve.ease(perc);
+            percEased = this.checkBorderProgress(percEased);
             this.progressCatch = progressStart + progressChange * percEased;
             this.progressGap = this.progressReal - this.progressCatch;
             this.sendToListsteners();
         }, () => {
             if (callback) callback();
         });
+    }
+
+    checkBorderProgress(progress: number): number {
+        progress = Math.max(0, progress);
+        progress = Math.min(1, progress);
+        return progress;
     }
 
     /**
