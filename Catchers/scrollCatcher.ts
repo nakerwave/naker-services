@@ -58,6 +58,7 @@ export class ScrollCatcher extends ProgressCatcher {
     setScrollSpeed(scrollSpeed: number) {
         this.scrollSpeed = scrollSpeed;
         this.speedHeight = 1000/this.scrollSpeed;
+        this.checkHeight();
     }
 
     /**
