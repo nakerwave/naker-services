@@ -33,6 +33,8 @@ export class SystemAnimation extends System {
     list: Array<Animation> = [];
     screenshotCamera: FreeCamera;
     qualityLayer: UtilityLayerRenderer;
+    layer1: Layer;
+    layer2: Layer;
     qualityScene: Scene;
 
     constructor(canvas: HTMLCanvasElement, screenshot?: boolean) {
@@ -50,6 +52,13 @@ export class SystemAnimation extends System {
         this.qualityLayer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer;
         this.qualityScene = this.qualityLayer.utilityLayerScene;
         this.qualityScene.autoClearDepthAndStencil = false;
+
+        // this.scene.autoClear = true;
+        // this.scene.autoClearDepthAndStencil = true;
+
+        this.on('stop', () => {
+            this.checkEndQuality();
+        })
     }
 
     forceRender() {
@@ -96,8 +105,10 @@ export class SystemAnimation extends System {
 
         // We avoid sending start and end at the same time
         this.frameSinceStarted++;
-        if (this.frameBeforeEnd < this.lastFrameNumberCheck && this.qualityAtBreak) this.checkEndQuality(this.frameBeforeEnd);
-        else if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.checkStartQuality(this.frameSinceStarted);
+        // if (this.frameBeforeEnd < this.lastFrameNumberCheck && this.qualityAtBreak) this.checkEndQuality(this.frameBeforeEnd);
+        // else if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.checkStartQuality(this.frameSinceStarted);
+
+        if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.checkStartQuality(this.frameSinceStarted);
     }
 
     qualityAtBreak = false;
@@ -131,6 +142,12 @@ export class SystemAnimation extends System {
 
         // if (this.qualityLayer) this.qualityLayer.dispose();
         // this.qualityLayer = null;
+
+        if (this.layer1) {
+            this.layer1.dispose();
+            this.layer2.dispose();
+        }
+
     }
 
     // checkEndQuality(frameBeforEnd: number) {
@@ -147,9 +164,7 @@ export class SystemAnimation extends System {
     //     // console.log(frameBeforEnd, scaling, sample);
     // }
 
-    checkEndQuality(frameBeforEnd: number) {
-        if (frameBeforEnd != 0) return;
-        this.pauseRender();
+    checkEndQuality() {
         // this.screenshotCamera.position = this.scene.activeCamera.position.clone();
         // this.screenshotCamera.rotationQuaternion = this.scene.activeCamera.rotationQuaternion.clone();
         let width = this.engine.getRenderWidth();
@@ -157,47 +172,45 @@ export class SystemAnimation extends System {
 
         // FIXME: Need timeout otherwise renderLoop will be called
         setTimeout(() => {
-            Tools.CreateScreenshot(this.engine, this.scene.activeCameras[0], { width: width, height: height }, (image1) => {
+            Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image1) => {
                 this.engine.setHardwareScalingLevel(0.5);
                 this.sceneAdvancedTexture.renderScale = 0.5;
                 this.defaultPipeline.samples = 4;
                 this.scene.render();
                 
-                console.log(this.scene.activeCameras[0]);
-                
-                Tools.CreateScreenshot(this.engine, this.scene.activeCameras[0], { width: width, height: height }, (image2) => {
-                    var layer1 = new Layer('', image1, this.qualityScene, false);
-                    layer1.color = new Color4(1, 1, 1, 1);
-                    var layer2 = new Layer('', image2, this.qualityScene, false);
-                    layer2.color = new Color4(1, 1, 1, 0);
+                Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image2) => {
+                    this.layer1 = new Layer('', image1, this.qualityScene, false);
+                    this.layer1.color = new Color4(1, 1, 1, 1);
+                    this.layer2 = new Layer('', image2, this.qualityScene, false);
+                    this.layer2.color = new Color4(1, 1, 1, 0);
 
-                    // let img1 = document.createElement('img');
-                    // document.body.append(img1);
-                    // img1.setAttribute('src', image1);
-                    // let img2 = document.createElement('img');
-                    // document.body.append(img2);
-                    // img2.setAttribute('src', image2);
+                    let img1 = document.createElement('img');
+                    document.body.append(img1);
+                    img1.setAttribute('src', image1);
+                    let img2 = document.createElement('img');
+                    document.body.append(img2);
+                    img2.setAttribute('src', image2);
 
-                    var t = 0, change = 0.01;
+                    var t = 0, change = 0.05;
                     console.log('stop');
                     this.engine.runRenderLoop(() => {
                         t += change;
                         let a = Math.max(t, 0)
                         a = Math.min(a, 1)
-                        layer1.color.a = 2 - a * 2;
-                        layer2.color.a = a * 2;
+                        this.layer1.color.a = 2 - a * 2;
+                        this.layer2.color.a = a * 2;
                         
                         this.qualityScene.render();
                         if (a == 1) {
-                            layer1.dispose();
-                            layer2.dispose();
+                            // this.layer1.dispose();
+                            // this.layer2.dispose();
                             this.engine.stopRenderLoop();
                         }
                     });
                 });
 
             });
-        }, 0)
+        }, 0);
     }
 
 	/**
