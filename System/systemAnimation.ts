@@ -62,7 +62,7 @@ export class SystemAnimation extends System {
     }
 
     forceRender() {
-        console.log('start');
+        // console.log('start');
         this.frameSinceStarted = 0;
         this.sendToStartListener();
         this.engine.stopRenderLoop();
@@ -120,35 +120,33 @@ export class SystemAnimation extends System {
     firstFrameNumberCheck = 2;
     scaleAccuracy = 10;
 
-    // Create false sceneAdvancedTexture and defaultPipeline so that it will also improve in story
-    sceneAdvancedTexture = { renderScale: 1 };
-    defaultPipeline = { samples: 1, fxaaEnabled: false };
-    checkStartQuality(frameSinceStarted: number) {
-        // let scaling = 1 - (this.firstFrameNumberCheck - frameSinceStarted) / (2 * this.firstFrameNumberCheck);
-        // scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
-        // this.engine.setHardwareScalingLevel(scaling);
-        // this.sceneAdvancedTexture.renderScale = scaling;
-        
-        // let sample = Math.round(4 - (frameSinceStarted + 1) * 3 / this.firstFrameNumberCheck);
-        // console.log(frameSinceStarted, scaling, sample);
-        // this.defaultPipeline.samples = sample;
-        // if (this.limitSwitch) this.scene.render();
-
+    checkStartQuality() {
         this.engine.setHardwareScalingLevel(1);
         this.sceneAdvancedTexture.renderScale = 1;
         this.defaultPipeline.samples = 1;
+        
         this.defaultPipeline.fxaaEnabled = true;
-        if (!this.limitSwitch) this.scene.render();
-
-        // if (this.qualityLayer) this.qualityLayer.dispose();
-        // this.qualityLayer = null;
+        this.defaultPipeline.depthOfFieldBlurLevel = 0;
+        this.defaultPipeline.depthOfField._depthOfFieldBlurY[0].kernel = 20;
+        this.defaultPipeline.depthOfField._depthOfFieldBlurX[0].kernel = 20;
 
         if (this.layer1) {
             this.layer1.dispose();
             this.layer2.dispose();
         }
-
     }
+
+    // checkStartQuality(frameSinceStarted: number) {
+    //     let scaling = 1 - (this.firstFrameNumberCheck - frameSinceStarted) / (2 * this.firstFrameNumberCheck);
+    //     scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
+    //     this.engine.setHardwareScalingLevel(scaling);
+    //     this.sceneAdvancedTexture.renderScale = scaling;
+
+    //     let sample = Math.round(4 - (frameSinceStarted + 1) * 3 / this.firstFrameNumberCheck);
+    //     console.log(frameSinceStarted, scaling, sample);
+    //     this.defaultPipeline.samples = sample;
+    //     if (this.limitSwitch) this.scene.render();
+    // }
 
     // checkEndQuality(frameBeforEnd: number) {
     //     let scaling = 1 - (this.lastFrameNumberCheck - frameBeforEnd) / (2 * this.lastFrameNumberCheck);
@@ -176,6 +174,11 @@ export class SystemAnimation extends System {
                 this.engine.setHardwareScalingLevel(0.5);
                 this.sceneAdvancedTexture.renderScale = 0.5;
                 this.defaultPipeline.samples = 4;
+                this.defaultPipeline.depthOfFieldBlurLevel = 1;
+                this.defaultPipeline.depthOfField._depthOfFieldBlurY[0].kernel = 20;
+                this.defaultPipeline.depthOfField._depthOfFieldBlurX[0].kernel = 20;
+                this.defaultPipeline.depthOfField._depthOfFieldBlurY[1].kernel = 20;
+                this.defaultPipeline.depthOfField._depthOfFieldBlurX[1].kernel = 20;
                 this.scene.render();
                 
                 Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image2) => {
@@ -184,12 +187,12 @@ export class SystemAnimation extends System {
                     this.layer2 = new Layer('', image2, this.qualityScene, false);
                     this.layer2.color = new Color4(1, 1, 1, 0);
 
-                    let img1 = document.createElement('img');
-                    document.body.append(img1);
-                    img1.setAttribute('src', image1);
-                    let img2 = document.createElement('img');
-                    document.body.append(img2);
-                    img2.setAttribute('src', image2);
+                    // let img1 = document.createElement('img');
+                    // document.body.append(img1);
+                    // img1.setAttribute('src', image1);
+                    // let img2 = document.createElement('img');
+                    // document.body.append(img2);
+                    // img2.setAttribute('src', image2);
 
                     var t = 0, change = 0.05;
                     console.log('stop');
