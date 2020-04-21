@@ -53,12 +53,17 @@ export class SystemAnimation extends System {
         this.qualityScene = this.qualityLayer.utilityLayerScene;
         this.qualityScene.autoClearDepthAndStencil = false;
 
+        // Be careful, thi.optimize function can make screenshot bug
         // this.scene.autoClear = true;
         // this.scene.autoClearDepthAndStencil = true;
 
         this.on('stop', () => {
-            this.checkEndQuality();
-        })
+            if (this.qualityAtBreak) this.checkEndQuality();
+        });
+
+        this.on('start', () => {
+            if (this.qualityAtBreak) this.checkStartQuality();
+        });
     }
 
     forceRender() {
@@ -78,6 +83,14 @@ export class SystemAnimation extends System {
                 this.scene.render();
             });
         }
+    }
+
+    pauseRender() {
+        if (!this.rendering) return;
+        // console.log('stop');
+        this.sendToStopListener();
+        this.rendering = false;
+        this.engine.stopRenderLoop();
     }
 
 	/**
@@ -105,10 +118,8 @@ export class SystemAnimation extends System {
 
         // We avoid sending start and end at the same time
         this.frameSinceStarted++;
-        // if (this.frameBeforeEnd < this.lastFrameNumberCheck && this.qualityAtBreak) this.checkEndQuality(this.frameBeforeEnd);
-        // else if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.checkStartQuality(this.frameSinceStarted);
-
-        if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.checkStartQuality(this.frameSinceStarted);
+        if (this.frameBeforeEnd < this.lastFrameNumberCheck && this.qualityAtBreak) this.sendToEndListener(this.frameBeforeEnd);
+        else if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.sendToBeginListener(this.frameSinceStarted);
     }
 
     qualityAtBreak = false;
@@ -121,15 +132,9 @@ export class SystemAnimation extends System {
     scaleAccuracy = 10;
 
     checkStartQuality() {
+        this.guiCamera.layerMask = 0x10000000;
+        this.sceneAdvancedTexture.layer.layerMask = 0x10000000;
         this.engine.setHardwareScalingLevel(1);
-        this.sceneAdvancedTexture.renderScale = 1;
-        this.defaultPipeline.samples = 1;
-        
-        this.defaultPipeline.fxaaEnabled = true;
-        this.defaultPipeline.depthOfFieldBlurLevel = 0;
-        this.defaultPipeline.depthOfField._depthOfFieldBlurY[0].kernel = 20;
-        this.defaultPipeline.depthOfField._depthOfFieldBlurX[0].kernel = 20;
-
         if (this.layer1) {
             this.layer1.dispose();
             this.layer2.dispose();
@@ -172,13 +177,6 @@ export class SystemAnimation extends System {
         setTimeout(() => {
             Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image1) => {
                 this.engine.setHardwareScalingLevel(0.5);
-                this.sceneAdvancedTexture.renderScale = 0.5;
-                this.defaultPipeline.samples = 4;
-                this.defaultPipeline.depthOfFieldBlurLevel = 1;
-                this.defaultPipeline.depthOfField._depthOfFieldBlurY[0].kernel = 20;
-                this.defaultPipeline.depthOfField._depthOfFieldBlurX[0].kernel = 20;
-                this.defaultPipeline.depthOfField._depthOfFieldBlurY[1].kernel = 20;
-                this.defaultPipeline.depthOfField._depthOfFieldBlurX[1].kernel = 20;
                 this.scene.render();
                 
                 Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image2) => {
@@ -187,6 +185,9 @@ export class SystemAnimation extends System {
                     this.layer2 = new Layer('', image2, this.qualityScene, false);
                     this.layer2.color = new Color4(1, 1, 1, 0);
 
+                    this.guiCamera.layerMask = 0x0FFFFFFF;
+                    this.sceneAdvancedTexture.layer.layerMask = 0x0FFFFFFF;
+                   
                     // let img1 = document.createElement('img');
                     // document.body.append(img1);
                     // img1.setAttribute('src', image1);
@@ -194,6 +195,7 @@ export class SystemAnimation extends System {
                     // document.body.append(img2);
                     // img2.setAttribute('src', image2);
 
+                    this.qualityScene.render();
                     var t = 0, change = 0.05;
                     console.log('stop');
                     this.engine.runRenderLoop(() => {
@@ -204,11 +206,7 @@ export class SystemAnimation extends System {
                         this.layer2.color.a = a * 2;
                         
                         this.qualityScene.render();
-                        if (a == 1) {
-                            // this.layer1.dispose();
-                            // this.layer2.dispose();
-                            this.engine.stopRenderLoop();
-                        }
+                        if (a == 1) this.engine.stopRenderLoop();
                     });
                 });
 
