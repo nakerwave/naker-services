@@ -158,32 +158,6 @@ export class SystemAnimation extends System {
     //     if (this.layer1) this.layer1.dispose();
     // }
 
-    // checkStartQuality(frameSinceStarted: number) {
-    //     let scaling = 1 - (this.firstFrameNumberCheck - frameSinceStarted) / (2 * this.firstFrameNumberCheck);
-    //     scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
-    //     this.engine.setHardwareScalingLevel(scaling);
-    //     this.sceneAdvancedTexture.renderScale = scaling;
-
-    //     let sample = Math.round(4 - (frameSinceStarted + 1) * 3 / this.firstFrameNumberCheck);
-    //     console.log(frameSinceStarted, scaling, sample);
-    //     this.defaultPipeline.samples = sample;
-    //     if (this.limitSwitch) this.scene.render();
-    // }
-
-    // checkEndQuality(frameBeforEnd: number) {
-    //     let scaling = 1 - (this.lastFrameNumberCheck - frameBeforEnd) / (2 * this.lastFrameNumberCheck);
-    //     scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
-    //     this.engine.setHardwareScalingLevel(scaling);
-    //     this.sceneAdvancedTexture.renderScale = scaling;
-
-    //     let sample = Math.round(4 - frameBeforEnd * 3 / this.lastFrameNumberCheck);
-    //     this.defaultPipeline.samples = sample;
-    //     this.defaultPipeline.fxaaEnabled = true;
-    //     // Make sure last frame use the best rendering quality
-    //     if (!this.limitSwitch) this.scene.render();
-    //     // console.log(frameBeforEnd, scaling, sample);
-    // }
-
     formerCameraLayerMask;
     checkEndQuality() {
         let width = this.engine.getRenderWidth();
