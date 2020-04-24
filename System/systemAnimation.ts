@@ -46,6 +46,12 @@ export class SystemAnimation extends System {
             this.setFocusBack();
         });
 
+        // Make sure we have the good camera when resize
+        window.addEventListener('resize', () => {
+            this.sendToStartListener();
+            this.checkStartQuality();
+        });
+
         this.qualityLayer = UtilityLayerRenderer.DefaultUtilityLayer;
         this.qualityLayer.shouldRender = false;
         this.qualityScene = this.qualityLayer.utilityLayerScene;
@@ -131,7 +137,7 @@ export class SystemAnimation extends System {
 
     checkStartQuality() {
         this.engine.setHardwareScalingLevel(1);
-        this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
+        if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
         if (this.layer1) this.layer1.dispose();
         if (this.layer2) this.layer2.dispose();
     }

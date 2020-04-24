@@ -47,11 +47,9 @@ export class TouchCatcher {
      * @ignore
      */
     _setTouchEvent() {
-        let count = 0;
         this._container.addEventListener("touchstart", (evt) => {
             this.touchStart.x = evt.changedTouches[0].clientX;
             this.touchStart.y = evt.changedTouches[0].clientY;
-            count = 0;
         });
         // Need test
         this._container.addEventListener("touchend", (evt) => {
@@ -63,14 +61,9 @@ export class TouchCatcher {
             if (this.touchStart) {
                 let x = evt.changedTouches[0].clientX;
                 let y = evt.changedTouches[0].clientY;
-                this.touchGap.x = (this.touchStart.x - x);
-                this.touchGap.y = (this.touchStart.y - y);
-                count++;
-                // if (count == 50) {
-                //     this.touchStart.x = x;
-                //     this.touchStart.y = y;
-                //     count = 0;
-                // }
+                // need to have bigger value to match with computer mouse sensitivity
+                this.touchGap.x = (this.touchStart.x - x) * 20;
+                this.touchGap.y = (this.touchStart.y - y) * 20;
                 this.sendToListener(this.touchGap, evt);
             }
         });
