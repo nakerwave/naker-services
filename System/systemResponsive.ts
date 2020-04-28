@@ -22,9 +22,10 @@ export class SystemResponsive extends System {
         // Call to launch the loop, initialize with and height of canvas plus make a first resize check
         this.setResizeContainerLoop();
 
-        window.addEventListener('resize', () => {
-            this.engine.resize();
-        });
+        // Useless bacause resize loop is already triggered
+        // window.addEventListener('resize', () => {
+        //     this.engine.resize();
+        // });
     }
 
     /**
@@ -44,11 +45,15 @@ export class SystemResponsive extends System {
     // window resize does not always work in some specific cases
     setResizeContainerLoop() {
         this.intervalLoop = setInterval(() => {
-            let sizeChanged = this.checkCanvasSize();
-            let platformChanged = false;
-            if (sizeChanged) platformChanged = this.checkPixelRatio();
-            if (sizeChanged || platformChanged) this.updateSize();
+            this.checkChange();
         }, this.sizeCheckInterval);
+    }
+
+    checkChange() {
+        let sizeChanged = this.checkCanvasSize();
+        let platformChanged = false;
+        if (sizeChanged) platformChanged = this.checkPixelRatio();
+        if (sizeChanged || platformChanged) this.updateSize();
     }
 
     checkCanvasSize(): boolean {
@@ -143,23 +148,15 @@ export class SystemResponsive extends System {
      */
     renderHeight = 100;
 
-    /**
-     * Width of the scene container
-     */
-    containerWidth = 100;
-
-    /**
-     * Height of the scene container
-     */
-    containerHeight = 100;
-
     updateSize() {
-        this.renderWidth = this.engine.getRenderWidth();
-        this.renderHeight = this.engine.getRenderHeight();
+        // Can't trust engine because qualitySystem will alter rending size 
+        // this.renderWidth = this.engine.getRenderWidth();
+        // this.renderHeight = this.engine.getRenderHeight();
 
-        this.containerWidth = this.renderWidth / this.pixelRatio;
-        this.containerHeight = this.renderHeight / this.pixelRatio;
-        this.containerRatio = this.containerWidth / this.containerHeight - 1;
+        this.renderWidth = this.canvasWidth * this.pixelRatio;
+        this.renderHeight = this.canvasHeight * this.pixelRatio;
+
+        this.containerRatio = this.renderWidth / this.renderHeight - 1;
         // Keep that for test purpose
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
@@ -181,7 +178,7 @@ export class SystemResponsive extends System {
     sendToResizeListener() {
         for (let i = 0; i < this.resizeListeners.length; i++) {
             // Clone to make sure there is not something which can alter real mouseCatch
-            this.resizeListeners[i](this.containerRatio, this.containerWidth, this.containerHeight, this.pixelRatio);
+            this.resizeListeners[i](this.containerRatio, this.canvasWidth, this.canvasHeight, this.pixelRatio);
         }
     }
 }
