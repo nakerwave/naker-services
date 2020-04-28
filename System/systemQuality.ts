@@ -39,16 +39,35 @@ export class SystemQuality extends SystemAnimation {
         //     this.engine.resize();
         // });
 
-        // Call to launch the loop, initialize with and height of canvas plus make a first resize check
-        this.setResizeContainerLoop();
-        this.checkPlatform();
-
         this.on('stop', () => {
             if (this.qualityAtBreak) this.checkEndQuality();
         });
 
         this.on('start', () => {
             if (this.qualityAtBreak) this.checkStartQuality();
+        });
+
+        this.on('resize', () => {
+            if (this.qualityBreakDone) {
+                this.checkStartQuality();
+                this.checkEndQuality();
+            }
+            
+            // if (this.qualityBreakDone) {
+            //     this.sendToStopListener();
+            //     this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
+            //     this.scene.render();
+
+            //     this.scene.activeCamera.layerMask = 0x0FFFFFFF;
+            //     this.getScreenshot((image2) => {
+            //         if (!this.qualityBreakStarted) return; // Check if animation restarted
+            //         this.layer2.dispose();
+            //         this.layer2 = this.addLayerImage(image2, () => {
+            //             if (!this.qualityBreakStarted) return; // Check if animation restarted
+            //             this.qualityLayer.render();
+            //         });
+            //     });
+            // }
         });
     }
 
@@ -61,7 +80,9 @@ export class SystemQuality extends SystemAnimation {
     firstFrameNumberCheck = 2;
 
     checkStartQuality() {
-        this.engine.setHardwareScalingLevel(1);
+        this.qualityBreakStarted = false;
+        this.qualityBreakDone = false;
+        this.engine.setHardwareScalingLevel(1 / this.pixelRatio);
         if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
         if (this.layer1) this.layer1.dispose();
         if (this.layer2) this.layer2.dispose();
@@ -90,64 +111,88 @@ export class SystemQuality extends SystemAnimation {
     // }
 
     formerCameraLayerMask;
+    qualityBreakStarted = false;
+    qualityBreakDone = false;
     checkEndQuality() {
-        let width = this.engine.getRenderWidth();
-        let height = this.engine.getRenderHeight();
-
+        this.qualityBreakStarted = true;
         // FIXME: Need timeout otherwise renderLoop will be called
         setTimeout(() => {
-            Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image1) => {
-                this.layer1 = new Layer('image1', image1, this.qualityScene, false);
-                this.layer1.color = new Color4(1, 1, 1, 1);
+            this.getScreenshot((image1) => {
+                if (!this.qualityBreakStarted) return; // Check if animation restarted
+                this.layer1 = this.addLayerImage(image1, () => {
+                    if (!this.qualityBreakStarted) return; // Check if animation restarted
+                    this.layer1.color = new Color4(1, 1, 1, 1);
 
-                // Check if layer ready to make sure layer is in front of the scene and avoid seiing HD rendering
-                let test = false;
-                this.layer1.onAfterRenderObservable.add(() => {
+                    this.engine.stopRenderLoop();
+                    this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
+                    this.scene.render();
+    
+                    // Camera can have a specific layerMask
+                    // Gui camera in story for instance
+                    this.formerCameraLayerMask = this.scene.activeCamera.layerMask;
+                    this.scene.activeCamera.layerMask = 0x0FFFFFFF;
                     
-                    if (!test) {
-                        test = true;
-                        this.engine.stopRenderLoop();
-                        this.engine.setHardwareScalingLevel(0.5);
-                        this.scene.render();
-
-                        // Camera can have a specific layerMask
-                        // Gui camera in story for instance
-                        this.formerCameraLayerMask = this.scene.activeCamera.layerMask;
-                        this.scene.activeCamera.layerMask = 0x0FFFFFFF;
-                        
-                        Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image2) => {
-                            this.layer1.render();
-                            this.layer2 = new Layer('image2', image2, this.qualityScene, false);
-                            this.layer2.color = new Color4(1, 1, 1, 0);
-        
-                            // Keep that if we need to check the result
-                            // let img1 = document.createElement('img');
-                            // document.body.append(img1);
-                            // img1.setAttribute('src', image1);
-                            // let img2 = document.createElement('img');
-                            // document.body.append(img2);
-                            // img2.setAttribute('src', image2);
-        
-                            var t = 0, change = 0.05;
-                            this.engine.runRenderLoop(() => {
-                                t += change;
-                                let a = Math.max(t, 0)
-                                a = Math.min(a, 1)
-                                this.layer1.color.a = 2 - a * 2;
-                                this.layer2.color.a = a * 2;
-                                
-                                this.qualityLayer.render();
-                                if (a == 1) this.engine.stopRenderLoop();
-                            });
+                    this.getScreenshot((image2) => {
+                        if (!this.qualityBreakStarted) return; // Check if animation restarted
+                        this.layer1.render();
+                        this.layer2 = this.addLayerImage(image2);
+                        this.layer2.color = new Color4(1, 1, 1, 0);
+    
+                        // Keep that if we need to check the result
+                        // let img1 = document.createElement('img');
+                        // document.body.append(img1);
+                        // img1.setAttribute('src', image1);
+                        // let img2 = document.createElement('img');
+                        // document.body.append(img2);
+                        // img2.setAttribute('src', image2);
+    
+                        var t = 0, change = 0.05;
+                        this.engine.runRenderLoop(() => {
+                            if (!this.qualityBreakStarted) return; // Check if animation restarted
+                            t += change;
+                            let a = Math.max(t, 0)
+                            a = Math.min(a, 1)
+                            this.layer1.color.a = 2 - a * 2;
+                            this.layer2.color.a = a * 2;
+                            
+                            this.qualityLayer.render();
+                            if (a == 1) {
+                                this.engine.stopRenderLoop();
+                                this.qualityBreakDone = true;
+                            }
                         });
-                    }
-                });
-
-                this.engine.runRenderLoop(() => {
-                    this.layer1.render();
+                    });
                 });
                 
             });
         }, 0);
+    }
+
+    getScreenshot(callback: Function) {
+        let width = this.engine.getRenderWidth();
+        let height = this.engine.getRenderHeight();
+        Tools.CreateScreenshot(this.engine, this.scene.activeCamera, { width: width, height: height }, (image) => {
+            callback(image);
+        });
+    }
+
+    addLayerImage(image: string, callback?: Function): Layer {
+        let layer = new Layer('image', image, this.qualityScene, false);
+
+        // Check if layer ready to make sure layer is in front of the scene and avoid seiing HD rendering
+        if (callback) {
+            let test = false;
+            layer.onAfterRenderObservable.add(() => {
+                if (!test) {
+                    test = true;
+                    callback();
+                }
+            });
+
+            this.engine.runRenderLoop(() => {
+                this.layer1.render();
+            });
+        }
+        return layer;
     }
 }

@@ -21,31 +21,10 @@ export class SystemResponsive extends System {
 
         // Call to launch the loop, initialize with and height of canvas plus make a first resize check
         this.setResizeContainerLoop();
-        this.checkPlatform();
-
-        this.engine.onResizeObservable.add(() => {
-            this.checkSize();
-        });
 
         window.addEventListener('resize', () => {
             this.engine.resize();
         });
-    }
-
-    /**
-    * Max Hardware scaling of BabylonJS Engine
-    */
-    maxScaling = 1;
-
-    isOnMobile = false;
-    checkPlatform() {
-        let isMobile = navigator.userAgent.toLowerCase().match(/mobile/i),
-            isTablet = navigator.userAgent.toLowerCase().match(/tablet/i),
-            isAndroid = navigator.userAgent.toLowerCase().match(/android/i),
-            isiPhone = navigator.userAgent.toLowerCase().match(/iphone/i),
-            isiPad = navigator.userAgent.toLowerCase().match(/ipad/i);
-        if (isMobile || isTablet || isAndroid || isiPhone || isiPad) this.isOnMobile = true;
-        else this.isOnMobile = false;
     }
 
     /**
@@ -65,16 +44,67 @@ export class SystemResponsive extends System {
     // window resize does not always work in some specific cases
     setResizeContainerLoop() {
         this.intervalLoop = setInterval(() => {
-            let newHeight, newWidth;
-            newWidth = this.canvas.offsetWidth;
-            newHeight = this.canvas.offsetHeight;
-            if (newWidth !== this.canvasWidth || newHeight !== this.canvasHeight) {
-                this.engine.resize();
-                this.scene.render();
-                this.canvasWidth = newWidth;
-                this.canvasHeight = newHeight
-            }
+            let sizeChanged = this.checkCanvasSize();
+            let platformChanged = false;
+            if (sizeChanged) platformChanged = this.checkPixelRatio();
+            if (sizeChanged || platformChanged) this.updateSize();
         }, this.sizeCheckInterval);
+    }
+
+    checkCanvasSize(): boolean {
+        let newHeight, newWidth;
+        newWidth = this.canvas.offsetWidth;
+        newHeight = this.canvas.offsetHeight;
+        if (newWidth !== this.canvasWidth || newHeight !== this.canvasHeight) {
+            this.canvasWidth = newWidth;
+            this.canvasHeight = newHeight
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+    * Max Hardware scaling of BabylonJS Engine
+    */
+    maxScaling = 1;
+
+    isOnMobile = false;
+
+    /**
+     * Scale between the scene size and the container size
+     */
+    pixelRatio = 1;
+
+    checkPixelRatio(): boolean {
+        let isMobile = navigator.userAgent.toLowerCase().match(/mobile/i),
+            isTablet = navigator.userAgent.toLowerCase().match(/tablet/i),
+            isAndroid = navigator.userAgent.toLowerCase().match(/android/i),
+            isiPhone = navigator.userAgent.toLowerCase().match(/iphone/i),
+            isiPad = navigator.userAgent.toLowerCase().match(/ipad/i);
+        if (isMobile || isTablet || isAndroid || isiPhone || isiPad) {
+            this.isOnMobile = true;
+            this.maxScaling = 2;
+        } else {
+            this.isOnMobile = false;
+            this.maxScaling = 1;
+        }
+
+        const devicePixelRatio = window.devicePixelRatio;
+
+        let newPixelRatio = Math.min(this.maxScaling, devicePixelRatio);
+        // We make sure scene stays fluid on big screen by forcing pixelRatio to 1
+        // console.log(newPixelRatio)
+        // console.log(this.renderWidth/newPixelRatio, this.renderHeight/newPixelRatio)
+        // if (this.renderWidth / newPixelRatio > 800 || this.renderHeight / newPixelRatio > 800) newPixelRatio = 1;
+        // setHardwareScalingLevel will call resize which call onResizeObservable which call checkPixelRatio
+        // So we make sure something has change inorder to avoid infinite loop
+        if (newPixelRatio != this.pixelRatio) {
+            this.pixelRatio = newPixelRatio;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -123,39 +153,18 @@ export class SystemResponsive extends System {
      */
     containerHeight = 100;
 
-    /**
-     * Scale between the scene size and the container size
-     */
-    renderScale = 1;
-
-    checkSize() {
+    updateSize() {
         this.renderWidth = this.engine.getRenderWidth();
         this.renderHeight = this.engine.getRenderHeight();
-        this.renderScale = 1 / this.engine.getHardwareScalingLevel();
-        // this.checkScaling();
-        this.containerWidth = this.renderWidth / this.renderScale;
-        this.containerHeight = this.renderHeight / this.renderScale;
+
+        this.containerWidth = this.renderWidth / this.pixelRatio;
+        this.containerHeight = this.renderHeight / this.pixelRatio;
         this.containerRatio = this.containerWidth / this.containerHeight - 1;
         // Keep that for test purpose
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
         this.sendToResizeListener();
-    }
-
-    checkScaling() {
-        const devicePixelRatio = window.devicePixelRatio;
-        let newScale = Math.min(this.maxScaling, devicePixelRatio);
-        // We make sure scene stays fluid on big screen by forcing renderScale to 1
-        // console.log(newScale)
-        // console.log(this.renderWidth/newScale, this.renderHeight/newScale)
-        if (this.renderWidth / newScale > 800 || this.renderHeight / newScale > 800) newScale = 1;
-        // setHardwareScalingLevel will call resize which call onResizeObservable which call checkScaling
-        // So we make sure something has change inorder to avoid infinite loop
-        if (newScale != this.renderScale) {
-            this.renderScale = newScale;
-            this.engine.setHardwareScalingLevel(1 / this.renderScale);
-        }
     }
 
     resizeListeners: Array<Function> = [];
@@ -172,7 +181,7 @@ export class SystemResponsive extends System {
     sendToResizeListener() {
         for (let i = 0; i < this.resizeListeners.length; i++) {
             // Clone to make sure there is not something which can alter real mouseCatch
-            this.resizeListeners[i](this.containerRatio, this.containerWidth, this.containerHeight, this.renderScale);
+            this.resizeListeners[i](this.containerRatio, this.containerWidth, this.containerHeight, this.pixelRatio);
         }
     }
 }
