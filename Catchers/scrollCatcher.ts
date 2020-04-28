@@ -1,4 +1,3 @@
-import { ResponsiveCatcher } from './ResponsiveCatcher';
 import { ProgressCatcher } from './progressCatcher';
 import { SystemAnimation } from '../System/systemAnimation';
 
@@ -30,14 +29,13 @@ export class ScrollCatcher extends ProgressCatcher {
     /**
      * Use to animate the catching
      * @param system System of the 3D scene
-     * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
-    constructor(system: SystemAnimation, container: HTMLElement, responsive: ResponsiveCatcher, touchCatcher: TouchCatcher) {
+    constructor(system: SystemAnimation, container: HTMLElement, touchCatcher: TouchCatcher) {
         super(system);
         this._container = container;
         this.system = system;
         
-        responsive.addListener(() => {
+        this.system.on('resize', () => {
             this.checkHeight();
         });
 

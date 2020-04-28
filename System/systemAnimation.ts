@@ -1,8 +1,8 @@
-import { System } from './system';
+import { SystemResponsive } from './systemResponsive';
 
 import remove from 'lodash/remove';
 
-export class SystemAnimation extends System {
+export class SystemAnimation extends SystemResponsive {
 
     fps = 60;
     fpsratio = 1;
@@ -168,9 +168,10 @@ export class SystemAnimation extends System {
     _beginListeners: Array<Function> = [];
     _endListeners: Array<Function> = [];
 
-    on(what: 'start' | 'stop' | 'begin' | 'end', funct: Function) {
+    on(what: 'start' | 'stop' | 'resize' | 'begin' | 'end', funct: Function) {
         if (what == 'start' || what == 'stop') this._onStartStop(what, funct);
-        else if (what == 'begin' || what == 'end') this._onBeginEnd(what, funct)
+        else if (what == 'resize') this._onResize(what, funct);
+        else if (what == 'begin' || what == 'end') this._onBeginEnd(what, funct);
     }
 
     _onBeginEnd(what: 'begin' | 'end', funct: Function) {

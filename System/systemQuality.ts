@@ -13,7 +13,7 @@ export class SystemQuality extends SystemAnimation {
     * Allow to improve quality depending on the device
     * Plus make a even better rendering when animation stop
     */
-   
+
     qualityLayer: UtilityLayerRenderer;
     layer1: Layer;
     layer2: Layer;
@@ -21,12 +21,6 @@ export class SystemQuality extends SystemAnimation {
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas, true);
-
-        // Make sure we have the good camera when resize
-        window.addEventListener('resize', () => {
-            this.sendToStartListener();
-            this.checkStartQuality();
-        });
 
         this.qualityLayer = UtilityLayerRenderer.DefaultUtilityLayer;
         this.qualityLayer.shouldRender = false;
@@ -36,6 +30,18 @@ export class SystemQuality extends SystemAnimation {
         // Be careful, thi.optimize function can make screenshot bug
         // this.scene.autoClear = false;
         // this.scene.autoClearDepthAndStencil = false;
+
+        // To avoid iphone flash on resize, we put resize here on every frame
+        // Don't worry resize will be calculated only when needed
+        // Actually it is called on every frame so not very performant
+        // Temporarely removed it in case it creates other issues
+        // this.scene.registerBeforeRender(() => {
+        //     this.engine.resize();
+        // });
+
+        // Call to launch the loop, initialize with and height of canvas plus make a first resize check
+        this.setResizeContainerLoop();
+        this.checkPlatform();
 
         this.on('stop', () => {
             if (this.qualityAtBreak) this.checkEndQuality();
@@ -144,5 +150,4 @@ export class SystemQuality extends SystemAnimation {
             });
         }, 0);
     }
-
 }
