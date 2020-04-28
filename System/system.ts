@@ -247,19 +247,19 @@ export class System {
     */
     _startListeners: Array<Function> = [];
     _stopListeners: Array<Function> = [];
-    _beginListeners: Array<Function> = [];
-    _endListeners: Array<Function> = [];
 
     /**
      * Allow to add a listener on special events
      * @param what the event: start or stop
      * @param funct the function to be called at the event
      */
-    on(what: 'start' | 'stop' | 'begin' | 'end', funct: Function) {
+    on(what: 'start' | 'stop', funct: Function) {
+        this._onStartStop(what, funct)
+    }
+
+    _onStartStop(what: 'start' | 'stop', funct: Function) {
         if (what == 'start') this._startListeners.push(funct);
         else if (what == 'stop') this._stopListeners.push(funct);
-        else if (what == 'begin') this._beginListeners.push(funct);
-        else if (what == 'end') this._endListeners.push(funct);
     }
 
     sendToStartListener() {
@@ -273,20 +273,6 @@ export class System {
         for (let i = 0; i < this._stopListeners.length; i++) {
             // Clone to make sure there is not something which can alter real mouseCatch
             this._stopListeners[i]();
-        }
-    }
-
-    sendToBeginListener(frameSinceStarted: number) {
-        for (let i = 0; i < this._beginListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._beginListeners[i](frameSinceStarted);
-        }
-    }
-
-    sendToEndListener(frameBeforeEnd: number) {
-        for (let i = 0; i < this._endListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._endListeners[i](frameBeforeEnd);
         }
     }
 }

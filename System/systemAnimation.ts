@@ -164,6 +164,33 @@ export class SystemAnimation extends System {
             this.checkStopRender();
         }, time? time : 20);
     }
+
+    _beginListeners: Array<Function> = [];
+    _endListeners: Array<Function> = [];
+
+    on(what: 'start' | 'stop' | 'begin' | 'end', funct: Function) {
+        if (what == 'start' || what == 'stop') this._onStartStop(what, funct);
+        else if (what == 'begin' || what == 'end') this._onBeginEnd(what, funct)
+    }
+
+    _onBeginEnd(what: 'begin' | 'end', funct: Function) {
+        if (what == 'begin') this._beginListeners.push(funct);
+        else if (what == 'end') this._endListeners.push(funct);
+    }
+
+    sendToBeginListener(frameSinceStarted: number) {
+        for (let i = 0; i < this._beginListeners.length; i++) {
+            // Clone to make sure there is not something which can alter real mouseCatch
+            this._beginListeners[i](frameSinceStarted);
+        }
+    }
+
+    sendToEndListener(frameBeforeEnd: number) {
+        for (let i = 0; i < this._endListeners.length; i++) {
+            // Clone to make sure there is not something which can alter real mouseCatch
+            this._endListeners[i](frameBeforeEnd);
+        }
+    }
 }
 
 
