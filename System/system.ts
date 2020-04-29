@@ -64,6 +64,10 @@ export class System {
         this.scene = new Scene(this.engine);
         this.scene.shadowsEnabled = false;
         this.scene.ambientColor = new Color3(1, 1, 1);
+
+        // Avoid automatic pick and improve performance
+        // Can't use it now as it breaks GUI events
+        // this.scene.detachControl();
     }
 
     /**
@@ -181,10 +185,14 @@ export class System {
      * Optimize scene to make rendering faster
      * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
+    otimized = false;
     optimize() {
+        this.otimized = true;
         this.scene.autoClear = false; // Color buffer
         this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
 
+        // this.scene.clearCachedVertexData();
+        // this.scene.cleanCachedTextureBuffer();
         // let activeTest = 0;
         // this.scene.registerBeforeRender(() => {
         //     activeTest++;
@@ -201,6 +209,7 @@ export class System {
      * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
     unOptimize() {
+        this.otimized = false;
         this.scene.autoClear = true; // Color buffer
         this.scene.autoClearDepthAndStencil = true; // Depth and stencil, obviously
     }
@@ -229,6 +238,11 @@ export class System {
         // this.scene.blockMaterialDirtyMechanism = false;
         // this.scene.setRenderingAutoClearDepthStencil(renderingGroupIdx, autoClear, depth, stencil);
         this.setLimitFPS(false);
+    }
+
+    checkActiveMeshes() {
+        this.scene.unfreezeActiveMeshes();
+        this.scene.freezeActiveMeshes();
     }
 
     limitFPS = false;

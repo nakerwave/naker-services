@@ -39,7 +39,7 @@ export class SystemResponsive extends System {
     canvasHeight = 100;
 
     intervalLoop;
-    sizeCheckInterval = 100;
+    sizeCheckInterval = 500;
 
     // Only way to make sure the scene is always fitted with the container is to have a timer checking for changes
     // window resize does not always work in some specific cases
