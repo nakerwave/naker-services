@@ -113,6 +113,30 @@ export class SystemResponsive extends System {
     }
 
     /**
+     * Get thecurrent browser
+     */
+    browser: string;
+    getBrowser(): string {
+        var nav = navigator.userAgent;
+        if ((nav.indexOf("Opera") || nav.indexOf('OPR')) != -1) {
+            this.browser = 'Opera';
+        } else if (nav.indexOf("Edge") != -1) {
+            this.browser = 'Edge';
+        } else if (nav.indexOf("Chrome") != -1) {
+            this.browser = 'Chrome';
+        } else if (nav.indexOf("Safari") != -1) {
+            this.browser = 'Safari';
+        } else if (nav.indexOf("Firefox") != -1) {
+            this.browser = 'Firefox';
+        } else if ((nav.indexOf("MSIE") != -1) || (!!document.documentMode == true)) {
+            this.browser = 'IE';
+        } else {
+            this.browser = 'unknown';
+        }
+        return this.browser;
+    }
+
+    /**
      * Should the catcher change Scene field of view to adapt to screen size
      */
     horizontalFixed = false;
