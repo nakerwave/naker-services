@@ -257,9 +257,9 @@ export class System {
         this._onStartStop(what, funct)
     }
 
-    _onStartStop(what: 'start' | 'stop', funct: Function) {
-        if (what == 'start') this._startListeners.push(funct);
-        else if (what == 'stop') this._stopListeners.push(funct);
+    _onStartStop(what: 'start' | 'stop', funct: Function, before?: boolean) {
+        if (what == 'start') this.addListenerToArray(this._startListeners, funct, before);
+        else if (what == 'stop') this.addListenerToArray(this._stopListeners, funct, before);
     }
 
     sendToStartListener() {
@@ -274,5 +274,10 @@ export class System {
             // Clone to make sure there is not something which can alter real mouseCatch
             this._stopListeners[i]();
         }
+    }
+
+    addListenerToArray(arr: Array<Function>, funct: Function, before?: boolean) {
+        if (before) arr.unshift(funct);
+        else arr.push(funct);
     }
 }

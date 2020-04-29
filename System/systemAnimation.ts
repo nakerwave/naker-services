@@ -168,15 +168,15 @@ export class SystemAnimation extends SystemResponsive {
     _beginListeners: Array<Function> = [];
     _endListeners: Array<Function> = [];
 
-    on(what: 'start' | 'stop' | 'resize' | 'begin' | 'end', funct: Function) {
-        if (what == 'start' || what == 'stop') this._onStartStop(what, funct);
-        else if (what == 'resize') this._onResize(what, funct);
-        else if (what == 'begin' || what == 'end') this._onBeginEnd(what, funct);
+    on(what: 'start' | 'stop' | 'resize' | 'begin' | 'end', funct: Function, before?: boolean) {
+        if (what == 'start' || what == 'stop') this._onStartStop(what, funct, before);
+        else if (what == 'resize') this._onResize(what, funct, before);
+        else if (what == 'begin' || what == 'end') this._onBeginEnd(what, funct, before);
     }
 
-    _onBeginEnd(what: 'begin' | 'end', funct: Function) {
-        if (what == 'begin') this._beginListeners.push(funct);
-        else if (what == 'end') this._endListeners.push(funct);
+    _onBeginEnd(what: 'begin' | 'end', funct: Function, before?: boolean) {
+        if (what == 'begin') this.addListenerToArray(this._beginListeners, funct, before);
+        else if (what == 'end') this.addListenerToArray(this._endListeners, funct, before);
     }
 
     sendToBeginListener(frameSinceStarted: number) {

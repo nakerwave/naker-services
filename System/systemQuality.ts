@@ -25,19 +25,11 @@ export class SystemQuality extends SystemAnimation {
         this.qualityLayer = UtilityLayerRenderer.DefaultUtilityLayer;
         this.qualityLayer.shouldRender = false;
         this.qualityScene = this.qualityLayer.utilityLayerScene;
-        this.qualityScene.autoClearDepthAndStencil = true;
+        this.qualityScene.autoClearDepthAndStencil = false;
 
         // Be careful, thi.optimize function can make screenshot bug
         // this.scene.autoClear = false;
         // this.scene.autoClearDepthAndStencil = false;
-
-        // To avoid iphone flash on resize, we put resize here on every frame
-        // Don't worry resize will be calculated only when needed
-        // Actually it is called on every frame so not very performant
-        // Temporarely removed it in case it creates other issues
-        // this.scene.registerBeforeRender(() => {
-        //     this.engine.resize();
-        // });
 
         this.on('stop', () => {
             if (this.qualityAtBreak) this.checkEndQuality();
@@ -48,26 +40,26 @@ export class SystemQuality extends SystemAnimation {
         });
 
         this.on('resize', () => {
-            if (this.qualityBreakDone) {
-                this.checkStartQuality();
-                this.checkEndQuality();
-            }
-            
             // if (this.qualityBreakDone) {
-            //     this.sendToStopListener();
-            //     this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
-            //     this.scene.render();
-
-            //     this.scene.activeCamera.layerMask = 0x0FFFFFFF;
-            //     this.getScreenshot((image2) => {
-            //         if (!this.qualityBreakStarted) return; // Check if animation restarted
-            //         this.layer2.dispose();
-            //         this.layer2 = this.addLayerImage(image2, () => {
-            //             if (!this.qualityBreakStarted) return; // Check if animation restarted
-            //             this.qualityLayer.render();
-            //         });
-            //     });
+            //     this.checkStartQuality();
+            //     this.checkEndQuality();
             // }
+            
+            if (this.qualityBreakDone) {
+                if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
+                this.engine.resize();
+                this.scene.render();
+                this.scene.activeCamera.layerMask = 0x0FFFFFFF;
+
+                this.getScreenshot((image2) => {
+                    if (!this.qualityBreakStarted) return; // Check if animation restarted
+                    this.layer2.dispose();
+                    this.layer2 = this.addLayerImage(image2, () => {
+                        if (!this.qualityBreakStarted) return; // Check if animation restarted
+                        this.qualityLayer.render();
+                    });
+                });
+            }
         });
     }
 
@@ -86,6 +78,7 @@ export class SystemQuality extends SystemAnimation {
         if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
         if (this.layer1) this.layer1.dispose();
         if (this.layer2) this.layer2.dispose();
+        this.scene.render();
     }
 
     // Test to slowy hide layer
@@ -117,6 +110,7 @@ export class SystemQuality extends SystemAnimation {
         this.qualityBreakStarted = true;
         // FIXME: Need timeout otherwise renderLoop will be called
         setTimeout(() => {
+            this.engine.stopRenderLoop();
             this.getScreenshot((image1) => {
                 if (!this.qualityBreakStarted) return; // Check if animation restarted
                 this.layer1 = this.addLayerImage(image1, () => {
@@ -126,7 +120,8 @@ export class SystemQuality extends SystemAnimation {
                     this.engine.stopRenderLoop();
                     this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
                     this.scene.render();
-    
+                    this.qualityLayer.render();
+
                     // Camera can have a specific layerMask
                     // Gui camera in story for instance
                     this.formerCameraLayerMask = this.scene.activeCamera.layerMask;
@@ -134,10 +129,10 @@ export class SystemQuality extends SystemAnimation {
                     
                     this.getScreenshot((image2) => {
                         if (!this.qualityBreakStarted) return; // Check if animation restarted
-                        this.layer1.render();
                         this.layer2 = this.addLayerImage(image2);
                         this.layer2.color = new Color4(1, 1, 1, 0);
-    
+                        this.qualityLayer.render();
+
                         // Keep that if we need to check the result
                         // let img1 = document.createElement('img');
                         // document.body.append(img1);

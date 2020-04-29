@@ -128,7 +128,7 @@ export class SystemResponsive extends System {
                 const camera = this.scene.activeCameras[i];
                 camera.fovMode = fovMode;
             }
-        } else {
+        } else if (this.scene.activeCamera) {
             this.scene.activeCamera.fovMode = fovMode;
         }
     }
@@ -164,21 +164,21 @@ export class SystemResponsive extends System {
         this.sendToResizeListener();
     }
 
-    resizeListeners: Array<Function> = [];
+    _resizeListeners: Array<Function> = [];
 
     on(what: 'start' | 'stop' | 'resize', funct: Function) {
         if (what == 'start' || what == 'stop') this._onStartStop(what, funct);
         else if (what == 'resize') this._onResize(what, funct);
     }
 
-    _onResize(what: 'resize', funct: Function) {
-        this.resizeListeners.push(funct);
+    _onResize(what: 'resize', funct: Function, before?: boolean) {
+        this.addListenerToArray(this._resizeListeners, funct, before);
     }
 
     sendToResizeListener() {
-        for (let i = 0; i < this.resizeListeners.length; i++) {
+        for (let i = 0; i < this._resizeListeners.length; i++) {
             // Clone to make sure there is not something which can alter real mouseCatch
-            this.resizeListeners[i](this.containerRatio, this.canvasWidth, this.canvasHeight, this.pixelRatio);
+            this._resizeListeners[i](this.containerRatio, this.canvasWidth, this.canvasHeight, this.pixelRatio);
         }
     }
 }
