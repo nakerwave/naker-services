@@ -1,5 +1,3 @@
-import remove from 'lodash/remove';
-
 /**
  * Specifies all the events possible
  */
@@ -32,8 +30,8 @@ export class NakerObservable<T> {
         this.on(EventsName.Progress, funct, first);
     }
 
-    removeListener(funct: (eventData: T) => void) {
-        this.off(EventsName.Progress, funct);
+    removeListener(funct: (eventData: T) => void): boolean {
+        return this.off(EventsName.Progress, funct);
     }
 
     sendToListener(eventData: T) {
@@ -44,6 +42,7 @@ export class NakerObservable<T> {
      * Allow to add a listener on special events
      * @param what the event: start or stop and mouseWheel for now
      * @param funct the function to be called at the event
+     * Do not use anonymous function or you won't be able to remove it
      */
     on(eventName: EventsName, funct: (eventData: T) => void, first?: boolean) {
         if (this.hasObserver(eventName, funct)) return;
@@ -59,14 +58,21 @@ export class NakerObservable<T> {
         }
     }
 
-    off(eventName: EventsName, funct: (eventData: T) => void) {
-        remove(this.observers, (obs) => { return obs.funct == funct && obs.eventName == eventName });
+    off(eventName: EventsName, funct: (eventData: T) => void): boolean {
+        for (var obs of this.observers) {
+            if (obs.eventName === eventName && obs.funct === funct) {
+                var index = this.observers.indexOf(obs);
+                if (index !== -1) {
+                    this.observers.splice(index, 1);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     notify(eventName: EventsName, eventData: T) {
         for (var obs of this.observers) {
-            // console.log(obs.eventName, eventName, obs.eventName && eventName && obs.eventName === eventName);
-            
             if (obs.eventName === eventName) {
                 obs.funct(eventData);
             }
@@ -81,7 +87,7 @@ export class NakerObservable<T> {
 
     hasObserver(eventName: EventsName, funct: (eventData: T) => void) {
         for (var obs of this.observers) {
-            if (obs.funct == funct && obs.eventName == eventName) return true;
+            if (obs.funct === funct && obs.eventName === eventName) return true;
         }
         return false;
     }
