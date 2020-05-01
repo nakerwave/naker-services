@@ -1,14 +1,19 @@
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
+import { NakerObservable, EventsName } from '../Tools/observable';
 
 import { EasingFunction, CubicEase } from '@babylonjs/core/Animations/easing';
-import remove from 'lodash/remove';
+
+interface ProgressEventData {
+    progress: number,
+    remain: number,
+}
 
 /**
  * Detect progress action of the user
  */
 
-export class ProgressCatcher {
+export class ProgressCatcher extends NakerObservable<ProgressEventData> {
 
     /**
     * @ignore
@@ -51,6 +56,7 @@ export class ProgressCatcher {
      * @param responsive If there is responsive changes, we may have to adapt progress height
      */
     constructor(system: SystemAnimation) {
+        super();
         this.key = Math.random().toString(36);
         this.animation = new Animation(system, 10);
         this.curve = new CubicEase();
@@ -89,17 +95,8 @@ export class ProgressCatcher {
     _start() {
         this.catching = true;
         this.catch(this.progressReal, this.speed);
-        this.sendToListsteners();
-        this.sendStartToListeners();
-    }
-
-    /**
-     * Send start event to listeners
-     */
-    sendStartToListeners() {
-        for (let i = 0; i < this._startListeners.length; i++) {
-            this._startListeners[i]();
-        }
+        this.notify(EventsName.Progress, {progress: 0, remain: 0});
+        this.notify(EventsName.Start, {progress: 0, remain: 0});
     }
 
     /**
@@ -115,38 +112,7 @@ export class ProgressCatcher {
     _stop() {
         this.animation.stop();
         this.catching = false;
-        this.sendStopToListeners();
-    }
-
-    /**
-     * Send stop event to listeners
-     */
-    sendStopToListeners() {
-        for (let i = 0; i < this._stopListeners.length; i++) {
-            this._stopListeners[i]();
-        }
-    }
-
-    /**
-     * List of progress start listeners
-     * @ignore
-     */
-    _startListeners: Array<Function> = [];
-
-    /**
-     * List of progress stop listeners
-     * @ignore
-     */
-    _stopListeners: Array<Function> = [];
-
-    /**
-     * Allow to add a listener on special events
-     * @param what the event: start or stop and mouseWheel for now
-     * @param funct the function to be called at the event
-     */
-    on(what: 'start' | 'stop', funct: Function) {
-        if (what == 'start') this._startListeners.push(funct);
-        else if (what == 'stop') this._stopListeners.push(funct);
+        this.notify(EventsName.Stop, { progress: this.progressCatch, remain: 0 });
     }
 
     /**
@@ -174,14 +140,14 @@ export class ProgressCatcher {
      * @param speed At what speed should we catch the new position (used when accelarating to new step for instance)
      */
     catch(progress: number, speed?: number, callback?:Function) {
-        // Sometimes on iphone, perc can go below 0
-        if (this.listeners.length == 0) return;
+        if (!this.hasObservers()) return;
         if (!progress) progress = 0;
         let catchSpeed = (speed) ? speed : this.speed;
         // Bigger speed will make percentage go behind 100%
         catchSpeed = Math.min(0.1, catchSpeed);
-
+        
         if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
+        // Sometimes on iphone, perc can go below 0
         progress = this.checkBorderProgress(progress);
         this.progressReal = progress;
         this.lastSpeed = catchSpeed;
@@ -197,7 +163,8 @@ export class ProgressCatcher {
             percEased = this.checkBorderProgress(percEased);
             this.progressCatch = progressStart + progressChange * percEased;
             this.progressGap = this.progressReal - this.progressCatch;
-            this.sendToListsteners();
+            
+            this.notify(EventsName.Progress, { progress: this.progressCatch, remain: this.progressGap });
         }, () => {
             if (callback) callback();
         });
@@ -207,34 +174,5 @@ export class ProgressCatcher {
         progress = Math.max(0, progress);
         progress = Math.min(1, progress);
         return progress;
-    }
-
-    /**
-      * Send progress change data to listeners
-     */
-    sendToListsteners() {
-        for (let i = 0; i < this.listeners.length; i++) {
-            this.listeners[i](this.progressCatch, this.progressGap);
-        }
-    }
-
-    /**
-     * List of all functions following the progress position
-     * @ignore
-     */
-    listeners: Array<Function> = [];
-
-    /**
-     * Add a new listener which will get the catching progress position
-     */
-    addListener(callback: Function) {
-        this.listeners.push(callback);
-    }
-
-    /**
-     * Remove a listener to stop following progress
-     */
-    removeListener(callback: Function) {
-        remove(this.listeners, (c) => { c == callback });
     }
 }

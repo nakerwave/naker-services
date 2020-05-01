@@ -6,6 +6,7 @@ import { Layer } from '@babylonjs/core/Layers/layer';
 import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilitylayerRenderer';
 import { Color4 } from '@babylonjs/core/Maths/math';
 import { Scene } from '@babylonjs/core/scene';
+import { EventsName } from '../Tools/observable';
 
 export class SystemQuality extends SystemAnimation {
 
@@ -31,15 +32,15 @@ export class SystemQuality extends SystemAnimation {
         // this.scene.autoClear = false;
         // this.scene.autoClearDepthAndStencil = false;
 
-        this.on('stop', () => {
+        this.on(EventsName.Stop, () => {
             if (this.qualityAtBreak) this.checkEndQuality();
         });
 
-        this.on('start', () => {
+        this.on(EventsName.Start, () => {
             if (this.qualityAtBreak) this.checkStartQuality();
         });
 
-        this.on('resize', () => {
+        this.on(EventsName.Resize, () => {
             // if (this.qualityBreakDone) {
             //     this.checkStartQuality();
             //     this.checkEndQuality();

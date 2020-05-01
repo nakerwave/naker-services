@@ -1,6 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
+import { NakerObservable, EventsName } from '../Tools/observable';
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -8,7 +9,7 @@ import { Color3 } from '@babylonjs/core/Maths/math';
  * The system is really important as it is often sent in every other class created to manage core assets
  */
 
-export class System {
+export class System extends NakerObservable<number> {
 
     /**
     * Max Hardware scaling of BabylonJS Engine
@@ -35,6 +36,7 @@ export class System {
      * @param canvas Element where the scene will be drawn
      */
     constructor(canvas: HTMLCanvasElement, screenshot?:boolean) {
+        super();
         // if (!Engine.isSupported()) throw 'WebGL not supported';
         this.canvas = canvas;
         // For now keep false as the last argument of the engine,
@@ -150,7 +152,7 @@ export class System {
     pauseRender() {
         if (!this.rendering) return;
         // console.log('stop');
-        this.sendToStopListener();
+        this.notify(EventsName.Stop, 0);
         this.rendering = false;
         this.engine.stopRenderLoop();
         this.scene.render();
@@ -167,7 +169,7 @@ export class System {
     
     forceRender() {
         // console.log('start');
-        this.sendToStartListener();
+        this.notify(EventsName.Start, 0);
         this.engine.stopRenderLoop();        
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
@@ -253,45 +255,5 @@ export class System {
         if (limitFPS == this.limitFPS) return;
         this.limitFPS = limitFPS;
         if (this.rendering) this.forceRender();
-    }
-
-    /**
-    * Allow to add a listener on special events
-    * @ignore
-    */
-    _startListeners: Array<Function> = [];
-    _stopListeners: Array<Function> = [];
-
-    /**
-     * Allow to add a listener on special events
-     * @param what the event: start or stop
-     * @param funct the function to be called at the event
-     */
-    on(what: 'start' | 'stop', funct: Function) {
-        this._onStartStop(what, funct)
-    }
-
-    _onStartStop(what: 'start' | 'stop', funct: Function, before?: boolean) {
-        if (what == 'start') this.addListenerToArray(this._startListeners, funct, before);
-        else if (what == 'stop') this.addListenerToArray(this._stopListeners, funct, before);
-    }
-
-    sendToStartListener() {
-        for (let i = 0; i < this._startListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._startListeners[i]();
-        }
-    }
-
-    sendToStopListener() {
-        for (let i = 0; i < this._stopListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._stopListeners[i]();
-        }
-    }
-
-    addListenerToArray(arr: Array<Function>, funct: Function, before?: boolean) {
-        if (before) arr.unshift(funct);
-        else arr.push(funct);
     }
 }

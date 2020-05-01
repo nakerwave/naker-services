@@ -1,10 +1,18 @@
+
+import { NakerObservable } from '../Tools/observable';
+
 import { Vector2 } from '@babylonjs/core/Maths/math';
+
+interface TouchEventData {
+    change: Vector2,
+    event: Event,
+}
 
 /**
  * Detect scroll action of the user
  */
 
-export class TouchCatcher {
+export class TouchCatcher extends NakerObservable<TouchEventData> {
 
     /**
      * @ignore
@@ -27,6 +35,7 @@ export class TouchCatcher {
      * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
     constructor(container: HTMLElement) {
+        super();
         this._container = container;
 
         this._setTouchEvent();
@@ -55,7 +64,7 @@ export class TouchCatcher {
         this._container.addEventListener("touchend", (evt) => {
             this.touchStart = Vector2.Zero();
             this.touchGap = Vector2.Zero();
-            this.sendToListener(this.touchGap, evt);
+            this.notifyAll({change: this.touchGap.clone(), event: evt});
         });
         this._container.addEventListener("touchmove", (evt) => {
             if (this.touchStart) {
@@ -64,30 +73,8 @@ export class TouchCatcher {
                 // need to have bigger value to match with computer mouse sensitivity
                 this.touchGap.x = (this.touchStart.x - x) * 20;
                 this.touchGap.y = (this.touchStart.y - y) * 20;
-                this.sendToListener(this.touchGap, evt);
+                this.notifyAll({change: this.touchGap.clone(), event: evt});
             }
         });
-    }
-
-    listeners: Array<Function> = []
-
-    /**
-     * Allow to add a listener on special events
-     * @param what the event: start or stop and mouseWheel for now
-     * @param funct the function to be called at the event
-     */
-    addListener(funct: Function) {
-        this.listeners.push(funct);
-    }
-
-    /**
-    * Catch the percentage of the scrollHeight
-    * @param perc What is the top position to be catched
-    */
-    sendToListener(change: Vector2, evt: Event) {
-        for (let i = 0; i < this.listeners.length; i++) {
-            this.listeners[i](change, evt);
-            
-        }
     }
 }

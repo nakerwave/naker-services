@@ -1,9 +1,10 @@
 import { ProgressCatcher } from './progressCatcher';
 import { SystemAnimation } from '../System/systemAnimation';
-
-import { Vector2 } from '@babylonjs/core/Maths/math';
-import { setStyle } from 'redom';
 import { TouchCatcher } from './touchCatcher';
+import { EventsName } from '../Tools/observable';
+
+import { setStyle } from 'redom';
+
 
 /**
  * Detect scroll action of the user
@@ -35,7 +36,7 @@ export class ScrollCatcher extends ProgressCatcher {
         this._container = container;
         this.system = system;
         
-        this.system.on('resize', () => {
+        this.system.on(EventsName.Resize, () => {
             this.checkHeight();
         });
 
@@ -151,7 +152,9 @@ export class ScrollCatcher extends ProgressCatcher {
      * @ignore
      */
     _setMobileDragEvent(touchCatcher: TouchCatcher) {
-        touchCatcher.addListener((change: Vector2, evt) => {
+        touchCatcher.addListener((touchEvent) => {
+            let change = touchEvent.change;
+            let evt = touchEvent.event;
             this.checkPreventBodyScroll(evt, change.y);
             if (Math.abs(change.x) < Math.abs(change.y)) {
                 let top = this.progressReal * this.scrollHeight + change.y/100;
@@ -214,25 +217,9 @@ export class ScrollCatcher extends ProgressCatcher {
             let top = this.progressReal * this.scrollHeight;
             this.catchTop(top);
         }
-        this.sendToListsteners();
-        this.sendStartToListeners();
-    }
 
-    /**
-    * Allow to add a listener on special events
-    * @ignore
-    */
-    _mouseWheelListeners: Array<Function> = [];
-
-    /**
-     * Allow to add a listener on special events
-     * @param what the event: start or stop and mouseWheel for now
-     * @param funct the function to be called at the event
-     */
-    on(what: 'start' | 'stop' | 'mouseWheel', funct: Function) {
-        if (what == 'start') this._startListeners.push(funct);
-        else if (what == 'stop') this._stopListeners.push(funct);
-        else if (what == 'mouseWheel') this._mouseWheelListeners.push(funct);
+        this.notify(EventsName.Progress, { progress: this.progressCatch, remain: this.progressGap });
+        this.notify(EventsName.Start, { progress: this.progressCatch, remain: this.progressGap });
     }
 
     scrollEvent(top: number) {
@@ -247,9 +234,7 @@ export class ScrollCatcher extends ProgressCatcher {
     mouseWheelEvent(evt: MouseEvent, top: number) {
         if (this.followWindowScroll) return;
         this.checkPreventComputerScroll(evt);
-        for (let i = 0; i < this._mouseWheelListeners.length; i++) {
-            this._mouseWheelListeners[i]();
-        }
+        this.notify(EventsName.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
         if (this.catching) this.catchTop(top);
     }
 

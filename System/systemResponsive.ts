@@ -1,6 +1,7 @@
 import { System } from './system';
 
 import { Camera } from '@babylonjs/core/Cameras/camera';
+import { EventsName } from '../Tools/observable';
 
 export class SystemResponsive extends System {
 
@@ -185,24 +186,7 @@ export class SystemResponsive extends System {
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
-        this.sendToResizeListener();
-    }
 
-    _resizeListeners: Array<Function> = [];
-
-    on(what: 'start' | 'stop' | 'resize', funct: Function) {
-        if (what == 'start' || what == 'stop') this._onStartStop(what, funct);
-        else if (what == 'resize') this._onResize(what, funct);
-    }
-
-    _onResize(what: 'resize', funct: Function, before?: boolean) {
-        this.addListenerToArray(this._resizeListeners, funct, before);
-    }
-
-    sendToResizeListener() {
-        for (let i = 0; i < this._resizeListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._resizeListeners[i](this.containerRatio, this.canvasWidth, this.canvasHeight, this.pixelRatio);
-        }
+        this.notify(EventsName.Resize, 0);
     }
 }

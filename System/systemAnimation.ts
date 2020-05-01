@@ -1,6 +1,7 @@
 import { SystemResponsive } from './systemResponsive';
 
 import remove from 'lodash/remove';
+import { EventsName } from '../Tools/observable';
 
 export class SystemAnimation extends SystemResponsive {
 
@@ -33,7 +34,7 @@ export class SystemAnimation extends SystemResponsive {
     forceRender() {
         // console.log('start');
         this.frameSinceStarted = 0;
-        this.sendToStartListener();
+        this.notify(EventsName.Start, 0);
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
@@ -52,7 +53,7 @@ export class SystemAnimation extends SystemResponsive {
     pauseRender() {
         if (!this.rendering) return;
         // console.log('stop');
-        this.sendToStopListener();
+        this.notify(EventsName.Stop, 0);
         this.rendering = false;
         this.engine.stopRenderLoop();
     }
@@ -82,8 +83,8 @@ export class SystemAnimation extends SystemResponsive {
 
         // We avoid sending start and end at the same time
         this.frameSinceStarted++;
-        if (this.frameBeforeEnd < this.lastFrameNumberCheck) this.sendToEndListener(this.frameBeforeEnd);
-        else if (this.frameSinceStarted < this.firstFrameNumberCheck) this.sendToBeginListener(this.frameSinceStarted);
+        if (this.frameBeforeEnd < this.lastFrameNumberCheck) this.notify(EventsName.End, this.frameBeforeEnd);
+        else if (this.frameSinceStarted < this.firstFrameNumberCheck) this.notify(EventsName.Begin, this.frameSinceStarted);
     }
 
     lastFrameNumberCheck = 20;
@@ -163,34 +164,6 @@ export class SystemAnimation extends SystemResponsive {
         setTimeout(() => {
             this.checkStopRender();
         }, time? time : 20);
-    }
-
-    _beginListeners: Array<Function> = [];
-    _endListeners: Array<Function> = [];
-
-    on(what: 'start' | 'stop' | 'resize' | 'begin' | 'end', funct: Function, before?: boolean) {
-        if (what == 'start' || what == 'stop') this._onStartStop(what, funct, before);
-        else if (what == 'resize') this._onResize(what, funct, before);
-        else if (what == 'begin' || what == 'end') this._onBeginEnd(what, funct, before);
-    }
-
-    _onBeginEnd(what: 'begin' | 'end', funct: Function, before?: boolean) {
-        if (what == 'begin') this.addListenerToArray(this._beginListeners, funct, before);
-        else if (what == 'end') this.addListenerToArray(this._endListeners, funct, before);
-    }
-
-    sendToBeginListener(frameSinceStarted: number) {
-        for (let i = 0; i < this._beginListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._beginListeners[i](frameSinceStarted);
-        }
-    }
-
-    sendToEndListener(frameBeforeEnd: number) {
-        for (let i = 0; i < this._endListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._endListeners[i](frameBeforeEnd);
-        }
     }
 }
 
