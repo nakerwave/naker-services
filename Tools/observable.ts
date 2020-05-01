@@ -46,6 +46,7 @@ export class NakerObservable<T> {
      * @param funct the function to be called at the event
      */
     on(eventName: EventsName, funct: (eventData: T) => void, first?: boolean) {
+        if (this.hasObserver(eventName, funct)) return;
         let newObserver = {
             funct: funct,
             eventName: eventName
@@ -78,14 +79,21 @@ export class NakerObservable<T> {
         }
     }
 
-    public hasObservers(): boolean {
+    hasObserver(eventName: EventsName, funct: (eventData: T) => void) {
+        for (var obs of this.observers) {
+            if (obs.funct == funct && obs.eventName == eventName) return true;
+        }
+        return false;
+    }
+
+    hasObservers(): boolean {
         return this.observers.length > 0;
     }
 
     /**
     * Clear the list of observers
     */
-    public clear(): void {
+    clear(): void {
         this.observers = new Array<Observer>();
     }
 
