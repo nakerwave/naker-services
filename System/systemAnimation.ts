@@ -28,7 +28,6 @@ export class SystemAnimation extends SystemResponsive {
         window.addEventListener("blur", () => {
             this.setFocusBack();
         });
-
     }
 
     forceRender() {

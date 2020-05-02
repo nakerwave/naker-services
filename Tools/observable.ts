@@ -15,6 +15,7 @@ export enum EventsName {
 export interface Observer {
     funct: (eventData) => void,
     eventName: EventsName,
+    scope?: any,
 }
 
 /**
@@ -26,8 +27,8 @@ export class NakerObservable<T> {
 
     observers: Array<Observer> = new Array<Observer>();
 
-    addListener(funct: (eventData: T) => void, first?: boolean) {
-        this.on(EventsName.Progress, funct, first);
+    addListener(funct: (eventData: T) => void, scope?:any, first?: boolean) {
+        this.on(EventsName.Progress, funct, scope, first);
     }
 
     removeListener(funct: (eventData: T) => void): boolean {
@@ -44,11 +45,12 @@ export class NakerObservable<T> {
      * @param funct the function to be called at the event
      * Do not use anonymous function or you won't be able to remove it
      */
-    on(eventName: EventsName, funct: (eventData: T) => void, first?: boolean) {
+    on(eventName: EventsName, funct: (eventData: T) => void, scope?: any, first?: boolean) {
         if (this.hasObserver(eventName, funct)) return;
         let newObserver = {
             funct: funct,
-            eventName: eventName
+            eventName: eventName,
+            scope: scope,
         }
 
         if (first) {
@@ -74,14 +76,22 @@ export class NakerObservable<T> {
     notify(eventName: EventsName, eventData: T) {
         for (var obs of this.observers) {
             if (obs.eventName === eventName) {
-                obs.funct(eventData);
+                this.notifyOberver(obs, eventData);
             }
         }
     }
 
     notifyAll(eventData: T) {
         for (var obs of this.observers) {
-            obs.funct(eventData);
+            this.notifyOberver(obs, eventData);
+        }
+    }
+
+    notifyOberver(observer: Observer, eventData: T) {
+        if (observer.scope) {
+            observer.funct.apply(observer.scope, [eventData]);
+        } else {
+            observer.funct(eventData);
         }
     }
 
