@@ -131,6 +131,7 @@ export class SystemAnimation extends SystemResponsive {
         this.setCheckScroll(false);
         let containerVisible = this.checkVisible();
         if (containerVisible) {
+            // console.log(this.list.indexOf(animation) == -1, animation.key);
             if (this.list.indexOf(animation) == -1) {
                 // console.log('add', animation);
                 this.list.push(animation);
@@ -144,7 +145,7 @@ export class SystemAnimation extends SystemResponsive {
     */
     removeAnimation(animation: Animation) {
         remove(this.list, (a: Animation) => { return a.key == animation.key });
-        // console.log('remove', this.list);
+        // console.log('remove', animation.key);
         this.checkStopRender();
     }
 

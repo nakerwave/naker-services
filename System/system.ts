@@ -166,6 +166,10 @@ export class System extends NakerObservable<number> {
         this.rendering = true;
         this.forceRender();
     }
+
+    isRendering(): boolean {
+        return this.rendering;
+    }
     
     forceRender() {
         // console.log('start');

@@ -111,11 +111,12 @@ export class SystemQuality extends SystemAnimation {
         this.qualityBreakStarted = true;
         // FIXME: Need timeout otherwise renderLoop will be called
         setTimeout(() => {
+            if (this.isRendering()) return;
             this.engine.stopRenderLoop();
             this.getScreenshot((image1) => {
-                if (!this.qualityBreakStarted) return; // Check if animation restarted
+                if (this.isRendering()) return;
                 this.layer1 = this.addLayerImage(image1, () => {
-                    if (!this.qualityBreakStarted) return; // Check if animation restarted
+                    if (this.isRendering()) return;
                     this.layer1.color = new Color4(1, 1, 1, 1);
 
                     this.engine.stopRenderLoop();
@@ -129,7 +130,7 @@ export class SystemQuality extends SystemAnimation {
                     this.scene.activeCamera.layerMask = 0x0FFFFFFF;
                     
                     this.getScreenshot((image2) => {
-                        if (!this.qualityBreakStarted) return; // Check if animation restarted
+                        if (this.isRendering()) return;
                         this.layer2 = this.addLayerImage(image2);
                         this.layer2.color = new Color4(1, 1, 1, 0);
                         this.qualityLayer.render();
@@ -144,7 +145,7 @@ export class SystemQuality extends SystemAnimation {
     
                         var t = 0, change = 0.05;
                         this.engine.runRenderLoop(() => {
-                            if (!this.qualityBreakStarted) return; // Check if animation restarted
+                            if (this.isRendering()) return;
                             t += change;
                             let a = Math.max(t, 0)
                             a = Math.min(a, 1)
@@ -159,7 +160,6 @@ export class SystemQuality extends SystemAnimation {
                         });
                     });
                 });
-                
             });
         }, 0);
     }
