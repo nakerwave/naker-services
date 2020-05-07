@@ -52,6 +52,11 @@ export class TouchCatcher extends NakerObservable<TouchEventData> {
     touchGap = Vector2.Zero();
 
     /**
+     * The gap of drag between start and current touch when on smartphone
+     */
+    timeStart = 0;
+
+    /**
      * On smartphone, we use the touch events to simulate scroll
      * @ignore
      */
@@ -59,20 +64,26 @@ export class TouchCatcher extends NakerObservable<TouchEventData> {
         this._container.addEventListener("touchstart", (evt) => {
             this.touchStart.x = evt.changedTouches[0].clientX;
             this.touchStart.y = evt.changedTouches[0].clientY;
+            this.timeStart = new Date().getTime();
         });
         // Need test
         this._container.addEventListener("touchend", (evt) => {
+            this.timeStart = 0;
             this.touchStart = Vector2.Zero();
             this.touchGap = Vector2.Zero();
             this.notifyAll({change: this.touchGap.clone(), event: evt});
         });
         this._container.addEventListener("touchmove", (evt) => {
             if (this.touchStart) {
+                let time = new Date().getTime();
+                let timeGap = (time - this.timeStart) / 1000 + 0.1;
+                let timeInfluence = Math.min(timeGap, 1);
+
                 let x = evt.changedTouches[0].clientX;
                 let y = evt.changedTouches[0].clientY;
                 // need to have bigger value to match with computer mouse sensitivity
-                this.touchGap.x = (this.touchStart.x - x) * 20;
-                this.touchGap.y = (this.touchStart.y - y) * 20;
+                this.touchGap.x = (this.touchStart.x - x) * 20 / timeInfluence;
+                this.touchGap.y = (this.touchStart.y - y) * 20 / timeInfluence;
                 this.notifyAll({change: this.touchGap.clone(), event: evt});
             }
         });
