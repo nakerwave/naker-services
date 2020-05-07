@@ -1,13 +1,13 @@
 import { Animation } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
 import { TouchCatcher } from './touchCatcher';
+import { NakerObservable } from '../Tools/observable';
 
-import remove from 'lodash/remove';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
 import { EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
 
-export class MouseCatcher {
+export class MouseCatcher extends NakerObservable<Vector2> {
 
     mousecatch = new Vector2(0, 0);
     catching = false;
@@ -21,6 +21,7 @@ export class MouseCatcher {
     curve: EasingFunction;
 
     constructor(system: SystemAnimation, touchCatcher: TouchCatcher) {
+        super();
         this.system = system;
         this.animation = new Animation(system, 10);
 
@@ -70,9 +71,9 @@ export class MouseCatcher {
     }
 
     _setMobileDragEvent(touchCatcher: TouchCatcher) {
-        touchCatcher.addListener((change: Vector2) => {
+        touchCatcher.addListener((touchEvent) => {
             if (this.catching) {
-                let mouseChange = change.multiply(this.touchVector);
+                let mouseChange = touchEvent.change.multiply(this.touchVector);
                 let posMax = Vector2.Minimize(mouseChange, this.deviceMaxVector);
                 let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
                 posMin.x = -posMin.x;
@@ -107,7 +108,6 @@ export class MouseCatcher {
                 let angles = quaternion.toEulerAngles();
 
                 let pos = new Vector2(angles.y, angles.x);
-
                 pos.divideInPlace(this.divideVector);
                 let posMax = Vector2.Minimize(pos, this.deviceMaxVector);
                 let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
@@ -151,35 +151,16 @@ export class MouseCatcher {
     mouseReal = new Vector2(0, 0);
     mouseCatch = new Vector2(0, 0);
     catch(mouse: Vector2) {
-        if (this.listeners.length == 0) return;
+        if (!this.hasObservers()) return;
         let mouseStart = this.mouseCatch;
         let mouseChange = mouse.subtract(mouseStart);
         this.mouseReal = mouse;
         let howmany = 5 / this.speed;
         this.animation.simple(howmany, (count, perc) => {
-            // if (perc == 0) return this.sendToListener();
             let percEased = this.speed + (1 - this.speed) * this.curve.ease(perc);
             let mouseProgress = mouseChange.multiply(new Vector2(percEased, percEased));
             this.mouseCatch = mouseStart.add(mouseProgress);
-            this.sendToListener();
+            this.notifyAll(this.mouseCatch.clone());
         });
-    }
-
-    listeners: Array<Function> = [];
-    addListener(callback: Function) {
-        this.listeners.push(callback);
-        
-    }
-
-    removeListener(callback: Function) {
-        remove(this.listeners, (c) => { c == callback });
-        
-    }
-
-    sendToListener() {
-        for (let i = 0; i < this.listeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this.listeners[i](this.mouseCatch.clone());
-        }
     }
 }

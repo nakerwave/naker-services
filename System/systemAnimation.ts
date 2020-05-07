@@ -1,14 +1,9 @@
-import { System } from './system';
+import { SystemResponsive } from './systemResponsive';
 
 import remove from 'lodash/remove';
+import { EventsName } from '../Tools/observable';
 
-/**
- * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
- *
- * The system is really important as it is often sent in every other class created to manage core assets
- */
-
-export class SystemAnimation extends System {
+export class SystemAnimation extends SystemResponsive {
 
     fps = 60;
     fpsratio = 1;
@@ -16,13 +11,13 @@ export class SystemAnimation extends System {
     fpsnode: HTMLElement;
     frameBeforeEnd = 0;
     frameSinceStarted = 0;
+    list: Array<Animation> = [];
 
     /**
     * List of all process which need rendering
     * Allow to have engine stop if nothing need rendering
     * Thus improving performance
     */
-    list: Array<Animation> = [];
 
     constructor(canvas: HTMLCanvasElement, screenshot?: boolean) {
         super(canvas, screenshot);
@@ -38,12 +33,12 @@ export class SystemAnimation extends System {
     forceRender() {
         // console.log('start');
         this.frameSinceStarted = 0;
-        this.sendToStartListener();
+        this.notify(EventsName.Start, 0);
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
                 this.runAnimations();
-                if (this.limitSwitch) this.scene.render();
+                if (this.limitSwitch && this.rendering) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
             });
         } else {
@@ -52,6 +47,14 @@ export class SystemAnimation extends System {
                 this.scene.render();
             });
         }
+    }
+
+    pauseRender() {
+        if (!this.rendering) return;
+        // console.log('stop');
+        this.notify(EventsName.Stop, 0);
+        this.rendering = false;
+        this.engine.stopRenderLoop();
     }
 
 	/**
@@ -79,53 +82,12 @@ export class SystemAnimation extends System {
 
         // We avoid sending start and end at the same time
         this.frameSinceStarted++;
-        if (this.frameBeforeEnd < this.lastFrameNumberCheck && this.qualityAtBreak) this.checkEndQuality(this.frameBeforeEnd);
-        else if (this.frameSinceStarted < this.firstFrameNumberCheck && this.qualityAtBreak) this.checkStartQuality(this.frameSinceStarted);
+        if (this.frameBeforeEnd < this.lastFrameNumberCheck) this.notify(EventsName.End, this.frameBeforeEnd);
+        else if (this.frameSinceStarted < this.firstFrameNumberCheck) this.notify(EventsName.Begin, this.frameSinceStarted);
     }
 
-    qualityAtBreak = false;
-    improveQualityAtBreak(qualityAtBreak: boolean) {
-        this.qualityAtBreak = qualityAtBreak;
-    }
-
-    lastFrameNumberCheck = 8;
+    lastFrameNumberCheck = 20;
     firstFrameNumberCheck = 2;
-    scaleAccuracy = 10;
-
-    // Create false sceneAdvancedTexture and defaultPipeline so that it will also improve in story
-    sceneAdvancedTexture = { renderScale: 1 };
-    defaultPipeline = { samples: 1, fxaaEnabled: false };
-    checkStartQuality(frameSinceStarted: number) {
-        // let scaling = 1 - (this.firstFrameNumberCheck - frameSinceStarted) / (2 * this.firstFrameNumberCheck);
-        // scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
-        // this.engine.setHardwareScalingLevel(scaling);
-        // this.sceneAdvancedTexture.renderScale = scaling;
-        
-        // let sample = Math.round(4 - (frameSinceStarted + 1) * 3 / this.firstFrameNumberCheck);
-        // console.log(frameSinceStarted, scaling, sample);
-        // this.defaultPipeline.samples = sample;
-        // if (this.limitSwitch) this.scene.render();
-
-        this.engine.setHardwareScalingLevel(1);
-        this.sceneAdvancedTexture.renderScale = 1;
-        this.defaultPipeline.samples = 1;
-        this.defaultPipeline.fxaaEnabled = true;
-        if (!this.limitSwitch) this.scene.render();
-    }
-
-    checkEndQuality(frameBeforEnd: number) {
-        let scaling = 1 - (this.lastFrameNumberCheck - frameBeforEnd) / (2 * this.lastFrameNumberCheck);
-        scaling = Math.round(scaling * this.scaleAccuracy) / this.scaleAccuracy;
-        this.engine.setHardwareScalingLevel(scaling);
-        this.sceneAdvancedTexture.renderScale = scaling;
-
-        let sample = Math.round(4 - frameBeforEnd * 3 / this.lastFrameNumberCheck);
-        this.defaultPipeline.samples = sample;
-        this.defaultPipeline.fxaaEnabled = true;
-        // Make sure last frame use the best rendering quality
-        if (!this.limitSwitch) this.scene.render();
-        // console.log(frameBeforEnd, scaling, sample);
-    }
 
 	/**
 	 * Stop all the scene animation
@@ -169,6 +131,7 @@ export class SystemAnimation extends System {
         this.setCheckScroll(false);
         let containerVisible = this.checkVisible();
         if (containerVisible) {
+            // console.log(this.list.indexOf(animation) == -1, animation.key);
             if (this.list.indexOf(animation) == -1) {
                 // console.log('add', animation);
                 this.list.push(animation);
@@ -182,7 +145,7 @@ export class SystemAnimation extends System {
     */
     removeAnimation(animation: Animation) {
         remove(this.list, (a: Animation) => { return a.key == animation.key });
-        // console.log('remove', this.list);
+        // console.log('remove', animation.key);
         this.checkStopRender();
     }
 

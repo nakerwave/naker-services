@@ -1,6 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
+import { NakerObservable, EventsName } from '../Tools/observable';
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -8,7 +9,7 @@ import { Color3 } from '@babylonjs/core/Maths/math';
  * The system is really important as it is often sent in every other class created to manage core assets
  */
 
-export class System {
+export class System extends NakerObservable<number> {
 
     /**
     * Max Hardware scaling of BabylonJS Engine
@@ -35,6 +36,7 @@ export class System {
      * @param canvas Element where the scene will be drawn
      */
     constructor(canvas: HTMLCanvasElement, screenshot?:boolean) {
+        super();
         // if (!Engine.isSupported()) throw 'WebGL not supported';
         this.canvas = canvas;
         // For now keep false as the last argument of the engine,
@@ -64,6 +66,10 @@ export class System {
         this.scene = new Scene(this.engine);
         this.scene.shadowsEnabled = false;
         this.scene.ambientColor = new Color3(1, 1, 1);
+
+        // Avoid automatic pick and improve performance
+        // Can't use it now as it breaks GUI events
+        // this.scene.detachControl();
     }
 
     /**
@@ -146,7 +152,7 @@ export class System {
     pauseRender() {
         if (!this.rendering) return;
         // console.log('stop');
-        this.sendToStopListener();
+        this.notify(EventsName.Stop, 0);
         this.rendering = false;
         this.engine.stopRenderLoop();
         this.scene.render();
@@ -160,10 +166,14 @@ export class System {
         this.rendering = true;
         this.forceRender();
     }
+
+    isRendering(): boolean {
+        return this.rendering;
+    }
     
     forceRender() {
         // console.log('start');
-        this.sendToStartListener();
+        this.notify(EventsName.Start, 0);
         this.engine.stopRenderLoop();        
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
@@ -181,10 +191,14 @@ export class System {
      * Optimize scene to make rendering faster
      * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
+    otimized = false;
     optimize() {
+        this.otimized = true;
         this.scene.autoClear = false; // Color buffer
         this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
 
+        // this.scene.clearCachedVertexData();
+        // this.scene.cleanCachedTextureBuffer();
         // let activeTest = 0;
         // this.scene.registerBeforeRender(() => {
         //     activeTest++;
@@ -201,6 +215,7 @@ export class System {
      * https://doc.babylonjs.com/how_to/optimizing_your_scene#reducing-shaders-overhead
      */
     unOptimize() {
+        this.otimized = false;
         this.scene.autoClear = true; // Color buffer
         this.scene.autoClearDepthAndStencil = true; // Depth and stencil, obviously
     }
@@ -231,6 +246,11 @@ export class System {
         this.setLimitFPS(false);
     }
 
+    checkActiveMeshes() {
+        this.scene.unfreezeActiveMeshes();
+        this.scene.freezeActiveMeshes();
+    }
+
     limitFPS = false;
     // Keep first value as true so that render function is called straight away
     // Otherwise you could have a flash 
@@ -239,54 +259,5 @@ export class System {
         if (limitFPS == this.limitFPS) return;
         this.limitFPS = limitFPS;
         if (this.rendering) this.forceRender();
-    }
-
-    /**
-    * Allow to add a listener on special events
-    * @ignore
-    */
-    _startListeners: Array<Function> = [];
-    _stopListeners: Array<Function> = [];
-    _beginListeners: Array<Function> = [];
-    _endListeners: Array<Function> = [];
-
-    /**
-     * Allow to add a listener on special events
-     * @param what the event: start or stop
-     * @param funct the function to be called at the event
-     */
-    on(what: 'start' | 'stop' | 'begin' | 'end', funct: Function) {
-        if (what == 'start') this._startListeners.push(funct);
-        else if (what == 'stop') this._stopListeners.push(funct);
-        else if (what == 'begin') this._beginListeners.push(funct);
-        else if (what == 'end') this._endListeners.push(funct);
-    }
-
-    sendToStartListener() {
-        for (let i = 0; i < this._startListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._startListeners[i]();
-        }
-    }
-
-    sendToStopListener() {
-        for (let i = 0; i < this._stopListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._stopListeners[i]();
-        }
-    }
-
-    sendToBeginListener(frameSinceStarted: number) {
-        for (let i = 0; i < this._beginListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._beginListeners[i](frameSinceStarted);
-        }
-    }
-
-    sendToEndListener(frameBeforeEnd: number) {
-        for (let i = 0; i < this._endListeners.length; i++) {
-            // Clone to make sure there is not something which can alter real mouseCatch
-            this._endListeners[i](frameBeforeEnd);
-        }
     }
 }
