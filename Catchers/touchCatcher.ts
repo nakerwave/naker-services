@@ -82,7 +82,9 @@ export class TouchCatcher extends NakerObservable<TouchEventData> {
                 let x = evt.changedTouches[0].clientX;
                 let y = evt.changedTouches[0].clientY;
                 // need to have bigger value to match with computer mouse sensitivity
-                this.touchGap.x = (this.touchStart.x - x) * 20 / timeInfluence;
+                this.touchGap.x = (this.touchStart.x - x) * 20;
+                // We divide height by touchSensity to have quick swipe taken into account
+                // this.touchGap.x = (this.touchStart.x - x) * 20 / timeInfluence;
                 this.touchGap.y = (this.touchStart.y - y) * 20 / timeInfluence;
                 this.notifyAll({change: this.touchGap.clone(), event: evt});
             }
