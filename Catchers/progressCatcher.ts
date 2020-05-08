@@ -1,8 +1,6 @@
-import { Animation } from '../System/systemAnimation';
+import { Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
 import { NakerObservable, EventsName } from '../Tools/observable';
-
-import { EasingFunction, CubicEase } from '@babylonjs/core/Animations/easing';
 
 interface ProgressEventData {
     progress: number,
@@ -46,11 +44,6 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     animation: Animation;
 
     /**
-    * Ease catch function
-    */
-    curve: EasingFunction;
-
-    /**
      * Use to animate the catching
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt progress height
@@ -59,8 +52,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
         super();
         this.key = Math.random().toString(36);
         this.animation = new Animation(system, 10);
-        this.curve = new CubicEase();
-        this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
+        this.animation.setEasing(Ease.Cubic, EaseMode.Out);
     }
 
     /**
@@ -158,10 +150,10 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
         let howmany = Math.round(5 / catchSpeed);
         howmany = Math.min(howmany, 500);
         
-        this.animation.simple(howmany, (count, perc) => {
-            let percEased = catchSpeed + (1 - catchSpeed) * this.curve.ease(perc);
-            percEased = this.checkBorderProgress(percEased);
-            this.progressCatch = progressStart + progressChange * percEased;
+        this.animation.simple(howmany, (perc) => {
+            let percSpeed = catchSpeed + (1 - catchSpeed) * perc;
+            percSpeed = this.checkBorderProgress(percSpeed);
+            this.progressCatch = progressStart + progressChange * percSpeed;
             this.progressGap = this.progressReal - this.progressCatch;
             
             this.notify(EventsName.Progress, { progress: this.progressCatch, remain: this.progressGap });

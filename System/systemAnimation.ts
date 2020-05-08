@@ -1,7 +1,23 @@
 import { SystemResponsive } from './systemResponsive';
+import { EventsName } from '../Tools/observable';
 
 import remove from 'lodash/remove';
-import { EventsName } from '../Tools/observable';
+import {
+    IEasingFunction,
+    EasingFunction, 
+    CircleEase, 
+    BounceEase,
+    BackEase, 
+    CubicEase,
+    ElasticEase,
+    ExponentialEase,
+    PowerEase,
+    QuadraticEase,
+    QuarticEase,
+    QuinticEase,
+    SineEase,
+    BezierCurveEase
+} from '@babylonjs/core/Animations/easing';
 
 export class SystemAnimation extends SystemResponsive {
 
@@ -73,7 +89,7 @@ export class SystemAnimation extends SystemResponsive {
         for (let i = 0; i < this.list.length; i++) {
             let anim = this.list[i];
             if (anim.running) {
-                anim.funct(anim.count, anim.count / anim.howmany);
+                anim.run(anim.count, anim.count / anim.howmany);
                 if (anim.count >= anim.howmany) anim.stop(true);
                 anim.count += anim.step * fpsratio;
                 if (anim.howmany - anim.count > this.frameBeforeEnd) this.frameBeforeEnd = Math.round(anim.howmany - anim.count + 1);
@@ -167,6 +183,34 @@ export class SystemAnimation extends SystemResponsive {
     }
 }
 
+export enum Ease {
+    Linear,
+    Circle,
+    Back,
+    Bounce,
+    Cubic,
+    Elastic,
+    Exponential,
+    Power,
+    Quadratic,
+    Quartic,
+    Quintic,
+    Sine,
+    BezierCurve,
+}
+
+export enum EaseMode {
+    In,
+    Out,
+    InOut,
+}
+
+class LinearEase extends EasingFunction implements IEasingFunction {
+    /** @hidden */
+    public easeInCore(gradient: number): number {
+        return gradient;
+    }
+}
 
 /**
  * animation which can be create aniwhere and which will be run by system
@@ -216,6 +260,11 @@ export class Animation {
 	 */
     key: string;
 
+    /**
+     * Easing of the animation
+     */
+    easing: EasingFunction;
+
 	/**
 	 * Create a new animation
 	 * @param system Manager where to push animation
@@ -227,6 +276,8 @@ export class Animation {
         this.system = system;
         if (howmany) this.setParam(howmany, start, step);
         this.key = Math.random().toString(36);
+        // Set default easing mode
+        this.setEasing(Ease.Linear);
         return this;
     }
 
@@ -243,6 +294,28 @@ export class Animation {
         if (start) this.start = start;
         this.count = this.start;
         return this;
+    }
+
+    setEasing(ease: Ease, mode?: EaseMode) {
+        if (ease == Ease.Linear) this.easing = new LinearEase();
+        if (ease == Ease.Circle) this.easing = new CircleEase();
+        else if (ease == Ease.Back) this.easing = new BackEase();
+        else if (ease == Ease.Bounce) this.easing = new BounceEase();
+        else if (ease == Ease.Cubic) this.easing = new CubicEase();
+        else if (ease == Ease.Elastic) this.easing = new ElasticEase();
+        else if (ease == Ease.Exponential) this.easing = new ExponentialEase();
+        else if (ease == Ease.Power) this.easing = new PowerEase();
+        else if (ease == Ease.Quadratic) this.easing = new QuadraticEase();
+        else if (ease == Ease.Quartic) this.easing = new QuarticEase();
+        else if (ease == Ease.Quintic) this.easing = new QuinticEase();
+        else if (ease == Ease.Sine) this.easing = new SineEase();
+        else if (ease == Ease.BezierCurve) this.easing = new BezierCurveEase();
+        
+        if (mode && this.easing) {
+            if (mode == EaseMode.In) this.easing.setEasingMode(EasingFunction.EASINGMODE_EASEIN);
+            else if (mode == EaseMode.Out) this.easing.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
+            else if (mode == EaseMode.InOut) this.easing.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+        }
     }
 
 	/**
@@ -353,6 +426,12 @@ export class Animation {
         this.functend = functend;
         this.play();
         return this;
+    }
+
+    run(count: number, perc: number) {
+        let easedPerc = this.easing.ease(perc);
+        let easedCount = easedPerc * count;
+        this.funct(easedPerc, easedCount);
     }
 
 	/**

@@ -1,11 +1,10 @@
-import { Animation } from '../System/systemAnimation';
+import { Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
 import { TouchCatcher } from './touchCatcher';
 import { NakerObservable } from '../Tools/observable';
 
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
-import { EasingFunction, CircleEase } from '@babylonjs/core/Animations/easing';
 
 export class MouseCatcher extends NakerObservable<Vector2> {
 
@@ -15,15 +14,11 @@ export class MouseCatcher extends NakerObservable<Vector2> {
     animation: Animation;
     accelerometerAvailable = true;
 
-    /**
-    * Ease catch function
-    */
-    curve: EasingFunction;
-
     constructor(system: SystemAnimation, touchCatcher: TouchCatcher) {
         super();
         this.system = system;
         this.animation = new Animation(system, 10);
+        this.animation.setEasing(Ease.Circle, EaseMode.Out);
 
         window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
@@ -31,8 +26,6 @@ export class MouseCatcher extends NakerObservable<Vector2> {
         this.orientationChanged();
         this._setMobileDragEvent(touchCatcher);
 
-        this.curve = new CircleEase();
-        this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
         // Want to add the possibility to stop the rendering when mouse is not moving
         // But we will mostly still need the rendering
 
@@ -156,9 +149,9 @@ export class MouseCatcher extends NakerObservable<Vector2> {
         let mouseChange = mouse.subtract(mouseStart);
         this.mouseReal = mouse;
         let howmany = 5 / this.speed;
-        this.animation.simple(howmany, (count, perc) => {
-            let percEased = this.speed + (1 - this.speed) * this.curve.ease(perc);
-            let mouseProgress = mouseChange.multiply(new Vector2(percEased, percEased));
+        this.animation.simple(howmany, (perc) => {
+            let percSpeed = this.speed + (1 - this.speed) * perc;
+            let mouseProgress = mouseChange.multiply(new Vector2(percSpeed, percSpeed));
             this.mouseCatch = mouseStart.add(mouseProgress);
             this.notifyAll(this.mouseCatch.clone());
         });
