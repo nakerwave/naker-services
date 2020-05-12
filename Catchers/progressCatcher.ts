@@ -1,6 +1,6 @@
 import { Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
-import { NakerObservable, EventsName } from '../Tools/observable';
+import { NakerObservable, CycleEvent } from '../Tools/observable';
 
 interface ProgressEventData {
     progress: number,
@@ -87,8 +87,8 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     _start() {
         this.catching = true;
         this.catch(this.progressReal, this.speed);
-        this.notify(EventsName.Progress, {progress: 0, remain: 0});
-        this.notify(EventsName.Start, {progress: 0, remain: 0});
+        this.notify(CycleEvent.Progress, {progress: 0, remain: 0});
+        this.notify(CycleEvent.Start, {progress: 0, remain: 0});
     }
 
     /**
@@ -104,7 +104,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     _stop() {
         this.animation.stop();
         this.catching = false;
-        this.notify(EventsName.Stop, { progress: this.progressCatch, remain: 0 });
+        this.notify(CycleEvent.Stop, { progress: this.progressCatch, remain: 0 });
     }
 
     /**
@@ -156,7 +156,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
             this.progressCatch = progressStart + progressChange * percSpeed;
             this.progressGap = this.progressReal - this.progressCatch;
             
-            this.notify(EventsName.Progress, { progress: this.progressCatch, remain: this.progressGap });
+            this.notify(CycleEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
         }, () => {
             if (callback) callback();
         });

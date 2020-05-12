@@ -1,7 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
-import { NakerObservable, EventsName } from '../Tools/observable';
+import { NakerObservable, CycleEvent } from '../Tools/observable';
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -152,7 +152,7 @@ export class System extends NakerObservable<number> {
     pauseRender() {
         if (!this.rendering) return;
         // console.log('stop');
-        this.notify(EventsName.Stop, 0);
+        this.notify(CycleEvent.Stop, 0);
         this.rendering = false;
         this.engine.stopRenderLoop();
         this.scene.render();
@@ -173,7 +173,7 @@ export class System extends NakerObservable<number> {
     
     forceRender() {
         // console.log('start');
-        this.notify(EventsName.Start, 0);
+        this.notify(CycleEvent.Start, 0);
         this.engine.stopRenderLoop();        
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {

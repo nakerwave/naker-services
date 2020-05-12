@@ -6,7 +6,7 @@ import { Layer } from '@babylonjs/core/Layers/layer';
 import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilitylayerRenderer';
 import { Color4 } from '@babylonjs/core/Maths/math';
 import { Scene } from '@babylonjs/core/scene';
-import { EventsName } from '../Tools/observable';
+import { CycleEvent } from '../Tools/observable';
 
 export class SystemQuality extends SystemAnimation {
 
@@ -32,20 +32,15 @@ export class SystemQuality extends SystemAnimation {
         // this.scene.autoClear = false;
         // this.scene.autoClearDepthAndStencil = false;
 
-        this.on(EventsName.Stop, () => {
+        this.on(CycleEvent.Stop, () => {
             if (this.qualityAtBreak) this.checkEndQuality();
         });
 
-        this.on(EventsName.Start, () => {
+        this.on(CycleEvent.Start, () => {
             if (this.qualityAtBreak) this.checkStartQuality();
         });
 
-        this.on(EventsName.Resize, () => {
-            // if (this.qualityBreakDone) {
-            //     this.checkStartQuality();
-            //     this.checkEndQuality();
-            // }
-            
+        this.on(CycleEvent.Resize, () => {
             if (this.qualityBreakDone) {
                 if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
                 this.engine.resize();

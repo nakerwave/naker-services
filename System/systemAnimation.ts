@@ -1,5 +1,5 @@
 import { SystemResponsive } from './systemResponsive';
-import { EventsName } from '../Tools/observable';
+import { CycleEvent } from '../Tools/observable';
 
 import remove from 'lodash/remove';
 import {
@@ -49,7 +49,7 @@ export class SystemAnimation extends SystemResponsive {
     forceRender() {
         // console.log('start');
         this.frameSinceStarted = 0;
-        this.notify(EventsName.Start, 0);
+        this.notify(CycleEvent.Start, 0);
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
@@ -68,7 +68,7 @@ export class SystemAnimation extends SystemResponsive {
     pauseRender() {
         if (!this.rendering) return;
         // console.log('stop');
-        this.notify(EventsName.Stop, 0);
+        this.notify(CycleEvent.Stop, 0);
         this.rendering = false;
         this.engine.stopRenderLoop();
     }
@@ -98,8 +98,8 @@ export class SystemAnimation extends SystemResponsive {
 
         // We avoid sending start and end at the same time
         this.frameSinceStarted++;
-        if (this.frameBeforeEnd < this.lastFrameNumberCheck) this.notify(EventsName.End, this.frameBeforeEnd);
-        else if (this.frameSinceStarted < this.firstFrameNumberCheck) this.notify(EventsName.Begin, this.frameSinceStarted);
+        if (this.frameBeforeEnd < this.lastFrameNumberCheck) this.notify(CycleEvent.End, this.frameBeforeEnd);
+        else if (this.frameSinceStarted < this.firstFrameNumberCheck) this.notify(CycleEvent.Begin, this.frameSinceStarted);
     }
 
     lastFrameNumberCheck = 20;

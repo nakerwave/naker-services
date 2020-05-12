@@ -1,7 +1,7 @@
 import { ProgressCatcher } from './progressCatcher';
 import { SystemAnimation } from '../System/systemAnimation';
 import { TouchCatcher } from './touchCatcher';
-import { EventsName } from '../Tools/observable';
+import { CycleEvent } from '../Tools/observable';
 
 import { setStyle } from 'redom';
 
@@ -36,7 +36,7 @@ export class ScrollCatcher extends ProgressCatcher {
         this._container = container;
         this.system = system;
         
-        this.system.on(EventsName.Resize, () => {
+        this.system.on(CycleEvent.Resize, () => {
             this.checkHeight();
         });
 
@@ -218,8 +218,8 @@ export class ScrollCatcher extends ProgressCatcher {
             this.catchTop(top);
         }
 
-        this.notify(EventsName.Progress, { progress: this.progressCatch, remain: this.progressGap });
-        this.notify(EventsName.Start, { progress: this.progressCatch, remain: this.progressGap });
+        this.notify(CycleEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
+        this.notify(CycleEvent.Start, { progress: this.progressCatch, remain: this.progressGap });
     }
 
     scrollEvent(top: number) {
@@ -234,7 +234,7 @@ export class ScrollCatcher extends ProgressCatcher {
     mouseWheelEvent(evt: MouseEvent, top: number) {
         if (this.followWindowScroll) return;
         this.checkPreventComputerScroll(evt);
-        this.notify(EventsName.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
+        this.notify(CycleEvent.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
         if (this.catching) this.catchTop(top);
     }
 
@@ -262,7 +262,6 @@ export class ScrollCatcher extends ProgressCatcher {
         // If scroll reach start or end we stop preventing page scroll
         let topTest = this.progressCatch + this.borderCheck < 1 && move >= 0;
         let bottomTest = this.progressCatch - this.borderCheck > 0 && move <= 0;
-        
         if (this._container != document.body && (topTest || bottomTest)) {
             evt.preventDefault();
             evt.stopPropagation();

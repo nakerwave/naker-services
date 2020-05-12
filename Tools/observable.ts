@@ -2,7 +2,7 @@
  * Specifies all the events possible
  */
 
-export enum EventsName {
+export enum CycleEvent {
     Progress,
     Start,
     Stop,
@@ -14,7 +14,7 @@ export enum EventsName {
 
 export interface Observer {
     funct: (eventData) => void,
-    eventName: EventsName,
+    event: CycleEvent,
     scope?: any,
 }
 
@@ -28,15 +28,15 @@ export class NakerObservable<T> {
     observers: Array<Observer> = new Array<Observer>();
 
     addListener(funct: (eventData: T) => void, scope?:any, first?: boolean) {
-        this.on(EventsName.Progress, funct, scope, first);
+        this.on(CycleEvent.Progress, funct, scope, first);
     }
 
     removeListener(funct: (eventData: T) => void): boolean {
-        return this.off(EventsName.Progress, funct);
+        return this.off(CycleEvent.Progress, funct);
     }
 
     sendToListener(eventData: T) {
-        this.notify(EventsName.Progress, eventData);
+        this.notify(CycleEvent.Progress, eventData);
     }
 
     /**
@@ -45,11 +45,11 @@ export class NakerObservable<T> {
      * @param funct the function to be called at the event
      * Do not use anonymous function or you won't be able to remove it
      */
-    on(eventName: EventsName, funct: (eventData: T) => void, scope?: any, first?: boolean) {
-        if (this.hasObserver(eventName, funct)) return;
+    on(event: CycleEvent, funct: (eventData: T) => void, scope?: any, first?: boolean) {
+        if (this.hasObserver(event, funct)) return;
         let newObserver = {
             funct: funct,
-            eventName: eventName,
+            event: event,
             scope: scope,
         }
 
@@ -60,9 +60,9 @@ export class NakerObservable<T> {
         }
     }
 
-    off(eventName: EventsName, funct: (eventData: T) => void): boolean {
+    off(event: CycleEvent, funct: (eventData: T) => void): boolean {
         for (var obs of this.observers) {
-            if (obs.eventName === eventName && obs.funct === funct) {
+            if (obs.event === event && obs.funct === funct) {
                 var index = this.observers.indexOf(obs);
                 if (index !== -1) {
                     this.observers.splice(index, 1);
@@ -73,9 +73,9 @@ export class NakerObservable<T> {
         return false;
     }
 
-    notify(eventName: EventsName, eventData: T) {
+    notify(event: CycleEvent, eventData: T) {
         for (var obs of this.observers) {
-            if (obs.eventName === eventName) {
+            if (obs.event === event) {
                 this.notifyOberver(obs, eventData);
             }
         }
@@ -95,9 +95,9 @@ export class NakerObservable<T> {
         }
     }
 
-    hasObserver(eventName: EventsName, funct: (eventData: T) => void) {
+    hasObserver(event: CycleEvent, funct: (eventData: T) => void) {
         for (var obs of this.observers) {
-            if (obs.funct === funct && obs.eventName === eventName) return true;
+            if (obs.funct === funct && obs.event === event) return true;
         }
         return false;
     }

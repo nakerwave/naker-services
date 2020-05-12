@@ -1,7 +1,7 @@
 import { System } from './system';
 
 import { Camera } from '@babylonjs/core/Cameras/camera';
-import { EventsName } from '../Tools/observable';
+import { CycleEvent } from '../Tools/observable';
 
 export class SystemResponsive extends System {
 
@@ -187,6 +187,6 @@ export class SystemResponsive extends System {
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
 
-        this.notify(EventsName.Resize, 0);
+        this.notify(CycleEvent.Resize, 0);
     }
 }
