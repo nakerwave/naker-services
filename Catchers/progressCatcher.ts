@@ -1,6 +1,14 @@
 import { Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
-import { NakerObservable, CycleEvent } from '../Tools/observable';
+import { NakerObservable } from '../Tools/observable';
+
+
+export enum ProgressEvent {
+    Start,
+    Stop,
+    Progress,
+    MouseWheel, // Mandatory for scrollCatcher
+}
 
 interface ProgressEventData {
     progress: number,
@@ -11,7 +19,7 @@ interface ProgressEventData {
  * Detect progress action of the user
  */
 
-export class ProgressCatcher extends NakerObservable<ProgressEventData> {
+export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEventData> {
 
     /**
     * @ignore
@@ -87,8 +95,8 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     _start() {
         this.catching = true;
         this.catch(this.progressReal, this.speed);
-        this.notify(CycleEvent.Progress, {progress: 0, remain: 0});
-        this.notify(CycleEvent.Start, {progress: 0, remain: 0});
+        this.notify(ProgressEvent.Progress, {progress: 0, remain: 0});
+        this.notify(ProgressEvent.Start, {progress: 0, remain: 0});
     }
 
     /**
@@ -104,7 +112,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     _stop() {
         this.animation.stop();
         this.catching = false;
-        this.notify(CycleEvent.Stop, { progress: this.progressCatch, remain: 0 });
+        this.notify(ProgressEvent.Stop, { progress: this.progressCatch, remain: 0 });
     }
 
     /**
@@ -156,7 +164,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
             this.progressCatch = progressStart + progressChange * percSpeed;
             this.progressGap = this.progressReal - this.progressCatch;
             
-            this.notify(CycleEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
+            this.notify(ProgressEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
         }, () => {
             if (callback) callback();
         });

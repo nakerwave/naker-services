@@ -6,7 +6,13 @@ import { NakerObservable } from '../Tools/observable';
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
 
-export class MouseCatcher extends NakerObservable<Vector2> {
+export enum MouseEvent {
+    Progress,
+    Start,
+    Stop,
+}
+
+export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
 
     mousecatch = new Vector2(0, 0);
     catching = false;
@@ -20,7 +26,8 @@ export class MouseCatcher extends NakerObservable<Vector2> {
         this.animation = new Animation(system, 10);
         this.animation.setEasing(Ease.Circle, EaseMode.Out);
 
-        window.addEventListener("mousemove", (evt) => { this.mouseOrientation(evt) });
+        let prefix = Tools.GetPointerPrefix();
+        window.addEventListener(prefix + "move", (evt) => { this.mouseOrientation(evt) });
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
@@ -145,6 +152,7 @@ export class MouseCatcher extends NakerObservable<Vector2> {
     mouseCatch = new Vector2(0, 0);
     catch(mouse: Vector2) {
         if (!this.hasObservers()) return;
+        this.notify(MouseEvent.Start, this.mouseCatch.clone());
         let mouseStart = this.mouseCatch;
         let mouseChange = mouse.subtract(mouseStart);
         this.mouseReal = mouse;
@@ -153,7 +161,9 @@ export class MouseCatcher extends NakerObservable<Vector2> {
             let percSpeed = this.speed + (1 - this.speed) * perc;
             let mouseProgress = mouseChange.multiply(new Vector2(percSpeed, percSpeed));
             this.mouseCatch = mouseStart.add(mouseProgress);
-            this.notifyAll(this.mouseCatch.clone());
+            this.notify(MouseEvent.Progress, this.mouseCatch.clone());
+        }, () => {
+            this.notify(MouseEvent.Stop, this.mouseCatch.clone());
         });
     }
 }

@@ -1,10 +1,9 @@
-import { ProgressCatcher } from './progressCatcher';
+import { ProgressCatcher, ProgressEvent } from './progressCatcher';
 import { SystemAnimation } from '../System/systemAnimation';
+import { SystemEvent } from '../System/system';
 import { TouchCatcher } from './touchCatcher';
-import { CycleEvent } from '../Tools/observable';
 
 import { setStyle } from 'redom';
-
 
 /**
  * Detect scroll action of the user
@@ -36,7 +35,7 @@ export class ScrollCatcher extends ProgressCatcher {
         this._container = container;
         this.system = system;
         
-        this.system.on(CycleEvent.Resize, () => {
+        this.system.on(SystemEvent.Resize, () => {
             this.checkHeight();
         });
 
@@ -218,8 +217,8 @@ export class ScrollCatcher extends ProgressCatcher {
             this.catchTop(top);
         }
 
-        this.notify(CycleEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
-        this.notify(CycleEvent.Start, { progress: this.progressCatch, remain: this.progressGap });
+        this.notify(ProgressEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
+        this.notify(ProgressEvent.Start, { progress: this.progressCatch, remain: this.progressGap });
     }
 
     scrollEvent(top: number) {
@@ -234,7 +233,7 @@ export class ScrollCatcher extends ProgressCatcher {
     mouseWheelEvent(evt: MouseEvent, top: number) {
         if (this.followWindowScroll) return;
         this.checkPreventComputerScroll(evt);
-        this.notify(CycleEvent.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
+        this.notify(ProgressEvent.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
         if (this.catching) this.catchTop(top);
     }
 

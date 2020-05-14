@@ -1,5 +1,4 @@
-
-import { NakerObservable } from '../Tools/observable';
+import { SimpleObservable } from '../Tools/simpleObservable';
 
 import { Vector2 } from '@babylonjs/core/Maths/math';
 
@@ -12,7 +11,7 @@ interface TouchEventData {
  * Detect scroll action of the user
  */
 
-export class TouchCatcher extends NakerObservable<TouchEventData> {
+export class TouchCatcher extends SimpleObservable<TouchEventData> {
 
     /**
      * @ignore

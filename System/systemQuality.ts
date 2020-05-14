@@ -1,4 +1,5 @@
 import { SystemAnimation } from './systemAnimation';
+import { SystemEvent } from './system';
 
 import '@babylonjs/core/Misc/screenshotTools';
 import { Tools } from '@babylonjs/core/Misc/tools';
@@ -6,7 +7,6 @@ import { Layer } from '@babylonjs/core/Layers/layer';
 import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilitylayerRenderer';
 import { Color4 } from '@babylonjs/core/Maths/math';
 import { Scene } from '@babylonjs/core/scene';
-import { CycleEvent } from '../Tools/observable';
 
 export class SystemQuality extends SystemAnimation {
 
@@ -32,16 +32,16 @@ export class SystemQuality extends SystemAnimation {
         // this.scene.autoClear = false;
         // this.scene.autoClearDepthAndStencil = false;
 
-        this.on(CycleEvent.Stop, () => {
-            if (this.qualityAtBreak) this.checkEndQuality();
+        this.on(SystemEvent.Stop, () => {
+            if (!this.keepHighQuality && this.qualityAtBreak) this.checkEndQuality();
         });
 
-        this.on(CycleEvent.Start, () => {
-            if (this.qualityAtBreak) this.checkStartQuality();
+        this.on(SystemEvent.Start, () => {
+            if (!this.keepHighQuality && this.qualityAtBreak) this.checkStartQuality();
         });
 
-        this.on(CycleEvent.Resize, () => {
-            if (this.qualityBreakDone) {
+        this.on(SystemEvent.Resize, () => {
+            if (!this.keepHighQuality && this.qualityBreakDone) {
                 if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
                 this.engine.resize();
                 this.scene.render();
@@ -62,6 +62,12 @@ export class SystemQuality extends SystemAnimation {
     qualityAtBreak = false;
     improveQualityAtBreak(qualityAtBreak: boolean) {
         this.qualityAtBreak = qualityAtBreak;
+    }
+
+    keepHighQuality = false;
+    alwaysKeepHighQuality(keepHighQuality: boolean) {
+        this.keepHighQuality = keepHighQuality;
+        this.engine.setHardwareScalingLevel(0.5);
     }
 
     lastFrameNumberCheck = 20;
