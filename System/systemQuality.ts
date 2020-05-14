@@ -67,13 +67,15 @@ export class SystemQuality extends SystemAnimation {
     keepHighQuality = false;
     alwaysKeepHighQuality(keepHighQuality: boolean) {
         this.keepHighQuality = keepHighQuality;
-        this.engine.setHardwareScalingLevel(0.5);
+        this.notify(SystemEvent.HighQuality, 0);
+        this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
     }
 
     lastFrameNumberCheck = 20;
     firstFrameNumberCheck = 2;
 
     checkStartQuality() {
+        this.notify(SystemEvent.LowQuality, 0);
         this.qualityBreakStarted = false;
         this.qualityBreakDone = false;
         this.engine.setHardwareScalingLevel(1 / this.pixelRatio);
@@ -109,6 +111,7 @@ export class SystemQuality extends SystemAnimation {
     qualityBreakStarted = false;
     qualityBreakDone = false;
     checkEndQuality() {
+        this.notify(SystemEvent.HighQuality, 0);
         this.qualityBreakStarted = true;
         // FIXME: Need timeout otherwise renderLoop will be called
         setTimeout(() => {
