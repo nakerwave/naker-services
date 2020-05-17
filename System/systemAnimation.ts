@@ -89,7 +89,7 @@ export class SystemAnimation extends SystemResponsive {
         for (let i = 0; i < this.list.length; i++) {
             let anim = this.list[i];
             if (anim.running) {
-                anim.run(anim.count, anim.count / anim.howmany);
+                anim.run(anim.count);
                 if (anim.count >= anim.howmany) anim.stop(true);
                 anim.count += anim.step * fpsratio;
                 if (anim.howmany - anim.count > this.frameBeforeEnd) this.frameBeforeEnd = Math.round(anim.howmany - anim.count + 1);
@@ -428,9 +428,9 @@ export class Animation {
         return this;
     }
 
-    run(count: number, perc: number) {
-        let easedPerc = this.easing.ease(perc);
-        let easedCount = easedPerc * count;
+    run(count: number) {
+        let easedPerc = this.easing.ease(count / this.howmany);
+        let easedCount = easedPerc * this.howmany;
         this.funct(easedPerc, easedCount);
     }
 
