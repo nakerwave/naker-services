@@ -80,6 +80,13 @@ export class NakerObservable<U, T> {
         return false;
     }
 
+    hasEventObservers(event: U): boolean {
+        for (var obs of this.observers) {
+            if (obs.event === event) return true;
+        }
+        return false;
+    }
+
     hasObservers(): boolean {
         return this.observers.length > 0;
     }

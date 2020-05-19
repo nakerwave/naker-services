@@ -5,33 +5,35 @@ import { NakerObservable } from '../Tools/observable';
 
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
+import { PointerEventTypes } from '@babylonjs/core/Events/pointerEvents';
 
 export enum MouseEvent {
-    Progress,
-    Start,
-    Stop,
+    Move,
+    Drag,
+    DragStart,
 }
 
 export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
 
-    mousecatch = new Vector2(0, 0);
     catching = false;
     system: SystemAnimation;
-    animation: Animation;
+    moveAnimation: Animation;
+    dragAnimation: Animation;
     accelerometerAvailable = true;
 
     constructor(system: SystemAnimation, touchCatcher: TouchCatcher) {
         super();
         this.system = system;
-        this.animation = new Animation(system, 10);
-        this.animation.setEasing(Ease.Circle, EaseMode.Out);
+        this.moveAnimation = new Animation(system, 10);
+        this.moveAnimation.setEasing(Ease.Circle, EaseMode.Out);
 
-        let prefix = Tools.GetPointerPrefix();
-        window.addEventListener(prefix + "move", (evt) => { this.mouseOrientation(evt) });
+        this.dragAnimation = new Animation(system, 10);
+        this.dragAnimation.setEasing(Ease.Circle, EaseMode.Out);
+
         window.addEventListener("deviceorientation", (evt) => { this.deviceOrientation(evt) });
         window.addEventListener("orientationchange", () => { this.orientationChanged() });
         this.orientationChanged();
-        this._setMobileDragEvent(touchCatcher);
+        this._setMobileMoveEvent(touchCatcher);
 
         // Want to add the possibility to stop the rendering when mouse is not moving
         // But we will mostly still need the rendering
@@ -60,7 +62,22 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
 
         window.addEventListener("focus", () => {
             if (this.catching) {
-                this.catch(this.mouseReal);
+                this.catchMove(this.mousePosition);
+            }
+        });
+
+        this.system.scene.onPointerObservable.add((pointerInfo) => {
+            this.getMousePosition(pointerInfo.event);
+            switch (pointerInfo.type) {
+                case PointerEventTypes.POINTERDOWN:
+                    this.startDrag();
+                    break;
+                case PointerEventTypes.POINTERUP:
+                    this.dragging = false;
+                    break;
+                case PointerEventTypes.POINTERMOVE:
+                    this.mouseOrientation(this.mousePosition);
+                    break;
             }
         });
     }
@@ -70,14 +87,14 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
         this.touchVector = touchVector;
     }
 
-    _setMobileDragEvent(touchCatcher: TouchCatcher) {
+    _setMobileMoveEvent(touchCatcher: TouchCatcher) {
         touchCatcher.addListener((touchEvent) => {
             if (this.catching) {
                 let mouseChange = touchEvent.change.multiply(this.touchVector);
                 let posMax = Vector2.Minimize(mouseChange, this.deviceMaxVector);
                 let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
                 posMin.x = -posMin.x;
-                this.catch(posMin);
+                this.catchMove(posMin);
             }
         });
     }
@@ -111,20 +128,28 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
                 pos.divideInPlace(this.divideVector);
                 let posMax = Vector2.Minimize(pos, this.deviceMaxVector);
                 let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
-                this.catch(posMin);
+                this.catchMove(posMin);
             }
         }
     }
 
-    mouseOrientation(evt: MouseEvent) {
+    mouseOrientation(mousepos: Vector2) {
         if (this.catching) {
-            let pos = Vector2.Zero();
-            let w = window.innerWidth;
-            let h = window.innerHeight;
-            pos.x = 2 * (evt.x - w / 2) / w;
-            pos.y = 2 * (evt.y - h / 2) / h;
-            this.catch(pos);
-        }
+            this.catchMove(mousepos);
+            if (this.dragging) {
+                this.catchDrag(mousepos);
+            }
+        } 
+    }
+
+    mousePosition = Vector2.Zero();
+    getMousePosition(evt: PointerEvent | WheelEvent) {
+        let w = window.innerWidth;
+        let h = window.innerHeight;
+        // Position in percentage of the window
+        // From -50% to 50%
+        this.mousePosition.x = (evt.x - w / 2) / w;
+        this.mousePosition.y = (evt.y - h / 2) / h;
     }
 
     start() {
@@ -147,23 +172,44 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
         this.speed = speed;
     }
 
-    step = new Vector2(0, 0);
-    mouseReal = new Vector2(0, 0);
-    mouseCatch = new Vector2(0, 0);
-    catch(mouse: Vector2) {
-        if (!this.hasObservers()) return;
-        this.notify(MouseEvent.Start, this.mouseCatch.clone());
-        let mouseStart = this.mouseCatch;
-        let mouseChange = mouse.subtract(mouseStart);
-        this.mouseReal = mouse;
+    moveCatch = Vector2.Zero();
+    catchMove(mouse: Vector2) {
+        if (!this.hasEventObservers(MouseEvent.Move)) return;
+        let start = this.moveCatch.clone();
+        let change = mouse.subtract(start);
         let howmany = 5 / this.speed;
-        this.animation.simple(howmany, (perc) => {
+        this.moveAnimation.simple(howmany, (perc) => {
             let percSpeed = this.speed + (1 - this.speed) * perc;
-            let mouseProgress = mouseChange.multiply(new Vector2(percSpeed, percSpeed));
-            this.mouseCatch = mouseStart.add(mouseProgress);
-            this.notify(MouseEvent.Progress, this.mouseCatch.clone());
-        }, () => {
-            this.notify(MouseEvent.Stop, this.mouseCatch.clone());
+            let progress = change.multiply(new Vector2(percSpeed, percSpeed));
+            this.moveCatch = start.add(progress);
+            this.notify(MouseEvent.Move, this.moveCatch.clone());
+        });
+    }
+
+    dragStart = Vector2.Zero();
+    dragging = false;
+    startDrag() {
+        // Make to stop animation or it will keep send data with bad start
+        this.dragAnimation.stop();
+        this.dragStart = this.mousePosition.clone();
+        this.dragCatch = Vector2.Zero();
+
+        this.dragging = true;
+        this.notify(MouseEvent.DragStart, Vector2.Zero());
+    }
+
+    dragCatch = Vector2.Zero();
+    catchDrag(mouse: Vector2) {
+        if (!this.hasEventObservers(MouseEvent.Drag)) return;
+        let dragReal = mouse.subtract(this.dragStart);
+        let start = this.dragCatch.clone();
+        let change = dragReal.subtract(start);
+        let howmany = 5 / this.speed;
+        this.dragAnimation.simple(howmany, (perc) => {
+            let percSpeed = this.speed + (1 - this.speed) * perc;
+            let progress = change.multiply(new Vector2(percSpeed, percSpeed));
+            this.dragCatch = start.add(progress);
+            this.notify(MouseEvent.Drag, this.dragCatch.clone());
         });
     }
 }
