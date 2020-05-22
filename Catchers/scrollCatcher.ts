@@ -114,14 +114,14 @@ export class ScrollCatcher extends ProgressCatcher {
 
         this._container.addEventListener("mousewheel", (evt) => {
             let top = this.progressReal * this.scrollHeight + evt.deltaY;
-            this.mouseWheelEvent(evt, top);
+            this.checkMouseWheel(evt, top);
         });
 
         // Wheel is continuously called when on a pad
         // Unfortunately can not find an event to trigger real end of scroll
         this._container.addEventListener("wheel", (evt) => {
             let top = this.progressReal * this.scrollHeight + evt.deltaY;
-            this.mouseWheelEvent(evt, top);
+            this.checkMouseWheel(evt, top);
         });
 
         // Firefox trigger this other event which we need to prevent to avoid body scroll when in Stpry
@@ -132,19 +132,33 @@ export class ScrollCatcher extends ProgressCatcher {
         // Firefox use DOMMouseScroll
         this._container.addEventListener("DOMMouseScroll", (evt: any) => {
             let top = this.progressReal * this.scrollHeight + evt.detail * 50;
-            this.mouseWheelEvent(evt, top);
+            this.checkMouseWheel(evt, top);
         });
     }
 
-    /**
-     * The position of drag start when on smartphone
-     */
-    // touchStart = Vector2.Zero();
+    scrollFromTouchPad = 0;
+    lastMouseEvent: number;
+    checkMouseWheel(evt: WheelEvent, top: number) {
+        this.checkPreventComputerScroll(evt);
+        let startTouchPad = this.checkIfFromTouchPad(evt);
+        if (startTouchPad) {
+            this.scrollFromTouchPad = 1;
+        } else {
+            // If from touchPad it will continue sending mousewheel event that we need to ignore
+            if (this.scrollFromTouchPad) {
+                this.scrollFromTouchPad++;
+                if (this.scrollFromTouchPad < 5) this.mouseWheelEvent(evt, top);
+            } else {
+                this.scrollFromTouchPad = 0;
+                this.mouseWheelEvent(evt, top); 
+            }
+        }
+    }
 
-    // /**
-    //  * The gap of drag between start and current touch when on smartphone
-    //  */
-    // touchGap = Vector2.Zero();
+    // Detect if mousewheel started from touchPad
+    checkIfFromTouchPad(evt: WheelEvent): boolean {
+        return evt.wheelDeltaY ? evt.wheelDeltaY === -3 * evt.deltaY : evt.deltaMode === 0
+    }
 
     /**
      * On smartphone, we use the touch events to simulate scroll
@@ -160,37 +174,6 @@ export class ScrollCatcher extends ProgressCatcher {
                 if (this.catching) this.catchTop(top);
             }
         });
-
-        // let count = 0;
-        // this._container.addEventListener("touchstart", (evt) => {
-        //     this.touchStart.x = evt.changedTouches[0].clientX;
-        //     this.touchStart.y = evt.changedTouches[0].clientY;
-        //     count = 0;
-        // });
-        // // Need test
-        // // this._container.addEventListener("touchend", (evt) => {
-        // //     this.touchStart = null;
-        // //     count = 0;
-        // // });
-        // this._container.addEventListener("touchmove", (evt) => {
-        //     if (this.touchStart && this.catching) {
-        //         let x = evt.changedTouches[0].clientX;
-        //         let y = evt.changedTouches[0].clientY;
-        //         this.touchGap.x = (this.touchStart.x - x);
-        //         this.touchGap.y = (this.touchStart.y - y);
-        //         this.checkPreventBodyScroll(evt, this.touchGap.y);
-        //         if (Math.abs(this.touchGap.x) < Math.abs(this.touchGap.y)) {
-        //             let top = this.progressReal * this.scrollHeight + this.touchGap.y;
-        //             if (this.catching) this.catchTop(top);
-        //             count++;
-        //             if (count == 50) {
-        //                 this.touchStart.x = x;
-        //                 this.touchStart.y = y;
-        //                 count = 0;
-        //             }
-        //         }
-        //     }
-        // });
     }
 
     /**
@@ -232,7 +215,6 @@ export class ScrollCatcher extends ProgressCatcher {
     */
     mouseWheelEvent(evt: MouseEvent, top: number) {
         if (this.followWindowScroll) return;
-        this.checkPreventComputerScroll(evt);
         this.notify(ProgressEvent.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
         if (this.catching) this.catchTop(top);
     }
