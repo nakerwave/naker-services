@@ -99,6 +99,15 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
         this.notify(ProgressEvent.Start, {progress: 0, remain: 0});
     }
 
+    pause() {
+        this.animation.stop();
+        this.catching = false;
+    }
+
+    play() {
+        this.catching = true;
+    }
+
     /**
      * Stop catching progress
      */
