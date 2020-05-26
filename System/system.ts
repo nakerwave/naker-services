@@ -46,7 +46,7 @@ export class System extends NakerObservable<SystemEvent, number> {
      * @param canvas Element where the scene will be drawn
      */
     constructor(canvas: HTMLCanvasElement, screenshot?:boolean) {
-        super();
+        super('System');
         // if (!Engine.isSupported()) throw 'WebGL not supported';
         this.canvas = canvas;
         // For now keep false as the last argument of the engine,

@@ -34,7 +34,7 @@ export class TouchCatcher extends SimpleObservable<TouchEventData> {
      * @param responsive If there is responsive changes, we may have to adapt scroll height
      */
     constructor(container: HTMLElement) {
-        super();
+        super('TouchCatcher');
         this._container = container;
 
         this._setTouchEvent();

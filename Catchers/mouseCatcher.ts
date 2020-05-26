@@ -22,7 +22,7 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
     accelerometerAvailable = true;
 
     constructor(system: SystemAnimation, touchCatcher: TouchCatcher) {
-        super();
+        super('MouseCather');
         this.system = system;
         this.moveAnimation = new Animation(system, 10);
         this.moveAnimation.setEasing(Ease.Circle, EaseMode.Out);

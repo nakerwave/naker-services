@@ -57,7 +57,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
      * @param responsive If there is responsive changes, we may have to adapt progress height
      */
     constructor(system: SystemAnimation) {
-        super();
+        super('ProgressCatcher');
         this.key = Math.random().toString(36);
         this.animation = new Animation(system, 10);
         this.animation.setEasing(Ease.Cubic, EaseMode.Out);

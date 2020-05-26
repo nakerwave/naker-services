@@ -15,7 +15,12 @@ export interface Observer<U> {
 
 export class NakerObservable<U, T> {
 
-    observers: Array<Observer<U>> = new Array<Observer<U>>();
+    observers = new Array<Observer<U>>();
+
+    observableName: string;
+    constructor(observableName: string) {
+        this.observableName = observableName;
+    }
 
     /**
      * Allow to add a listener on special events
@@ -50,18 +55,37 @@ export class NakerObservable<U, T> {
         }
         return false;
     }
-
+    
+    inTheMiddleOfEventCallback: Array<U> = [];
     notify(event: U, eventData: T) {
-        for (var obs of this.observers) {
-            if (obs.event === event) {
-                this.notifyOberver(obs, eventData);
+        if (this.inTheMiddleOfEventCallback.indexOf(event) == -1) {
+            this.inTheMiddleOfEventCallback.push(event);
+            for (var obs of this.observers) {
+                if (obs.event === event) {
+                    // observersToNotify.push(obs);
+                    this.notifyOberver(obs, eventData);
+                }
             }
+            let index = this.inTheMiddleOfEventCallback.indexOf(event);
+            this.inTheMiddleOfEventCallback.splice(index, 1);
+        } else {
+            //infinite loop avoided! report the scenario somehow
+            console.error('Infinite callback loop in observable: ' + this.observableName + ', Event:' + event);
         }
     }
-
+        
     notifyAll(eventData: T) {
-        for (var obs of this.observers) {
-            this.notifyOberver(obs, eventData);
+        // Use null to avoid error message in loop test
+        if (this.inTheMiddleOfEventCallback.indexOf(null) == -1) {
+            this.inTheMiddleOfEventCallback.push(null);
+            for (var obs of this.observers) {
+                this.notifyOberver(obs, eventData);
+            }
+            let index = this.inTheMiddleOfEventCallback.indexOf(null);
+            this.inTheMiddleOfEventCallback.slice(index, index + 1);
+        } else {
+            //infinite loop avoided! report the scenario somehow
+            console.error('Infinite callback loop in observable: ' + this.observableName + ', Observers:' + observers);
         }
     }
 
