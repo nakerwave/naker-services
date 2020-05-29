@@ -9,6 +9,7 @@ import { PointerEventTypes } from '@babylonjs/core/Events/pointerEvents';
 
 export enum MouseEvent {
     Move,
+    InstantMove,
     Drag,
     DragStart,
 }
@@ -174,16 +175,18 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
 
     moveCatch = Vector2.Zero();
     catchMove(mouse: Vector2) {
-        if (!this.hasEventObservers(MouseEvent.Move)) return;
-        let start = this.moveCatch.clone();
-        let change = mouse.subtract(start);
-        let howmany = 5 / this.speed;
-        this.moveAnimation.simple(howmany, (perc) => {
-            let percSpeed = this.speed + (1 - this.speed) * perc;
-            let progress = change.multiply(new Vector2(percSpeed, percSpeed));
-            this.moveCatch = start.add(progress);
-            this.notify(MouseEvent.Move, this.moveCatch.clone());
-        });
+        if (this.hasEventObservers(MouseEvent.InstantMove)) this.notify(MouseEvent.InstantMove, mouse.clone());
+        if (this.hasEventObservers(MouseEvent.Move)) {
+            let start = this.moveCatch.clone();
+            let change = mouse.subtract(start);
+            let howmany = 5 / this.speed;
+            this.moveAnimation.simple(howmany, (perc) => {
+                let percSpeed = this.speed + (1 - this.speed) * perc;
+                let progress = change.multiply(new Vector2(percSpeed, percSpeed));
+                this.moveCatch = start.add(progress);
+                this.notify(MouseEvent.Move, this.moveCatch.clone());
+            });
+        }
     }
 
     dragStart = Vector2.Zero();

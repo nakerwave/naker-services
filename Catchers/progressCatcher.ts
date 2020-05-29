@@ -1,5 +1,4 @@
-import { Animation, Ease, EaseMode } from '../System/systemAnimation';
-import { SystemAnimation } from '../System/systemAnimation';
+import { SystemAnimation, Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { NakerObservable } from '../Tools/observable';
 
 
@@ -20,16 +19,6 @@ interface ProgressEventData {
  */
 
 export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEventData> {
-
-    /**
-    * @ignore
-    */
-    key: string;
-
-    /**
-    * @ignore
-    */
-    system: SystemAnimation;
 
     /**
      * Current progress position to be catched
@@ -58,7 +47,6 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
      */
     constructor(system: SystemAnimation) {
         super('ProgressCatcher');
-        this.key = Math.random().toString(36);
         this.animation = new Animation(system, 10);
         this.animation.setEasing(Ease.Cubic, EaseMode.Out);
     }
