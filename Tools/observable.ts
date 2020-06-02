@@ -1,20 +1,10 @@
 /**
- * Specifies all the events possible
+ * An observer which will be call at a specific event
  */
 
-export enum EventsName {
-    Progress,
-    Start,
-    Stop,
-    Begin,
-    End,
-    Resize,
-    MouseWheel,
-}
-
-export interface Observer {
+export interface Observer<U> {
     funct: (eventData) => void,
-    eventName: EventsName,
+    event: U,
     scope?: any,
 }
 
@@ -23,20 +13,13 @@ export interface Observer {
  * https://github.com/BabylonJS/Babylon.js/blob/master/src/Misc/observable.ts
  */
 
-export class NakerObservable<T> {
+export class NakerObservable<U, T> {
 
-    observers: Array<Observer> = new Array<Observer>();
+    observers = new Array<Observer<U>>();
 
-    addListener(funct: (eventData: T) => void, scope?:any, first?: boolean) {
-        this.on(EventsName.Progress, funct, scope, first);
-    }
-
-    removeListener(funct: (eventData: T) => void): boolean {
-        return this.off(EventsName.Progress, funct);
-    }
-
-    sendToListener(eventData: T) {
-        this.notify(EventsName.Progress, eventData);
+    observableName: string;
+    constructor(observableName: string) {
+        this.observableName = observableName;
     }
 
     /**
@@ -45,11 +28,11 @@ export class NakerObservable<T> {
      * @param funct the function to be called at the event
      * Do not use anonymous function or you won't be able to remove it
      */
-    on(eventName: EventsName, funct: (eventData: T) => void, scope?: any, first?: boolean) {
-        if (this.hasObserver(eventName, funct)) return;
+    on(event: U, funct: (eventData: T) => void, scope?: any, first?: boolean) {
+        if (this.hasObserver(event, funct)) return;
         let newObserver = {
             funct: funct,
-            eventName: eventName,
+            event: event,
             scope: scope,
         }
 
@@ -60,9 +43,9 @@ export class NakerObservable<T> {
         }
     }
 
-    off(eventName: EventsName, funct: (eventData: T) => void): boolean {
+    off(event: U, funct: (eventData: T) => void): boolean {
         for (var obs of this.observers) {
-            if (obs.eventName === eventName && obs.funct === funct) {
+            if (obs.event === event && obs.funct === funct) {
                 var index = this.observers.indexOf(obs);
                 if (index !== -1) {
                     this.observers.splice(index, 1);
@@ -72,22 +55,41 @@ export class NakerObservable<T> {
         }
         return false;
     }
-
-    notify(eventName: EventsName, eventData: T) {
-        for (var obs of this.observers) {
-            if (obs.eventName === eventName) {
+    
+    inTheMiddleOfEventCallback: Array<U> = [];
+    notify(event: U, eventData: T) {
+        if (this.inTheMiddleOfEventCallback.indexOf(event) == -1) {
+            this.inTheMiddleOfEventCallback.push(event);
+            for (var obs of this.observers) {
+                if (obs.event === event) {
+                    // observersToNotify.push(obs);
+                    this.notifyOberver(obs, eventData);
+                }
+            }
+            let index = this.inTheMiddleOfEventCallback.indexOf(event);
+            this.inTheMiddleOfEventCallback.splice(index, 1);
+        } else {
+            //infinite loop avoided! report the scenario somehow
+            console.error('Infinite callback loop in observable: ' + this.observableName + ', Event:' + event);
+        }
+    }
+        
+    notifyAll(eventData: T) {
+        // Use null to avoid error message in loop test
+        if (this.inTheMiddleOfEventCallback.indexOf(null) == -1) {
+            this.inTheMiddleOfEventCallback.push(null);
+            for (var obs of this.observers) {
                 this.notifyOberver(obs, eventData);
             }
+            let index = this.inTheMiddleOfEventCallback.indexOf(null);
+            this.inTheMiddleOfEventCallback.slice(index, index + 1);
+        } else {
+            //infinite loop avoided! report the scenario somehow
+            console.error('Infinite callback loop in observable: ' + this.observableName + ', Observers:' + observers);
         }
     }
 
-    notifyAll(eventData: T) {
-        for (var obs of this.observers) {
-            this.notifyOberver(obs, eventData);
-        }
-    }
-
-    notifyOberver(observer: Observer, eventData: T) {
+    notifyOberver(observer: Observer<U>, eventData: T) {
         if (observer.scope) {
             observer.funct.apply(observer.scope, [eventData]);
         } else {
@@ -95,9 +97,16 @@ export class NakerObservable<T> {
         }
     }
 
-    hasObserver(eventName: EventsName, funct: (eventData: T) => void) {
+    hasObserver(event: U, funct: (eventData: T) => void) {
         for (var obs of this.observers) {
-            if (obs.funct === funct && obs.eventName === eventName) return true;
+            if (obs.funct === funct && obs.event === event) return true;
+        }
+        return false;
+    }
+
+    hasEventObservers(event: U): boolean {
+        for (var obs of this.observers) {
+            if (obs.event === event) return true;
         }
         return false;
     }
@@ -110,7 +119,7 @@ export class NakerObservable<T> {
     * Clear the list of observers
     */
     clear(): void {
-        this.observers = new Array<Observer>();
+        this.observers = new Array<Observer<U>>();
     }
 
 }

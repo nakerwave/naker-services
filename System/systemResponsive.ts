@@ -1,7 +1,6 @@
-import { System } from './system';
+import { System, SystemEvent } from './system';
 
 import { Camera } from '@babylonjs/core/Cameras/camera';
-import { EventsName } from '../Tools/observable';
 
 export class SystemResponsive extends System {
 
@@ -99,12 +98,11 @@ export class SystemResponsive extends System {
         const devicePixelRatio = window.devicePixelRatio;
 
         let newPixelRatio = Math.min(this.maxScaling, devicePixelRatio);
-        // We make sure scene stays fluid on big screen by forcing pixelRatio to 1
         // console.log(newPixelRatio)
         // console.log(this.renderWidth/newPixelRatio, this.renderHeight/newPixelRatio)
+        // We make sure scene stays fluid on big screen by forcing pixelRatio to 1
         // if (this.renderWidth / newPixelRatio > 800 || this.renderHeight / newPixelRatio > 800) newPixelRatio = 1;
-        // setHardwareScalingLevel will call resize which call onResizeObservable which call checkPixelRatio
-        // So we make sure something has change inorder to avoid infinite loop
+        // setHardwareScalingLevel must be used only by systemQuality class or it will create conflicts
         if (newPixelRatio != this.pixelRatio) {
             this.pixelRatio = newPixelRatio;
             return true;
@@ -187,6 +185,6 @@ export class SystemResponsive extends System {
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
 
-        this.notify(EventsName.Resize, 0);
+        this.notify(SystemEvent.Resize, 0);
     }
 }

@@ -1,4 +1,5 @@
 import { SystemAnimation } from './systemAnimation';
+import { SystemEvent } from './system';
 
 import '@babylonjs/core/Misc/screenshotTools';
 import { Tools } from '@babylonjs/core/Misc/tools';
@@ -6,7 +7,6 @@ import { Layer } from '@babylonjs/core/Layers/layer';
 import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilitylayerRenderer';
 import { Color4 } from '@babylonjs/core/Maths/math';
 import { Scene } from '@babylonjs/core/scene';
-import { EventsName } from '../Tools/observable';
 
 export class SystemQuality extends SystemAnimation {
 
@@ -32,21 +32,16 @@ export class SystemQuality extends SystemAnimation {
         // this.scene.autoClear = false;
         // this.scene.autoClearDepthAndStencil = false;
 
-        this.on(EventsName.Stop, () => {
-            if (this.qualityAtBreak) this.checkEndQuality();
+        this.on(SystemEvent.Stop, () => {
+            if (!this.keepHighQuality && this.qualityAtBreak) this.checkEndQuality();
         });
 
-        this.on(EventsName.Start, () => {
-            if (this.qualityAtBreak) this.checkStartQuality();
+        this.on(SystemEvent.Start, () => {
+            if (!this.keepHighQuality && this.qualityAtBreak) this.checkStartQuality();
         });
 
-        this.on(EventsName.Resize, () => {
-            // if (this.qualityBreakDone) {
-            //     this.checkStartQuality();
-            //     this.checkEndQuality();
-            // }
-            
-            if (this.qualityBreakDone) {
+        this.on(SystemEvent.Resize, () => {
+            if (!this.keepHighQuality && this.qualityBreakDone) {
                 if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
                 this.engine.resize();
                 this.scene.render();
@@ -69,10 +64,18 @@ export class SystemQuality extends SystemAnimation {
         this.qualityAtBreak = qualityAtBreak;
     }
 
+    keepHighQuality = false;
+    alwaysKeepHighQuality(keepHighQuality: boolean) {
+        this.keepHighQuality = keepHighQuality;
+        this.notify(SystemEvent.HighQuality, 0);
+        this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
+    }
+
     lastFrameNumberCheck = 20;
     firstFrameNumberCheck = 2;
 
     checkStartQuality() {
+        this.notify(SystemEvent.LowQuality, 0);
         this.qualityBreakStarted = false;
         this.qualityBreakDone = false;
         this.engine.setHardwareScalingLevel(1 / this.pixelRatio);
@@ -90,7 +93,6 @@ export class SystemQuality extends SystemAnimation {
     //             let a = Math.max(t, 0)
     //             a = Math.min(a, 1)
     //             this.layer2.color.a = a;
-
     //             this.qualityLayer.render();
     //         } else {
     //             this.guiCamera.layerMask = 0x10000000;
@@ -107,7 +109,9 @@ export class SystemQuality extends SystemAnimation {
     formerCameraLayerMask;
     qualityBreakStarted = false;
     qualityBreakDone = false;
+    
     checkEndQuality() {
+        this.notify(SystemEvent.HighQuality, 0);
         this.qualityBreakStarted = true;
         // FIXME: Need timeout otherwise renderLoop will be called
         setTimeout(() => {

@@ -76,7 +76,6 @@ export class NakerViewer {
         // 'touch-action': 'none' Keep it to avoid refresh on android phones
         // -webkit-tap to avoid touch effect on iphone
        
-       
         // Add cool WaterMark in all naker Projects
         setAttr(this.canvas, { 'data-who': 'Made with naker.io' });
         mount(this.container, this.canvas);

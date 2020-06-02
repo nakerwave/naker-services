@@ -1,8 +1,12 @@
-import { Animation } from '../System/systemAnimation';
-import { SystemAnimation } from '../System/systemAnimation';
-import { NakerObservable, EventsName } from '../Tools/observable';
+import { SystemAnimation, Animation, Ease, EaseMode } from '../System/systemAnimation';
+import { NakerObservable } from '../Tools/observable';
 
-import { EasingFunction, CubicEase } from '@babylonjs/core/Animations/easing';
+export enum ProgressEvent {
+    Start,
+    Stop,
+    Progress,
+    MouseWheel, // Mandatory for scrollCatcher
+}
 
 interface ProgressEventData {
     progress: number,
@@ -13,17 +17,7 @@ interface ProgressEventData {
  * Detect progress action of the user
  */
 
-export class ProgressCatcher extends NakerObservable<ProgressEventData> {
-
-    /**
-    * @ignore
-    */
-    key: string;
-
-    /**
-    * @ignore
-    */
-    system: SystemAnimation;
+export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEventData> {
 
     /**
      * Current progress position to be catched
@@ -46,21 +40,14 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     animation: Animation;
 
     /**
-    * Ease catch function
-    */
-    curve: EasingFunction;
-
-    /**
      * Use to animate the catching
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt progress height
      */
     constructor(system: SystemAnimation) {
-        super();
-        this.key = Math.random().toString(36);
+        super('ProgressCatcher');
         this.animation = new Animation(system, 10);
-        this.curve = new CubicEase();
-        this.curve.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
+        this.animation.setEasing(Ease.Cubic, EaseMode.Out);
     }
 
     /**
@@ -69,6 +56,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     restart() {
         this._restart();
     }
+
     _restart() {
         this.progressReal = 0;
         this.progressCatch = 0;
@@ -95,8 +83,17 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     _start() {
         this.catching = true;
         this.catch(this.progressReal, this.speed);
-        this.notify(EventsName.Progress, {progress: 0, remain: 0});
-        this.notify(EventsName.Start, {progress: 0, remain: 0});
+        this.notify(ProgressEvent.Progress, {progress: 0, remain: 0});
+        this.notify(ProgressEvent.Start, {progress: 0, remain: 0});
+    }
+
+    pause() {
+        this.animation.stop();
+        this.catching = false;
+    }
+
+    play() {
+        this.catching = true;
     }
 
     /**
@@ -112,7 +109,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
     _stop() {
         this.animation.stop();
         this.catching = false;
-        this.notify(EventsName.Stop, { progress: this.progressCatch, remain: 0 });
+        this.notify(ProgressEvent.Stop, { progress: this.progressCatch, remain: 0 });
     }
 
     /**
@@ -158,13 +155,13 @@ export class ProgressCatcher extends NakerObservable<ProgressEventData> {
         let howmany = Math.round(5 / catchSpeed);
         howmany = Math.min(howmany, 500);
         
-        this.animation.simple(howmany, (count, perc) => {
-            let percEased = catchSpeed + (1 - catchSpeed) * this.curve.ease(perc);
-            percEased = this.checkBorderProgress(percEased);
-            this.progressCatch = progressStart + progressChange * percEased;
+        this.animation.simple(howmany, (perc) => {
+            let percSpeed = catchSpeed + (1 - catchSpeed) * perc;
+            percSpeed = this.checkBorderProgress(percSpeed);
+            this.progressCatch = progressStart + progressChange * percSpeed;
             this.progressGap = this.progressReal - this.progressCatch;
             
-            this.notify(EventsName.Progress, { progress: this.progressCatch, remain: this.progressGap });
+            this.notify(ProgressEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
         }, () => {
             if (callback) callback();
         });
