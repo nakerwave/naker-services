@@ -1,7 +1,6 @@
 import { SystemAnimation, Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { NakerObservable } from '../Tools/observable';
 
-
 export enum ProgressEvent {
     Start,
     Stop,
@@ -57,6 +56,7 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
     restart() {
         this._restart();
     }
+
     _restart() {
         this.progressReal = 0;
         this.progressCatch = 0;

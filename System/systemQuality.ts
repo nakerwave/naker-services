@@ -93,7 +93,6 @@ export class SystemQuality extends SystemAnimation {
     //             let a = Math.max(t, 0)
     //             a = Math.min(a, 1)
     //             this.layer2.color.a = a;
-
     //             this.qualityLayer.render();
     //         } else {
     //             this.guiCamera.layerMask = 0x10000000;
@@ -110,6 +109,7 @@ export class SystemQuality extends SystemAnimation {
     formerCameraLayerMask;
     qualityBreakStarted = false;
     qualityBreakDone = false;
+    
     checkEndQuality() {
         this.notify(SystemEvent.HighQuality, 0);
         this.qualityBreakStarted = true;
