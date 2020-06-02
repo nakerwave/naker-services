@@ -67,19 +67,19 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
             }
         });
 
-        this.system.scene.onPointerObservable.add((pointerInfo) => {
-            this.getMousePosition(pointerInfo.event);
-            switch (pointerInfo.type) {
-                case PointerEventTypes.POINTERDOWN:
-                    this.startDrag();
-                    break;
-                case PointerEventTypes.POINTERUP:
-                    this.dragging = false;
-                    break;
-                case PointerEventTypes.POINTERMOVE:
-                    this.mouseOrientation(this.mousePosition);
-                    break;
-            }
+        window.addEventListener("pointermove", (evt) => {
+            this.getMousePosition(evt);
+            this.mouseOrientation(this.mousePosition);
+        });
+
+        // WARNING: This doesn't work if container z-index = -1
+        system.canvas.addEventListener("pointerdown", (evt) => {
+            this.getMousePosition(evt);
+            this.startDrag();
+        });
+
+        system.canvas.addEventListener("pointerup", (evt) => {
+            this.dragging = false;
         });
     }
 
