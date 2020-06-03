@@ -248,7 +248,7 @@ export class Animation {
 	/**
 	 * Function called at each run and used to animate something
 	 */
-    funct: Function;
+    funct: (perc: number, count: number) => void;
 
 	/**
 	 * Function called when animation is over
@@ -322,7 +322,7 @@ export class Animation {
 	 * Create an infinite animation which will never stop
 	 * @param funct Function called at each run and used to animate something
 	 */
-    infinite(funct: Function) {
+    infinite(funct: (perc: number, count: number) => void) {
         let howmany = 1000000000000;
         this.simple(howmany, funct);
         return this;
@@ -336,7 +336,7 @@ export class Animation {
 	 * @param funct2 Alternate function 2
 	 * @param functend Function called when animation is over
 	 */
-    alternate(howmany: number, alter: number, funct1: Function, funct2?: Function, functend?: Function) {
+    alternate(howmany: number, alter: number, funct1: (perc: number, count: number) => void, funct2?: Function, functend?: Function) {
         let ft = true;
         let alterstep = 0;
         this.simple(howmany, (count, perc) => {
@@ -360,7 +360,7 @@ export class Animation {
 	 * @param functloop Function called everytime the loop goes back to start
 	 * @param functend Function called when animation is over
 	 */
-    loop(howmany: number, loop: number, funct: Function, functloop?: Function, functend?: Function) {
+    loop(howmany: number, loop: number, funct: (perc: number, count: number) => void, functloop?: Function, functend?: Function) {
         let loopstep = 0;
         this.simple(howmany, (count, perc) => {
             if (count > loop * (loopstep + 1)) {
@@ -405,7 +405,7 @@ export class Animation {
 	 * @param funct Function called at each run and used to animate something
 	 * @param functend Function called when animation is over
 	 */
-    simple(howmany: number, funct: Function, functend?: Function) {
+    simple(howmany: number, funct: (perc: number, count: number) => void, functend?: Function) {
         this.start = 0;
         this.count = 0;
         this.step = 1;
@@ -419,7 +419,7 @@ export class Animation {
 	 * @param funct Function called at each run and used to animate something
 	 * @param functend Function called when animation is over
 	 */
-    go(funct: Function, functend?: Function) {
+    go(funct: (perc: number, count: number) => void, functend?: Function) {
         this.resetVar();
         this.running = true;
         this.funct = funct;

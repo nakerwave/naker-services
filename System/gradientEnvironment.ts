@@ -58,6 +58,8 @@ export class GradientEnvironment {
     }
 
     setBackStart(color: Array < number > ) {
+        if (!color) return;
+        if (!color[3]) color[3] = 1;
         this.colorStart = color;
         if (this.sky) {
             this.sky.unfreeze();
@@ -67,6 +69,8 @@ export class GradientEnvironment {
     }
 
     setBackStop(color: Array < number > ) {
+        if (!color) return;
+        if (!color[3]) color[3] = 1;
         this.colorEnd = color;
         if (this.sky) {
             this.sky.unfreeze();
