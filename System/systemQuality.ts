@@ -55,6 +55,8 @@ export class SystemQuality extends SystemAnimation {
                         this.qualityLayer.render();
                     });
                 });
+            } else {
+                this.engine.resize();
             }
         });
     }
