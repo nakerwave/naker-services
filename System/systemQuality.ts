@@ -192,6 +192,7 @@ export class SystemQuality extends SystemAnimation {
             });
 
             this.engine.runRenderLoop(() => {
+                if (this.isRendering()) return;
                 this.layer1.render();
             });
         }
