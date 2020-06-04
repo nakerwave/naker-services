@@ -339,15 +339,15 @@ export class Animation {
     alternate(howmany: number, alter: number, funct1: (perc: number, count: number) => void, funct2?: Function, functend?: Function) {
         let ft = true;
         let alterstep = 0;
-        this.simple(howmany, (count, perc) => {
+        this.simple(howmany, (perc, count) => {
             if (count > alter * (alterstep + 1)) {
                 ft = !ft;
                 alterstep++;
             }
             count = count - alter * alterstep;
             perc = count / alter;
-            if (ft) funct1(count, perc);
-            else if (funct2) funct2(count, perc);
+            if (ft) funct1(perc, count);
+            else if (funct2) funct2(perc, count);
         }, functend);
         return this;
     }
@@ -362,14 +362,14 @@ export class Animation {
 	 */
     loop(howmany: number, loop: number, funct: (perc: number, count: number) => void, functloop?: Function, functend?: Function) {
         let loopstep = 0;
-        this.simple(howmany, (count, perc) => {
+        this.simple(howmany, (perc, count) => {
             if (count > loop * (loopstep + 1)) {
                 loopstep++;
                 if (functloop) functloop();
             }
             count = count - loop * loopstep;
             perc = count / loop;
-            funct(count, perc);
+            funct(perc, count);
         }, functend);
         return this;
     }
@@ -390,7 +390,7 @@ export class Animation {
     // loopsteps (steps:any, step:number) {
     // 	if (!steps[step]) return;
     // 	let stepO = steps[step];
-    // 	this.simple(stepO.howmany, (count, perc) => {
+    // 	this.simple(stepO.howmany, (perc, count) => {
     // 		stepO.funct(count, perc);
     // 	}, () => {
     // 		stepO.functend();
