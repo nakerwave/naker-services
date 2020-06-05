@@ -136,23 +136,10 @@ export class ScrollCatcher extends ProgressCatcher {
         });
     }
 
-    scrollFromTouchPad = 0;
     lastMouseEvent: number;
     checkMouseWheel(evt: WheelEvent, top: number) {
         this.checkPreventComputerScroll(evt);
-        let startTouchPad = this.checkIfFromTouchPad(evt);
-        if (startTouchPad) {
-            this.scrollFromTouchPad = 1;
-        } else {
-            // If from touchPad it will continue sending mousewheel event that we need to ignore
-            if (this.scrollFromTouchPad) {
-                this.scrollFromTouchPad++;
-                if (this.scrollFromTouchPad < 5) this.mouseWheelEvent(evt, top);
-            } else {
-                this.scrollFromTouchPad = 0;
-                this.mouseWheelEvent(evt, top); 
-            }
-        }
+        this.mouseWheelEvent(top);
     }
 
     // Detect if mousewheel started from touchPad
@@ -213,7 +200,7 @@ export class ScrollCatcher extends ProgressCatcher {
     * @param evt Event of the mouse wheel
     * @param top What is the new top position due to this mouseWheel event
     */
-    mouseWheelEvent(evt: MouseEvent, top: number) {
+    mouseWheelEvent(top: number) {
         if (this.followWindowScroll) return;
         this.notify(ProgressEvent.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
         if (this.catching) this.catchTop(top);
