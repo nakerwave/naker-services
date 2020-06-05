@@ -83,10 +83,10 @@ export class NakerScreen extends NakerViewer {
     worker: Worker;
     offScreen(callback: Function) {
         let scriptUrl = this.getScriptUrl();
-        // this.worker = new Worker(scriptUrl + 'worker.js');
         this.worker = this.createWorker(scriptUrl + 'worker.js');
         // In case error creating the worker, we fallback to inscreen canvas
-        if (!this.worker) return this.inScreen(callback);
+        if (!this.worker) return false;
+
         this.worker.onmessage = (mg) => {
             this.workerToMain(mg)
         };
@@ -102,6 +102,7 @@ export class NakerScreen extends NakerViewer {
         }, [offscreenCanvas]);
         this.onResize();
         callback();
+        return true;
     }
 
     getScriptUrl(): string {
@@ -263,6 +264,8 @@ export class NakerScreen extends NakerViewer {
         // Make sure data object is clonable
         // This will remove methods
         data = JSON.parse(JSON.stringify(data, serializer));
+        console.log(type, this.worker);
+        
         if (this.worker) this.worker.postMessage(data);
     }
 

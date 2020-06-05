@@ -28,21 +28,28 @@ export class NakerOffscreenViewer extends NakerScreen {
 
     load(project: any, callback: Function) {
         if (this.isOffsreenAvailable() && this.offscreen) {
-            this.offScreen(() => {
+            let offscreenSuccess = this.offScreen(() => {
                 console.log('Naker - offscreen');
                 this.sendToWorker('build', project);
                 callback('offscreen mode');
             });
+            if (!offscreenSuccess) {
+                this.loadInscreen(project, callback);
+            }
         } else {
-            this.inScreen(() => {
-                project.container = this.container;
-                project.canvas = this.canvas;
-                let engine = this.buildProject(project);
-                this.system = engine.system;
-                callback(engine);
-            });
+            this.loadInscreen(project, callback);
         }
         this.onResize();
+    }
+
+    loadInscreen(project: any, callback: Function) {
+        this.inScreen(() => {
+            project.container = this.container;
+            project.canvas = this.canvas;
+            let engine = this.buildProject(project);
+            this.system = engine.system;
+            callback(engine);
+        });
     }
 
     // Offscreen canvas not compatible everywhere yet
