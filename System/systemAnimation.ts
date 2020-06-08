@@ -382,6 +382,17 @@ export class Animation {
         return this;
     }
 
+    interval(time: number, funct: Function) {
+        let timeTest = 0;
+        this.infinite(() => {
+            timeTest += 1000 / this.system.fps;
+            if (timeTest > time) {
+                funct();
+                timeTest = 0;
+            }
+        });
+    }
+
     // steps (steps:any) {
     // 	this.loopsteps(steps, 0);
     // 	return this;

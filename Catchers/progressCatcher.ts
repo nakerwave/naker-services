@@ -88,7 +88,6 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
     }
 
     pause() {
-        this.animation.stop();
         this.catching = false;
     }
 
