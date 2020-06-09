@@ -128,6 +128,9 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
     setCatchSpeed(speed: number) {
         this.speed = speed;
         this.lastSpeed = speed;
+        if (this.animation.running) {
+            this.catch(this.progressReal);
+        }
     }
 
     /**
