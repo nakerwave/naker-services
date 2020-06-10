@@ -1,5 +1,5 @@
 import { SystemAnimation, Animation, Ease, EaseMode } from '../System/systemAnimation';
-import { NakerObservable } from '../Tools/observable';
+import { Catcher } from './catcher';
 
 export enum ProgressEvent {
     Start,
@@ -17,7 +17,7 @@ interface ProgressEventData {
  * Detect progress action of the user
  */
 
-export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEventData> {
+export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
 
     /**
      * Current progress position to be catched
@@ -36,78 +36,38 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
 
     /**
      * Use to animate the catching
-     */
-    animation: Animation;
-
-    /**
-     * Use to animate the catching
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt progress height
      */
     constructor(system: SystemAnimation) {
-        super('ProgressCatcher');
-        this.animation = new Animation(system, 10);
-        this.animation.setEasing(Ease.Cubic, EaseMode.Out);
+        super(system, 'ProgressCatcher');
     }
 
     /**
      * Restart progress catcher
      */
     restart() {
-        this._restart();
-    }
-
-    _restart() {
         this.progressReal = 0;
         this.progressCatch = 0;
         this.progressGap = 0;
-        this.stop();
-        this.start();
-    }
-
-    /**
-     * Is the progress currently catched or not
-     */
-    catching = false;
-
-    /**
-     * Start catching progress
-     */
-    start() {
-        this._start();
+        this._restart();
     }
 
     /**
      * @ignore
      */
-    _start() {
-        this.catching = true;
+    start() {
+        this._start();
         this.catch(this.progressReal, this.speed);
         this.notify(ProgressEvent.Progress, {progress: 0, remain: 0});
         this.notify(ProgressEvent.Start, {progress: 0, remain: 0});
     }
 
-    pause() {
-        this.catching = false;
-    }
-
-    play() {
-        this.catching = true;
-    }
-
-    /**
-     * Stop catching progress
-     */
-    stop() {
-        this._stop();
-    }
-
     /**
      * @ignore
      */
-    _stop() {
-        this.animation.stop();
-        this.catching = false;
+    stop() {
+        this._stop();
         this.notify(ProgressEvent.Stop, { progress: this.progressCatch, remain: 0 });
     }
 
@@ -133,40 +93,47 @@ export class ProgressCatcher extends NakerObservable<ProgressEvent, ProgressEven
         }
     }
 
+    maximumCatchSpeed = 0.2;
     /**
      * Catch the progress
      * @param top Top position to be catched
      * @param speed At what speed should we catch the new position (used when accelarating to new step for instance)
      */
-    catch(progress: number, speed?: number, callback?:Function) {
+    catch(progress: number, speed?: number, force?: boolean) {
         if (!this.hasObservers()) return;
         if (!progress) progress = 0;
-        let catchSpeed = (speed) ? speed : this.speed;
-        // Bigger speed will make percentage go behind 100%
-        catchSpeed = Math.min(0.1, catchSpeed);
+        if (progress == this.progressReal) return;
         
-        if (progress == this.progressReal && catchSpeed == this.lastSpeed) return;
         // Sometimes on iphone, perc can go below 0
         progress = this.checkBorderProgress(progress);
         this.progressReal = progress;
+        
+        let catchSpeed = (speed) ? speed : this.speed;
+        // Bigger speed will make percentage go behind 100%
+        // Alway keep a minimum inertia or scroll won't be fluide at all
+        catchSpeed = Math.min(this.maximumCatchSpeed, catchSpeed);
+        if (catchSpeed == this.lastSpeed && this.checkRecentCatch(100) && !force) return;
         this.lastSpeed = catchSpeed;
         
-        let progressStart = this.progressCatch;
-        let progressChange = progress - progressStart;
-        
+        this.progressStart = this.progressCatch;
+        this.progressChange = progress - this.progressStart;
         let howmany = Math.round(5 / catchSpeed);
         howmany = Math.min(howmany, 500);
-        
         this.animation.simple(howmany, (perc) => {
-            let percSpeed = catchSpeed + (1 - catchSpeed) * perc;
-            percSpeed = this.checkBorderProgress(percSpeed);
-            this.progressCatch = progressStart + progressChange * percSpeed;
-            this.progressGap = this.progressReal - this.progressCatch;
-            
-            this.notify(ProgressEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
-        }, () => {
-            if (callback) callback();
+            this.progress(perc, catchSpeed);
         });
+    }
+
+    progressStart: number;
+    progressChange: number;
+    progress(perc: number, catchSpeed: number) {
+        // We use catchSpeed to make perc is never equal to 0
+        // This way the scroll start from the first mouseWheel
+        let percSpeed = catchSpeed + (1 - catchSpeed) * perc;
+        percSpeed = this.checkBorderProgress(percSpeed);
+        this.progressCatch = this.progressStart + this.progressChange * percSpeed;
+        this.progressGap = this.progressReal - this.progressCatch;
+        this.notify(ProgressEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
     }
 
     checkBorderProgress(progress: number): number {

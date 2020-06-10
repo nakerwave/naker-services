@@ -1,11 +1,10 @@
 import { Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
 import { TouchCatcher } from './touchCatcher';
-import { NakerObservable } from '../Tools/observable';
+import { Catcher } from './catcher';
 
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
-import { PointerEventTypes } from '@babylonjs/core/Events/pointerEvents';
 
 export enum MouseEvent {
     Move,
@@ -14,17 +13,14 @@ export enum MouseEvent {
     DragStart,
 }
 
-export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
+export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
 
-    catching = false;
-    system: SystemAnimation;
     moveAnimation: Animation;
     dragAnimation: Animation;
     accelerometerAvailable = true;
 
     constructor(system: SystemAnimation, touchCatcher: TouchCatcher) {
-        super('MouseCather');
-        this.system = system;
+        super(system, 'MouseCather');
         this.moveAnimation = new Animation(system, 10);
         this.moveAnimation.setEasing(Ease.Circle, EaseMode.Out);
 
@@ -153,14 +149,6 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
         this.mousePosition.y = (evt.y - h / 2) / h;
     }
 
-    start() {
-        this.catching = true;
-    }
-
-    stop() {
-        this.catching = false;
-    }
-
     /**
     * Spped of the progress used when mousewheel or drag on phone
     */
@@ -177,6 +165,7 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
     catchMove(mouse: Vector2) {
         if (this.hasEventObservers(MouseEvent.InstantMove)) this.notify(MouseEvent.InstantMove, mouse.clone());
         if (this.hasEventObservers(MouseEvent.Move)) {
+            if (this.checkRecentCatch(100)) return;
             let start = this.moveCatch.clone();
             let change = mouse.subtract(start);
             let howmany = 5 / this.speed;
@@ -204,6 +193,7 @@ export class MouseCatcher extends NakerObservable<MouseEvent, Vector2> {
     dragCatch = Vector2.Zero();
     catchDrag(mouse: Vector2) {
         if (!this.hasEventObservers(MouseEvent.Drag)) return;
+        if (this.checkRecentCatch(100)) return;
         let dragReal = mouse.subtract(this.dragStart);
         let start = this.dragCatch.clone();
         let change = dragReal.subtract(start);
