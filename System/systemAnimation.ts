@@ -65,14 +65,6 @@ export class SystemAnimation extends SystemResponsive {
         }
     }
 
-    pauseRender() {
-        if (!this.rendering) return;
-        // console.log('stop');
-        this.notify(SystemEvent.Stop, 0);
-        this.rendering = false;
-        this.engine.stopRenderLoop();
-    }
-
 	/**
 	 * Make one step forward for all animations
 	 * @param fps Frame per second of the engine
@@ -143,7 +135,7 @@ export class SystemAnimation extends SystemResponsive {
     * Add a rendering process
     */
     addAnimation(animation: Animation) {
-        if (!this.started) return;
+        if (!this.launched) return;
         this.setCheckScroll(false);
         let containerVisible = this.checkVisible();
         if (containerVisible) {
@@ -161,7 +153,7 @@ export class SystemAnimation extends SystemResponsive {
     */
     removeAnimation(animation: Animation) {
         remove(this.list, (a: Animation) => { return a.key == animation.key });
-        // console.log('remove', animation.key);
+        // console.log('remove', animation);
         this.checkStopRender();
     }
 

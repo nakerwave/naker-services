@@ -165,7 +165,7 @@ export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
     catchMove(mouse: Vector2) {
         if (this.hasEventObservers(MouseEvent.InstantMove)) this.notify(MouseEvent.InstantMove, mouse.clone());
         if (this.hasEventObservers(MouseEvent.Move)) {
-            if (this.checkRecentCatch(100)) return;
+            // if (this.checkRecentCatch(100)) return;
             let start = this.moveCatch.clone();
             let change = mouse.subtract(start);
             let howmany = 5 / this.speed;
@@ -193,7 +193,7 @@ export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
     dragCatch = Vector2.Zero();
     catchDrag(mouse: Vector2) {
         if (!this.hasEventObservers(MouseEvent.Drag)) return;
-        if (this.checkRecentCatch(100)) return;
+        // if (this.checkRecentCatch(100)) return;
         let dragReal = mouse.subtract(this.dragStart);
         let start = this.dragCatch.clone();
         let change = dragReal.subtract(start);

@@ -90,7 +90,7 @@ export class System extends NakerObservable<SystemEvent, number> {
     /**
     * Tell if scene needs to be render
     */
-    started = false;
+    launched = false;
 
     /**
      * @ignore
@@ -102,7 +102,7 @@ export class System extends NakerObservable<SystemEvent, number> {
     */
     setCheckScroll(checkingScroll: boolean) {
         this.checkingScroll = checkingScroll;        
-        if (checkingScroll && this.started) this.checkScroll();
+        if (checkingScroll && this.launched) this.checkScroll();
     }
 
     /**
@@ -121,7 +121,7 @@ export class System extends NakerObservable<SystemEvent, number> {
      * @ignore
      */
     checkScroll() {
-        if (this.started && (this.checkingScroll || !this.needProcess)) {
+        if (this.launched && (this.checkingScroll || !this.needProcess)) {
             // If overflow style = hidden, there is no scrollingElement on document
             let containerVisible = this.checkVisible();
             if (containerVisible) this.startRender();
@@ -141,18 +141,23 @@ export class System extends NakerObservable<SystemEvent, number> {
     /**
      * Allow to launch scene rendering (when everything is loaded for instance)
      */
-    launchRender() {
-        this.started = true;
-        // console.log('launch');
-        this.scene.render();
-        this.checkScroll();
+    launchRender(callback?: Function) {
+        this.engine.runRenderLoop(() => {
+            // Make sure scene is ready            
+            if (this.scene.isReady()) {
+                this.engine.stopRenderLoop();
+                this.launched = true; 
+                this.checkScroll();
+                if (callback) callback();
+            }
+        });
     }
 
     /**
      * Stop scene rendering
      */
     stopRender() {
-        this.started = false;
+        this.launched = false;
         this.pauseRender();
     }
 
@@ -165,14 +170,13 @@ export class System extends NakerObservable<SystemEvent, number> {
         this.notify(SystemEvent.Stop, 0);
         this.rendering = false;
         this.engine.stopRenderLoop();
-        this.scene.render();
     }
 
     /**
      * @ignore
      */
     startRender() {
-        if (this.rendering || !this.started) return;
+        if (this.rendering || !this.launched) return;
         this.rendering = true;
         this.forceRender();
     }
