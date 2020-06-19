@@ -61,11 +61,13 @@ export class System extends NakerObservable<SystemEvent, number> {
         this.buildScene();
 
         window.addEventListener("scroll", () => {
-            this.checkScroll();
+            this.checkStartRender();
         });
 
         window.addEventListener("focus", () => {
-            this.checkScroll();
+            this.checkStartRender();
+            // When focus on page after launchedRender called we need to restart the check
+            if (!this.launched && this.isCheckingReady) this.launchRender(this.currentLaunchCallback);
         });
     }
 
@@ -95,34 +97,8 @@ export class System extends NakerObservable<SystemEvent, number> {
     /**
      * @ignore
      */
-    checkingScroll = true;
-
-    /**
-    * Set if if have to check scroll to render
-    */
-    setCheckScroll(checkingScroll: boolean) {
-        this.checkingScroll = checkingScroll;        
-        if (checkingScroll && this.launched) this.checkScroll();
-    }
-
-    /**
-    * @ignore
-    */
-    needProcess = true;
-
-    /**
-    * @ignore
-    */
-    setNeedProcess(needProcess: boolean) {
-        this.needProcess = needProcess;
-    }
-
-    /**
-     * @ignore
-     */
-    checkScroll() {
-        if (this.launched && (this.checkingScroll || !this.needProcess)) {
-            // If overflow style = hidden, there is no scrollingElement on document
+    checkStartRender() {
+        if (this.launched) {
             let containerVisible = this.checkVisible();
             if (containerVisible) this.startRender();
             else this.pauseRender();
@@ -141,14 +117,26 @@ export class System extends NakerObservable<SystemEvent, number> {
     /**
      * Allow to launch scene rendering (when everything is loaded for instance)
      */
+    currentLaunchCallback: Function;
     launchRender(callback?: Function) {
+        this.currentLaunchCallback = callback;
+        this.checkSceneReadyToRender(() => {
+            this.launched = true; 
+            this.checkStartRender();
+            if (callback) callback();
+        });
+    }
+    
+    isCheckingReady = false;
+    checkSceneReadyToRender(callback: Function) {
+        this.isCheckingReady = true;
+        this.engine.stopRenderLoop();
         this.engine.runRenderLoop(() => {
-            // Make sure scene is ready            
+            // Make sure scene is ready  
             if (this.scene.isReady()) {
                 this.engine.stopRenderLoop();
-                this.launched = true; 
-                this.checkScroll();
-                if (callback) callback();
+                this.isCheckingReady = false;
+                callback();
             }
         });
     }
@@ -177,6 +165,7 @@ export class System extends NakerObservable<SystemEvent, number> {
      */
     startRender() {
         if (this.rendering || !this.launched) return;
+        // console.log('start');
         this.rendering = true;
         this.forceRender();
     }
@@ -186,7 +175,6 @@ export class System extends NakerObservable<SystemEvent, number> {
     }
     
     forceRender() {
-        // console.log('start');
         this.notify(SystemEvent.Start, 0);
         this.engine.stopRenderLoop();        
         if (this.limitFPS) {

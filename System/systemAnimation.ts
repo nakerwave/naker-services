@@ -47,7 +47,6 @@ export class SystemAnimation extends SystemResponsive {
     }
 
     forceRender() {
-        // console.log('start');
         this.frameSinceStarted = 0;
         this.notify(SystemEvent.Start, 0);
         this.engine.stopRenderLoop();
@@ -75,8 +74,8 @@ export class SystemAnimation extends SystemResponsive {
         this.fpsratio = 60 / this.fps;
         
         this.frameBeforeEnd = 0;
-        // if (this.focusback) return;
         // To avoid acceleration when focus back
+        // if (this.focusback) return;
         let fpsratio = Math.min(this.fpsratio, 2);
         for (let i = 0; i < this.list.length; i++) {
             let anim = this.list[i];
@@ -135,16 +134,36 @@ export class SystemAnimation extends SystemResponsive {
     * Add a rendering process
     */
     addAnimation(animation: Animation) {
-        if (!this.launched) return;
-        this.setCheckScroll(false);
-        let containerVisible = this.checkVisible();
-        if (containerVisible) {
-            // console.log(this.list.indexOf(animation) == -1, animation.key);
-            if (this.list.indexOf(animation) == -1) {
-                // console.log('add', animation);
-                this.list.push(animation);
-                if (this.needProcess) this.startRender();
-            }
+        // console.log(this.list.indexOf(animation) == -1, animation.key);
+        if (this.list.indexOf(animation) == -1) {
+            // console.log('add', animation);
+            this.list.push(animation);
+            this.checkStartRender();
+        }
+    }
+
+    /**
+    * @ignore
+    */
+    needProcess = true;
+
+    /**
+    * @ignore
+    */
+    setNeedProcess(needProcess: boolean) {
+        this.needProcess = needProcess;
+        if (!needProcess && this.launched) this.startRender();
+    }
+
+    /**
+     * @ignore
+     */
+    checkStartRender() {
+        if (this.launched) {
+            // If overflow style = hidden, there is no scrollingElement on document
+            let containerVisible = this.checkVisible();
+            if (containerVisible && this.list.length != 0) this.startRender();
+            else if (this.needProcess) this.pauseRender();
         }
     }
 
