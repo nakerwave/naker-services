@@ -264,8 +264,6 @@ export class NakerScreen extends NakerViewer {
         // Make sure data object is clonable
         // This will remove methods
         data = JSON.parse(JSON.stringify(data, serializer));
-        console.log(type, this.worker);
-        
         if (this.worker) this.worker.postMessage(data);
     }
 

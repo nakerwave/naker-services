@@ -8,6 +8,9 @@ export class NakerWorker {
             addEventListener: (event: string, fn: Function, option) => {
                 this.bindHandler('window', event, fn, option);
             },
+            removeEventListener: (event: string, fn: Function, option) => {
+                this.unbindHandler('window', event);
+            },
             setTimeout: self.setTimeout.bind(self),
             PointerEvent: true,
             innerHeight: 100,
@@ -17,6 +20,9 @@ export class NakerWorker {
         self.document = {
             addEventListener: (event: string, fn: Function, option) => {
                 this.bindHandler('document', event, fn, option);
+            },
+            removeEventListener: (event: string, fn: Function, option) => {
+                this.unbindHandler('document', event);
             },
             // Uses to detect wheel event like at src/Inputs/scene.inputManager.ts:797
             createElement: () => {
@@ -98,6 +104,10 @@ export class NakerWorker {
             this.bindHandler('canvas', event, fn, option);
         };
 
+        canvas.removeEventListener = (event: string, fn: Function, option) => {
+            this.unbindHandler('canvas', event);
+        };
+
         canvas.getBoundingClientRect = () => {
             return this.canvasRect;
         };
@@ -154,6 +164,17 @@ export class NakerWorker {
         }
 
         this.sendToScreen('event', eventMessage);
+    }
+
+    /**
+     * removeEventListener hooks
+     * 1. Remove callback in worker
+     * @param targetName
+     * @param eventName
+     */
+    unbindHandler(targetName: 'document' | 'window' | 'canvas', eventName: string) {
+        const handlerId = targetName + eventName;
+        this.handlers.delete(handlerId);
     }
 
     /**
