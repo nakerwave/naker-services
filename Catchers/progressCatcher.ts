@@ -5,7 +5,6 @@ export enum ProgressEvent {
     Start,
     Stop,
     Progress,
-    MouseWheel, // Mandatory for scrollCatcher
 }
 
 interface ProgressEventData {
@@ -112,7 +111,9 @@ export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
         // Bigger speed will make percentage go behind 100%
         // Alway keep a minimum inertia or scroll won't be fluide at all
         catchSpeed = Math.min(this.maximumCatchSpeed, catchSpeed);
-        if (catchSpeed == this.lastSpeed && this.checkRecentCatch(100) && !force) return;
+        let isLimit = (progress == 0 || progress == 1);
+        let isRecent = (catchSpeed == this.lastSpeed && this.checkRecentCatch(100));
+        if (!isLimit && isRecent && !force) return;
         this.lastSpeed = catchSpeed;
         
         this.progressStart = this.progressCatch;

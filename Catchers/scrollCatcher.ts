@@ -100,13 +100,11 @@ export class ScrollCatcher extends ProgressCatcher {
         // Body use different evnet for scroll
         if (this._container == document.body) {
             window.addEventListener("scroll", (evt) => {
-                if (!this.followWindowScroll) return;
                 let top = document.scrollingElement.scrollTop;
                 this.scrollEvent(top);
             });
         } else {
             this._container.addEventListener("scroll", (evt) => {
-                if (!this.followWindowScroll) return;
                 let top = this._container.scrollTop;
                 this.scrollEvent(top);
             });
@@ -191,8 +189,8 @@ export class ScrollCatcher extends ProgressCatcher {
         this.notify(ProgressEvent.Start, { progress: this.progressCatch, remain: this.progressGap });
     }
 
-    scrollEvent(top: number) {
-        if (this.catching) this.catchTop(top);
+    scrollEvent(top: number) {        
+        if (this.catching && this.followWindowScroll) this.catchTop(top);
     }
 
     /**
@@ -202,7 +200,6 @@ export class ScrollCatcher extends ProgressCatcher {
     */
     mouseWheelEvent(top: number) {
         if (this.followWindowScroll) return;
-        this.notify(ProgressEvent.MouseWheel, { progress: this.progressCatch, remain: this.progressGap });
         if (this.catching) this.catchTop(top);
     }
 
@@ -256,12 +253,10 @@ export class ScrollCatcher extends ProgressCatcher {
     }
 
     _catchTop(top: number) {
-        if (!this.followWindowScroll) {
-            // let progress = top / this.scrollHeight;
-            // let change = 100 * Math.abs(progress - this.progressCatch);
-            // The furthest, the fatest
-            // this.catch(top / this.scrollHeight, change * this.speed);
-            this.catch(top / this.scrollHeight);
-        }
+        // let progress = top / this.scrollHeight;
+        // let change = 100 * Math.abs(progress - this.progressCatch);
+        // The furthest, the fatest
+        // this.catch(top / this.scrollHeight, change * this.speed);
+        this.catch(top / this.scrollHeight);
     }
 }
