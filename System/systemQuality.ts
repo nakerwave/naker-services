@@ -33,11 +33,13 @@ export class SystemQuality extends SystemAnimation {
         // this.scene.autoClearDepthAndStencil = false;
 
         this.on(SystemEvent.Stop, () => {
-            if (!this.keepHighQuality && this.qualityAtBreak) this.checkEndQuality();
+            if (this.keepHighQuality) this.notify(SystemEvent.HighQuality, 0);
+            else if (this.qualityAtBreak) this.checkEndQuality();
         });
 
         this.on(SystemEvent.Start, () => {
-            if (!this.keepHighQuality && this.qualityAtBreak) this.checkStartQuality();
+            if (this.keepHighQuality) this.notify(SystemEvent.HighQuality, 0);
+            else if (this.qualityAtBreak) this.checkStartQuality();
         });
 
         this.on(SystemEvent.Resize, () => {
@@ -69,8 +71,13 @@ export class SystemQuality extends SystemAnimation {
     keepHighQuality = false;
     alwaysKeepHighQuality(keepHighQuality: boolean) {
         this.keepHighQuality = keepHighQuality;
-        this.notify(SystemEvent.HighQuality, 0);
-        this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
+        if (keepHighQuality) {
+            this.notify(SystemEvent.HighQuality, 0);
+            this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
+        } else if (this.rendering) {
+            this.notify(SystemEvent.LowQuality, 0);
+            this.engine.setHardwareScalingLevel(this.pixelRatio);
+        }
     }
 
     lastFrameNumberCheck = 20;
