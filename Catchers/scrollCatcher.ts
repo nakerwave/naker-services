@@ -1,7 +1,7 @@
 import { ProgressCatcher, ProgressEvent } from './progressCatcher';
 import { SystemAnimation } from '../System/systemAnimation';
 import { SystemEvent } from '../System/system';
-import { TouchCatcher } from './touchCatcher';
+import { TouchCatcher, NakerTouchEvent } from './touchCatcher';
 
 import { setStyle } from 'redom';
 
@@ -134,7 +134,6 @@ export class ScrollCatcher extends ProgressCatcher {
         });
     }
 
-    lastMouseEvent: number;
     checkMouseWheel(evt: WheelEvent, top: number) {
         this.checkPreventComputerScroll(evt);
         this.mouseWheelEvent(top);
@@ -150,7 +149,7 @@ export class ScrollCatcher extends ProgressCatcher {
      * @ignore
      */
     _setMobileDragEvent(touchCatcher: TouchCatcher) {
-        touchCatcher.addListener((touchEvent) => {
+        touchCatcher.on(NakerTouchEvent.Move, (touchEvent) => {
             let change = touchEvent.change;
             let evt = touchEvent.event;
             this.checkPreventBodyScroll(evt, change.y);

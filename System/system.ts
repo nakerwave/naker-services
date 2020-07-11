@@ -52,9 +52,10 @@ export class System extends NakerObservable<SystemEvent, number> {
         // For now keep false as the last argument of the engine,
         // We don't want the canvas to adapt to screen ratio as it slow down too much the scene
         // preserveDrawingBuffer and stencil needed for screenshot
+        // premultipliedAlpha needed for .HDR to .ENV transformation
         let engineOption;
         if (!screenshot) engineOption = { limitDeviceRatio: this.maxScaling };
-        else engineOption = { limitDeviceRatio: this.maxScaling, preserveDrawingBuffer: true, stencil: true };
+        else engineOption = { limitDeviceRatio: this.maxScaling, preserveDrawingBuffer: true, stencil: true, premultipliedAlpha: false };
         this.engine = new Engine(this.canvas, true, engineOption, false);
         // NOTE to avoid request for manifest files because it can block loading on safari
         this.engine.enableOfflineSupport = false;

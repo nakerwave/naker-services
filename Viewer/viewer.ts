@@ -14,18 +14,19 @@ export interface ProjectInterface extends ViewerOption {
 export interface ViewerOption {
     container?: HTMLElement,
     waterMark?: boolean,
+    pushQuality?: boolean,
     website?: string,
     listenEvent?: boolean,
 }
 
 export let quotereplacement = '|';
 
-export let removeQuote = (optionString) => {
+export let removeQuote = (optionString: string): string => {
     let optionArray = optionString.split('"');
     return optionArray.join(quotereplacement);
 }
 
-export let addQuote = (optionString) => {
+export let addQuote = (optionString: string): string => {
     let optionArray = optionString.split(quotereplacement);
     return optionArray.join('"');
 }

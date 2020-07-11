@@ -1,19 +1,20 @@
 import { Animation, Ease, EaseMode } from '../System/systemAnimation';
 import { SystemAnimation } from '../System/systemAnimation';
-import { TouchCatcher } from './touchCatcher';
+import { TouchCatcher, NakerTouchEvent } from './touchCatcher';
 import { Catcher } from './catcher';
 
 import { Vector2, Quaternion } from '@babylonjs/core/Maths/math';
 import { Tools } from '@babylonjs/core/Misc/Tools';
 
-export enum MouseEvent {
+// NakerMouseEvent and not MouseEvent otherwise conflict with real window MouseEvent
+export enum NakerMouseEvent {
     Move,
     InstantMove,
     Drag,
     DragStart,
 }
 
-export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
+export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 
     moveAnimation: Animation;
     dragAnimation: Animation;
@@ -79,17 +80,19 @@ export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
         });
     }
 
-    touchVector: Vector2 = new Vector2(0.01, 0.01);
+    touchVector = new Vector2(0.01, 0.01);
     setTouchVector(touchVector: Vector2) {
         this.touchVector = touchVector;
     }
 
+    lastTouchVector = Vector2.Zero();
     _setMobileMoveEvent(touchCatcher: TouchCatcher) {
-        touchCatcher.addListener((touchEvent) => {
+        touchCatcher.on(NakerTouchEvent.Move, (touchEvent) => {
             if (this.catching) {
                 let mouseChange = touchEvent.change.multiply(this.touchVector);
                 let posMax = Vector2.Minimize(mouseChange, this.deviceMaxVector);
                 let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
+                this.lastTouchVector = posMin.clone();
                 posMin.x = -posMin.x;
                 this.catchMove(posMin);
             }
@@ -163,8 +166,8 @@ export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
 
     moveCatch = Vector2.Zero();
     catchMove(mouse: Vector2) {
-        if (this.hasEventObservers(MouseEvent.InstantMove)) this.notify(MouseEvent.InstantMove, mouse.clone());
-        if (this.hasEventObservers(MouseEvent.Move)) {
+        if (this.hasEventObservers(NakerMouseEvent.InstantMove)) this.notify(NakerMouseEvent.InstantMove, mouse.clone());
+        if (this.hasEventObservers(NakerMouseEvent.Move)) {
             // if (this.checkRecentCatch(100)) return;
             let start = this.moveCatch.clone();
             let change = mouse.subtract(start);
@@ -173,7 +176,7 @@ export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
                 let percSpeed = this.speed + (1 - this.speed) * perc;
                 let progress = change.multiply(new Vector2(percSpeed, percSpeed));
                 this.moveCatch = start.add(progress);
-                this.notify(MouseEvent.Move, this.moveCatch.clone());
+                this.notify(NakerMouseEvent.Move, this.moveCatch.clone());
             });
         }
     }
@@ -187,12 +190,12 @@ export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
         this.dragCatch = Vector2.Zero();
 
         this.dragging = true;
-        this.notify(MouseEvent.DragStart, Vector2.Zero());
+        this.notify(NakerMouseEvent.DragStart, Vector2.Zero());
     }
 
     dragCatch = Vector2.Zero();
     catchDrag(mouse: Vector2) {
-        if (!this.hasEventObservers(MouseEvent.Drag)) return;
+        if (!this.hasEventObservers(NakerMouseEvent.Drag)) return;
         // if (this.checkRecentCatch(100)) return;
         let dragReal = mouse.subtract(this.dragStart);
         let start = this.dragCatch.clone();
@@ -202,7 +205,7 @@ export class MouseCatcher extends Catcher<MouseEvent, Vector2> {
             let percSpeed = this.speed + (1 - this.speed) * perc;
             let progress = change.multiply(new Vector2(percSpeed, percSpeed));
             this.dragCatch = start.add(progress);
-            this.notify(MouseEvent.Drag, this.dragCatch.clone());
+            this.notify(NakerMouseEvent.Drag, this.dragCatch.clone());
         });
     }
 }
