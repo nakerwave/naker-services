@@ -73,12 +73,11 @@ export class TouchCatcher extends NakerObservable<NakerTouchEvent, TouchEventDat
             this.timeStart = new Date().getTime();
             this.notify(NakerTouchEvent.Start, { change: Vector2.Zero(), event: evt });
         });
-        // Need test
         this._container.addEventListener("touchend", (evt) => {
             this.timeStart = 0;
+            this.notify(NakerTouchEvent.Stop, {change: this.touchGap.clone(), event: evt});
             this.touchStart = Vector2.Zero();
             this.touchGap = Vector2.Zero();
-            this.notify(NakerTouchEvent.Stop, {change: this.touchGap.clone(), event: evt});
         });
         this._container.addEventListener("touchmove", (evt) => {
             if (this.touchStart) {
@@ -89,10 +88,10 @@ export class TouchCatcher extends NakerObservable<NakerTouchEvent, TouchEventDat
                 let x = evt.changedTouches[0].clientX;
                 let y = evt.changedTouches[0].clientY;
                 // need to have bigger value to match with computer mouse sensitivity
-                this.touchGap.x = (this.touchStart.x - x) * 20;
+                this.touchGap.x = (this.touchStart.x - x);
                 // We divide height by touchSensity to have quick swipe taken into account
-                // this.touchGap.x = (this.touchStart.x - x) * 20 / timeInfluence;
-                this.touchGap.y = (this.touchStart.y - y) * 20 / timeInfluence;
+                // this.touchGap.x = (this.touchStart.x - x) / timeInfluence;
+                this.touchGap.y = (this.touchStart.y - y) / timeInfluence;
                 this.notify(NakerTouchEvent.Move, { change: this.touchGap.clone(), event: evt });
             }
         });

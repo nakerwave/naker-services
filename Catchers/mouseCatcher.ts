@@ -64,7 +64,8 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
             }
         });
 
-        window.addEventListener("pointermove", (evt) => {
+        // Do not use pointermove or it will make a conflict with mobile events
+        window.addEventListener("mousemove", (evt) => {
             this.getMousePosition(evt);
             this.mouseOrientation(this.mousePosition);
         });
@@ -80,7 +81,7 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
         });
     }
 
-    touchVector = new Vector2(0.01, 0.01);
+    touchVector = new Vector2(1, 1);
     setTouchVector(touchVector: Vector2) {
         this.touchVector = touchVector;
     }
@@ -89,14 +90,23 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
     _setMobileMoveEvent(touchCatcher: TouchCatcher) {
         touchCatcher.on(NakerTouchEvent.Move, (touchEvent) => {
             if (this.catching) {
-                let mouseChange = touchEvent.change.multiply(this.touchVector);
-                let posMax = Vector2.Minimize(mouseChange, this.deviceMaxVector);
-                let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
-                this.lastTouchVector = posMin.clone();
-                posMin.x = -posMin.x;
-                this.catchMove(posMin);
+                touchEvent.change.x = -touchEvent.change.x;
+                let newTouch = this.getTouchVector(touchEvent.change);
+                this.catchMove(newTouch);
             }
         });
+
+        touchCatcher.on(NakerTouchEvent.Stop, (touchEvent) => {
+            this.lastTouchVector = this.moveReal;
+        });
+    }
+
+    getTouchVector(change: Vector2): Vector2 {
+        let mouseChange = change.multiply(this.touchVector);
+        let newTouch = this.lastTouchVector.add(mouseChange);
+        let posMax = Vector2.Minimize(newTouch, this.deviceMaxVector);
+        let posMin = Vector2.Maximize(posMax, this.deviceMinVector);
+        return posMin;
     }
 
     // Code copied from babylon: https://github.com/BabylonJS/Babylon.js/blob/master/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts
@@ -143,7 +153,7 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
     }
 
     mousePosition = Vector2.Zero();
-    getMousePosition(evt: PointerEvent | WheelEvent) {
+    getMousePosition(evt: MouseEvent | PointerEvent | WheelEvent) {
         let w = window.innerWidth;
         let h = window.innerHeight;
         // Position in percentage of the window
@@ -164,9 +174,11 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
         this.speed = speed;
     }
 
+    moveReal = Vector2.Zero();
     moveCatch = Vector2.Zero();
     catchMove(mouse: Vector2) {
-        if (this.hasEventObservers(NakerMouseEvent.InstantMove)) this.notify(NakerMouseEvent.InstantMove, mouse.clone());
+        this.moveReal = mouse.clone();
+        if (this.hasEventObservers(NakerMouseEvent.InstantMove)) this.notify(NakerMouseEvent.InstantMove, this.moveReal);
         if (this.hasEventObservers(NakerMouseEvent.Move)) {
             // if (this.checkRecentCatch(100)) return;
             let start = this.moveCatch.clone();

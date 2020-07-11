@@ -154,7 +154,7 @@ export class ScrollCatcher extends ProgressCatcher {
             let evt = touchEvent.event;
             this.checkPreventBodyScroll(evt, change.y);
             if (Math.abs(change.x) < Math.abs(change.y)) {
-                let top = this.progressReal * this.scrollHeight + change.y/100;
+                let top = this.progressReal * this.scrollHeight + change.y/5;
                 if (this.catching) this.catchTop(top);
             }
         });
