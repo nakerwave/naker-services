@@ -180,6 +180,7 @@ export class SystemAnimation extends SystemResponsive {
     * Check if there is still a process which need renderong
     */
     checkStopRender() {
+        // console.log(this.list.length, this.needProcess);
         if (this.list.length == 0 && this.needProcess) this.pauseRender();
     }
 

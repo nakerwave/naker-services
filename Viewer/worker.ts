@@ -1,5 +1,4 @@
-
-import { BindEventMessage, EventMessage, ResizeEventMessage } from './screen';
+import { BindEventMessage, ResizeEventMessage, WorkerMessage } from './screen';
 
 export class NakerWorker {
     
@@ -32,9 +31,10 @@ export class NakerWorker {
             },
             defaultView: self.window,
             documentElement: {},
+            cookie: '', // Used by BabylonJS Utils
         };
         
-        // Not works without it
+        // Doesn't work without it
         class HTMLElement { }
         
         // Listening events from Main thread
@@ -65,13 +65,13 @@ export class NakerWorker {
             case 'build':
                 data.container = this.canvas;
                 this.engine = this.buildProject(data);
+                this.engine.system.setOffscreen(true);
                 break;
         }
     }
 
     engine: any;
     buildProject(project: any) {
-
     }
     
     canvas: HTMLCanvasElement;
@@ -94,9 +94,11 @@ export class NakerWorker {
         self.canvas = canvas;
 
         canvas.setAttribute = (name, value) => {
-            this.sendToScreen('canvasMethod', {
-                method: 'setAttribute',
-                args: [name, value],
+            this.sendToScreen({
+                targetName: 'canvas',
+                type: 'method',
+                eventName: 'setAttribute',
+                option: [name, value],
             });
         };
 
@@ -113,20 +115,26 @@ export class NakerWorker {
         };
 
         canvas.focus = () => {
-            this.sendToScreen('canvasMethod', {
-                method: 'focus',
-                args: [],
+            this.sendToScreen({
+                targetName: 'canvas',
+                type: 'method',
+                eventName: 'focus',
+                option: [],
             });
         };
 
+        var that = this;
         // noinspection JSUnusedGlobalSymbols
         const style = {
             set touchAction(value) {
-                postMessage({
-                    type: 'canvasStyle',
-                    name: 'touchAction',
-                    value: value,
-                });
+                let workerMessage: WorkerMessage = {
+                    targetName: 'canvas',
+                    eventName: 'touchAction',
+                    option: value,
+                    type: 'style',
+                }
+
+                that.sendToScreen(workerMessage);
             }
         };
 
@@ -152,18 +160,17 @@ export class NakerWorker {
      * @param option third addEventListener argument
      */
     bindHandler(targetName: 'document' | 'window' | 'canvas', eventName: string, fn: Function, option) {
-
         const handlerId = targetName + eventName;
-
         this.handlers.set(handlerId, fn);
 
-        let eventMessage: EventMessage = {
+        let workerMessage: WorkerMessage = {
             targetName: targetName,
             eventName: eventName,
             option: option,
+            type: 'event',
         }
 
-        this.sendToScreen('event', eventMessage);
+        this.sendToScreen(workerMessage);
     }
 
     /**
@@ -183,11 +190,27 @@ export class NakerWorker {
      */
     handleEvent(event: BindEventMessage) {
         const handlerId = event.targetName + event.eventName;
-        event.eventClone.preventDefault = () => {};
+        event.eventClone.preventDefault = () => { 
+            // this.sendToScreen({
+            //     targetName: event.targetName,
+            //     type: 'method',
+            //     eventName: 'preventDefault',
+            // }); 
+        };
+        event.eventClone.stopPropagation = () => { 
+            // this.sendToScreen({
+            //     targetName: event.targetName,
+            //     type: 'method',
+            //     eventName: 'stopPropagation',
+            // });
+        };
+
         event.eventClone.target = self.canvas;
         // Just in case
         if (!this.handlers.has(handlerId)) {
-            throw new Error('Unknown handlerId: ' + handlerId);
+            return;
+            // Don't need to throw error has the event can be removed
+            // throw new Error('Unknown handlerId: ' + handlerId);
         }
         this.handlers.get(handlerId)(event.eventClone);
     }
@@ -217,8 +240,7 @@ export class NakerWorker {
         }
     }
 
-    sendToScreen(type: string, data: any){
-        data.type = type;
-        postMessage(data);
+    sendToScreen(message: WorkerMessage) {
+        postMessage(message);
     }
 }

@@ -281,7 +281,7 @@ export let checkScript = (callback: Function) => {
             window.addEventListener('load', () => {
                 projectOption.container = document.getElementById(currentScript.dataset.container);
                 if (!projectOption.container) projectOption.container = document.querySelector(currentScript.dataset.container);
-                if (!projectOption.container) console.error('Naker: Bad id, not able to find your container');
+                if (!projectOption.container) console.error('Naker: Bad selector, not able to find your container');
                 else callback(projectOption);
             });
         } else {

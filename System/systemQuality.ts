@@ -34,7 +34,8 @@ export class SystemQuality extends SystemAnimation {
 
         this.on(SystemEvent.Stop, () => {
             if (this.keepHighQuality) this.notify(SystemEvent.HighQuality, 0);
-            else if (this.qualityAtBreak) this.checkEndQuality();
+            // Not able to take screenshot with offscreen viewer
+            else if (this.qualityAtBreak && !this.offscreen) this.checkEndQuality();
         });
 
         this.on(SystemEvent.Start, () => {
@@ -204,5 +205,11 @@ export class SystemQuality extends SystemAnimation {
             });
         }
         return layer;
+    }
+
+    // System needs to know if launch in a worker as some features won't work like Screenshot
+    offscreen = false;
+    setOffscreen(offscreen: boolean) {
+        this.offscreen = offscreen;
     }
 }

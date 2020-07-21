@@ -1,19 +1,21 @@
 import { NakerViewer, currentScript } from './viewer';
 
-export interface WorkerMessage {
-     data: any;
- }
-
-export interface EventMessage {
-    targetName: 'document' | 'window' | 'canvas';
-    eventName: string;
-    option: any;
+export interface BasicEventMessage { 
+    targetName: 'document' | 'window' | 'canvas',
+    eventName: string,
 }
 
-export interface BindEventMessage {
-    targetName: 'document' | 'window' | 'canvas';
-    eventName: string;
-    eventClone: any;
+export interface WorkerMessage extends BasicEventMessage {
+    type: 'event' | 'method' | 'style',
+    option?: any,
+}
+
+export interface EventMessage extends BasicEventMessage {
+    option: any,
+}
+
+export interface BindEventMessage extends BasicEventMessage {
+    eventClone: any,
 }
 
 export interface WindowData {
@@ -31,8 +33,8 @@ export interface DocumentData {
 
 export interface ResizeEventMessage {
     canvas: DOMRect|ClientRect;
-    window: WindowData;
-    document: DocumentData;
+    window?: WindowData;
+    document?: DocumentData;
 }
 
 export class NakerScreen extends NakerViewer {
@@ -88,7 +90,7 @@ export class NakerScreen extends NakerViewer {
         if (!this.worker) return false;
 
         this.worker.onmessage = (mg) => {
-            this.workerToMain(mg)
+            this.workerToScreen(mg)
         };
 
         const offscreenCanvas = this.canvas.transferControlToOffscreen();
@@ -123,9 +125,14 @@ export class NakerScreen extends NakerViewer {
                 try {
                     blob = new Blob(["importScripts('" + workerUrl + "');"], { "type": 'application/javascript' });
                 } catch (e1) {
-                    var blobBuilder = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder)();
-                    blobBuilder.append("importScripts('" + workerUrl + "');");
-                    blob = blobBuilder.getBlob('application/javascript');
+                    try {
+                        var blobBuilder = new (window.BlobBuilder || window.MSBlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder)();
+                        blobBuilder.append("importScripts('" + workerUrl + "');");
+                        blob = blobBuilder.getBlob('application/javascript');
+                    } catch (e2) {
+                        return false;
+                        //if it still fails, there is nothing much we can do
+                    }
                 }
                 var url = window.URL || window.webkitURL;
                 var blobUrl = url.createObjectURL(blob);
@@ -149,25 +156,22 @@ export class NakerScreen extends NakerViewer {
         });
     }
 
-    workerToMain(msg: WorkerMessage) {
-        switch (msg.data.type) {
+    workerToScreen(msg: any) {
+        let data: WorkerMessage = msg.data;
+        switch (data.type) {
             case 'event':
-                this.bindEvent(msg.data);
+                this.bindEvent(data);
                 break;
-            case 'canvasMethod':
-                this.canvas[msg.data.method](...msg.data.args);
+            case 'method':
+                this.bindMethod(data);
                 break;
-            case 'canvasStyle':
-                this.canvas.style[msg.data.name] = msg.data.value;
+            case 'style':
+                this.bindStyle(data);
                 break;
         }
     }
 
-    /**
-     * Bind DOM element
-     * @param data
-     */
-    bindEvent(data: EventMessage) {
+    getTarget(data: WorkerMessage) {
         let target;
         switch (data.targetName) {
             case 'window':
@@ -183,8 +187,40 @@ export class NakerScreen extends NakerViewer {
 
         if (!target) {
             console.error('Unknown target: ' + data.targetName);
-            return;
+            return null;
         }
+        return target;
+    }
+
+    /**
+     * Execute method
+     * @param data
+     */
+    bindMethod(data: WorkerMessage) {
+        let target = this.getTarget(data);
+        if (!target) return;
+        
+        target[data.eventName](...data.option);
+    }
+
+    /**
+     * Change style
+     * @param data
+    */
+    bindStyle(data: WorkerMessage) {
+        let target = this.getTarget(data);
+        if (!target) return;
+
+        target.style[data.eventName] = data.option;
+    }
+
+    /**
+     * Bind DOM element
+     * @param data
+     */
+    bindEvent(data: WorkerMessage) {
+        let target = this.getTarget(data);
+        if (!target) return;
 
         target.addEventListener(data.eventName, (e) => {
             // We can`t pass original event to the worker
@@ -196,7 +232,6 @@ export class NakerScreen extends NakerViewer {
             };
             this.sendToWorker('event', bindEventMessage);
         }, data.option);
-
     }
 
     /**
