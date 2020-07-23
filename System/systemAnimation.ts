@@ -453,6 +453,8 @@ export class Animation {
 
     run(count: number) {
         let easedPerc = this.easing.ease(count / this.howmany);
+        easedPerc = Math.max(easedPerc, 0);
+        easedPerc = Math.min(easedPerc, 1);
         let easedCount = easedPerc * this.howmany;
         this.funct(easedPerc, easedCount);
     }
