@@ -136,6 +136,13 @@ export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
         this.progressGap = this.progressReal - this.progressCatch;
         this.notifyProgress();
     }
+
+    setToProgress(progress: number) {
+        this.progressReal = progress;
+        this.progressCatch = progress;
+        this.progressGap = 0;
+        this.notifyProgress();
+    }
     
     notifyProgress() {
         this.notify(ProgressEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
