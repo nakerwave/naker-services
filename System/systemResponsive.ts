@@ -136,7 +136,7 @@ export class SystemResponsive extends System {
     }
 
     /**
-     * Should the catcher change Scene field of view to adapt to screen size
+     * Should the system change Scene field of view to adapt to screen size
      */
     horizontalFixed = false;
 
@@ -151,7 +151,8 @@ export class SystemResponsive extends System {
                 const camera = this.scene.activeCameras[i];
                 camera.fovMode = fovMode;
             }
-        } else if (this.scene.activeCamera) {
+        }
+        if (this.scene.activeCamera) {
             this.scene.activeCamera.fovMode = fovMode;
         }
     }

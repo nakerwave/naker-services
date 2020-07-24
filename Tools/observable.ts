@@ -62,7 +62,6 @@ export class NakerObservable<U, T> {
             this.inTheMiddleOfEventCallback.push(event);
             for (var obs of this.observers) {
                 if (obs.event === event) {
-                    // observersToNotify.push(obs);
                     this.notifyOberver(obs, eventData);
                 }
             }
@@ -70,7 +69,7 @@ export class NakerObservable<U, T> {
             this.inTheMiddleOfEventCallback.splice(index, 1);
         } else {
             //infinite loop avoided! report the scenario somehow
-            console.error('Infinite callback loop in observable: ' + this.observableName + ', Event:' + event);
+            console.error('Infinite callback loop in observable: ' + this.observableName + ', Event: ' + event, eventData);
         }
     }
         
