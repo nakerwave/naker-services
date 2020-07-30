@@ -188,7 +188,7 @@ export class ScrollCatcher extends ProgressCatcher {
         this.notify(ProgressEvent.Start, { progress: this.progressCatch, remain: this.progressGap });
     }
 
-    scrollEvent(top: number) {        
+    scrollEvent(top: number) {
         if (this.catching && this.followWindowScroll) this.catchTop(top);
     }
 
@@ -211,6 +211,8 @@ export class ScrollCatcher extends ProgressCatcher {
 
     borderCheck = 0.01;
     checkPreventBodyScroll(evt: MouseEvent | TouchEvent, move: number) {
+        // If scroll catcher didn't start we make sure to not prevent scrolling
+        if (!this.catching) return;
         // Try to have different sensitivity when leaving or entering
         // Should be easy to leave and fast to enter
         // let topTest =false, bottomTest =false;

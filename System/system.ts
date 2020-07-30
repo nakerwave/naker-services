@@ -132,14 +132,19 @@ export class System extends NakerObservable<SystemEvent, number> {
     checkSceneReadyToRender(callback: Function) {
         this.isCheckingReady = true;
         this.engine.stopRenderLoop();
-        this.engine.runRenderLoop(() => {
-            // Make sure scene is ready  
-            if (this.scene.isReady()) {
-                this.engine.stopRenderLoop();
-                this.isCheckingReady = false;
-                callback();
-            }
+        // Make sure scene is ready  
+        this.scene.executeWhenReady(() => {
+            this.isCheckingReady = false;
+            callback();
         });
+    }
+
+    executeOnceAfterRender(func: () => void): void {
+        let execFunc = () => {
+            this.scene.unregisterAfterRender(execFunc);
+            func();
+        };
+        this.scene.registerAfterRender(execFunc);
     }
 
     /**
@@ -165,6 +170,7 @@ export class System extends NakerObservable<SystemEvent, number> {
      * @ignore
      */
     startRender() {
+        console.log(this.rendering, !this.launched);
         if (this.rendering || !this.launched) return;
         // console.log('start');
         this.rendering = true;
