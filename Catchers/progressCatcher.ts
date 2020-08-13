@@ -130,8 +130,7 @@ export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
     progress(perc: number, catchSpeed: number) {
         // We use catchSpeed to make perc is never equal to 0
         // This way the scroll start from the first mouseWheel
-        let percSpeed = catchSpeed + (1 - catchSpeed) * perc;
-        percSpeed = this.checkBorderProgress(percSpeed);
+        let percSpeed = this.checkBorderProgress(perc);
         this.progressCatch = this.progressStart + this.progressChange * percSpeed;
         this.progressGap = this.progressReal - this.progressCatch;
         this.notifyProgress();

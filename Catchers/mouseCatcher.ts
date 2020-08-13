@@ -185,8 +185,7 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
             let change = mouse.subtract(start);
             let howmany = 5 / this.speed;
             this.moveAnimation.simple(howmany, (perc) => {
-                let percSpeed = this.speed + (1 - this.speed) * perc;
-                let progress = change.multiply(new Vector2(percSpeed, percSpeed));
+                let progress = change.multiply(new Vector2(perc, perc));
                 this.moveCatch = start.add(progress);
                 this.notify(NakerMouseEvent.Move, this.moveCatch.clone());
             });
@@ -214,8 +213,7 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
         let change = dragReal.subtract(start);
         let howmany = 5 / this.speed;
         this.dragAnimation.simple(howmany, (perc) => {
-            let percSpeed = this.speed + (1 - this.speed) * perc;
-            let progress = change.multiply(new Vector2(percSpeed, percSpeed));
+            let progress = change.multiply(new Vector2(perc, perc));
             this.dragCatch = start.add(progress);
             this.notify(NakerMouseEvent.Drag, this.dragCatch.clone());
         });
