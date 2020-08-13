@@ -170,7 +170,6 @@ export class System extends NakerObservable<SystemEvent, number> {
      * @ignore
      */
     startRender() {
-        console.log(this.rendering, !this.launched);
         if (this.rendering || !this.launched) return;
         // console.log('start');
         this.rendering = true;

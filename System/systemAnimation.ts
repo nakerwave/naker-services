@@ -235,7 +235,7 @@ export class Animation {
 	/**
 	 * Starting value
 	 */
-    start = 0;
+    start = 1;
 
 	/**
 	 * Current progress
@@ -429,8 +429,9 @@ export class Animation {
 	 * @param functend Function called when animation is over
 	 */
     simple(howmany: number, funct: (perc: number, count: number) => void, functend?: Function) {
-        this.start = 0;
-        this.count = 0;
+        // Equal 1 so that it start quick
+        this.start = 1;
+        this.count = 1;
         this.step = 1;
         this.howmany = howmany;
         this.go(funct, functend);
