@@ -13,6 +13,7 @@ export interface ProjectInterface extends ViewerOption {
 
 export interface ViewerOption {
     container?: HTMLElement,
+    canvas?: HTMLCanvasElement,
     waterMark?: boolean,
     pushQuality?: boolean,
     website?: string,
@@ -51,6 +52,10 @@ export class NakerViewer {
      */
     constructor(viewerOption: ViewerOption) {
         // Keep that variable def
+        if (viewerOption.container) this.buildCanvas(viewerOption);
+    }
+
+    buildCanvas(viewerOption: ViewerOption) {
         this.container = viewerOption.container;
 
         // let browser = this.getBrowser();
@@ -62,11 +67,11 @@ export class NakerViewer {
             const child = this.container.childNodes[i];
             if (this.checkElWithStyle(child)) {
                 // Some node can't change style
-                try {setStyle(child, { 'z-index': '1' });}
-                catch (e) {}
+                try { setStyle(child, { 'z-index': '1' }); }
+                catch (e) { }
             }
         }
-        
+
         this.canvas = el('canvas', { style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden', 'overflow-x': 'hidden', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
         let canvasposition = 'absolute';
         if (this.container == document.body) canvasposition = 'fixed';
@@ -76,7 +81,7 @@ export class NakerViewer {
         // https://forum.babylonjs.com/t/scroll-issues-with-touch-action/2135
         // 'touch-action': 'none' Keep it to avoid refresh on android phones
         // -webkit-tap to avoid touch effect on iphone
-       
+
         // Add cool WaterMark in all naker Projects
         setAttr(this.canvas, { 'data-who': 'Made with naker.io' });
         mount(this.container, this.canvas);
@@ -265,7 +270,6 @@ export let getCurrentScript = () => {
 getCurrentScript();
 
 export let checkScript = (callback: Function) => {
-    getCurrentScript();
     if (!currentScript) return;
 
     var projectString = currentScript.dataset.option;
@@ -277,16 +281,42 @@ export let checkScript = (callback: Function) => {
         } catch {
             return console.error('Naker: Bad Json');
         }
-        if (currentScript.dataset.container) {
-            window.addEventListener('load', () => {
-                projectOption.container = document.getElementById(currentScript.dataset.container);
-                if (!projectOption.container) projectOption.container = document.querySelector(currentScript.dataset.container);
-                if (!projectOption.container) console.error('Naker: Bad selector, not able to find your container');
-                else callback(projectOption);
-            });
-        } else {
-            projectOption.container = currentScript.parentNode;
-            callback(projectOption);
-        }
+        callback(projectOption);
     }
+}
+
+export let checkContainer = (callback: Function) => {
+    if (!currentScript) return;
+
+    let containerSelector = currentScript.dataset.container;
+    if (containerSelector) {
+        let container = getContainer(containerSelector);
+        if (container) { // If container already there then go
+            callback(container);
+        } else { // Otherwise wait for the page to load
+            window.addEventListener('load', () => {
+                let container = getContainer(containerSelector);
+                if (container) {
+                    callback(container);
+                } else { // If still no container, launch loop to check if it appears later
+                    let intervalCheck = setInterval(() => {
+                        let container = getContainer(containerSelector);
+                        if (container) {
+                            clearInterval(intervalCheck);
+                            callback(container);
+                        }
+                    }, 100);
+                    console.error('Naker: Bad selector, not able to find your container after page load');
+                }
+            });
+        }
+    } else { // If no container in data, check for the parent
+        callback(currentScript.parentNode);
+    }
+}
+
+let getContainer = (selector: string) => {
+    let container = document.getElementById(selector);
+    if (!container) container = document.querySelector(selector);
+    return container;
 }
