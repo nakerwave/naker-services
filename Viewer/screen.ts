@@ -240,9 +240,10 @@ export class NakerScreen extends NakerViewer {
      */
     cloneMouseEvent(event: Event) {
         // Sometimes can't preventDefault like with touch events
-        try {
-            event.preventDefault();
-        } catch {}
+        // Do not do that or it prevents from scroll when mouse above Naker scene
+        // try {
+        //     event.preventDefault();
+        // } catch {}
         return this.cloneMouseEventProperties(event);
     }
 

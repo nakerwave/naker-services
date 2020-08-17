@@ -57,6 +57,8 @@ export class NakerViewer {
 
     buildCanvas(viewerOption: ViewerOption) {
         this.container = viewerOption.container;
+        if (!this.container) throw 'Naker : Missing container';
+        if (this.container.tagName == 'HEAD') throw 'Naker : container container can not be head tag';
 
         // let browser = this.getBrowser();
         //   let canvasposition = (browser == 'Safari') ? '-webkit-sticky' : 'sticky';

@@ -150,6 +150,7 @@ export class ScrollCatcher extends ProgressCatcher {
      */
     _setMobileDragEvent(touchCatcher: TouchCatcher) {
         touchCatcher.on(NakerTouchEvent.Move, (touchEvent) => {
+            if (!this.catching) return;
             let change = touchEvent.change;
             let evt = touchEvent.event;
             this.checkPreventBodyScroll(evt, change.y);
