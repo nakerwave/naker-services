@@ -136,12 +136,7 @@ export class SystemQuality extends SystemAnimation {
                     this.engine.stopRenderLoop();
                     this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
                     this.scene.render();
-                    this.qualityLayer.render();
-
-                    // Camera can have a specific layerMask
-                    // Gui camera in story for instance
-                    this.formerCameraLayerMask = this.scene.activeCamera.layerMask;
-                    this.scene.activeCamera.layerMask = 0x0FFFFFFF;
+                    // this.qualityLayer.render();
                     
                     this.getScreenshot((image2) => {
                         if (this.isRendering()) return;
@@ -156,6 +151,7 @@ export class SystemQuality extends SystemAnimation {
                         // let img2 = document.createElement('img');
                         // document.body.append(img2);
                         // img2.setAttribute('src', image2);
+                        // console.log(this.layer1, this.layer2);
     
                         var t = 0, change = 0.05;
                         this.engine.runRenderLoop(() => {
@@ -163,8 +159,8 @@ export class SystemQuality extends SystemAnimation {
                             t += change;
                             let a = Math.max(t, 0)
                             a = Math.min(a, 1)
-                            this.layer1.color.a = 2 - a * 2;
-                            this.layer2.color.a = a * 2;
+                            this.layer1.color.a = Math.max(2 - a * 2);
+                            this.layer2.color.a = Math.min(a * 2, 1);
                             
                             this.qualityLayer.render();
                             if (a == 1) {
@@ -188,6 +184,8 @@ export class SystemQuality extends SystemAnimation {
 
     addLayerImage(image: string, callback?: Function): Layer {
         let layer = new Layer('image', image, this.qualityScene, false);
+        // layer.isBackground = true;
+        // layer.texture.hasAlpha = true;
 
         // Check if layer ready to make sure layer is in front of the scene and avoid seiing HD rendering
         if (callback) {
@@ -201,7 +199,7 @@ export class SystemQuality extends SystemAnimation {
 
             this.engine.runRenderLoop(() => {
                 if (this.isRendering()) return;
-                this.layer1.render();
+                layer.render();
             });
         }
         return layer;

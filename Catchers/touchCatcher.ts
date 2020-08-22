@@ -26,16 +26,6 @@ export class TouchCatcher extends NakerObservable<NakerTouchEvent, TouchEventDat
     _container: HTMLElement;
 
     /**
-     * Distance left to be reached by scroll animation
-     */
-    scrollGap = 0;
-
-    /**
-     * Scrollable height (Used to simulate real scroll in Intale)
-     */
-    scrollHeight = 1000;
-
-    /**
      * Use to animate the catching
      * @param system System of the 3D scene
      * @param responsive If there is responsive changes, we may have to adapt scroll height
@@ -67,19 +57,19 @@ export class TouchCatcher extends NakerObservable<NakerTouchEvent, TouchEventDat
      * @ignore
      */
     _setTouchEvent() {
-        this._container.addEventListener("touchstart", (evt) => {
+        window.addEventListener("touchstart", (evt) => {
             this.touchStart.x = evt.changedTouches[0].clientX;
             this.touchStart.y = evt.changedTouches[0].clientY;
             this.timeStart = new Date().getTime();
             this.notify(NakerTouchEvent.Start, { change: Vector2.Zero(), event: evt });
         });
-        this._container.addEventListener("touchend", (evt) => {
+        window.addEventListener("touchend", (evt) => {
             this.timeStart = 0;
             this.notify(NakerTouchEvent.Stop, {change: this.touchGap.clone(), event: evt});
             this.touchStart = Vector2.Zero();
             this.touchGap = Vector2.Zero();
         });
-        this._container.addEventListener("touchmove", (evt) => {
+        window.addEventListener("touchmove", (evt) => {
             if (this.touchStart) {
                 let time = new Date().getTime();
                 let timeGap = (time - this.timeStart) / 1000 + 0.1;

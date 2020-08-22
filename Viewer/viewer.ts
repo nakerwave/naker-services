@@ -12,10 +12,12 @@ export interface ProjectInterface extends ViewerOption {
 }
 
 export interface ViewerOption {
+    id?: string,
     container?: HTMLElement,
     canvas?: HTMLCanvasElement,
     waterMark?: boolean,
     pushQuality?: boolean,
+    fullScreenOption?: boolean,
     website?: string,
     listenEvent?: boolean,
 }

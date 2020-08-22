@@ -2,7 +2,7 @@ import { System } from './system';
 
 import { Color4 } from '@babylonjs/core/Maths/math'
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import '@babylonjs/core/Meshes/meshBuilder';
+import { SphereBuilder } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { Effect } from '@babylonjs/core/Materials/effect';
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import '@babylonjs/core/Materials/standardMaterial';
@@ -24,7 +24,7 @@ export class GradientEnvironment {
     skyBox: Mesh;
     sky: ShaderMaterial;
     setSky() {
-        this.skyBox = Mesh.CreateSphere("skyBox", 10.0, this.skySize, this.system.scene);
+        this.skyBox = SphereBuilder.CreateSphere("skyBox", { segments: 10, diameter: this.skySize}, this.system.scene);
         this.skyBox.freezeWorldMatrix();
         this.skyBox.convertToUnIndexedMesh();
         this.skyBox.doNotSyncBoundingInfo = true;
