@@ -4,7 +4,7 @@ import { SystemEvent } from './system';
 import '@babylonjs/core/Misc/screenshotTools';
 import { Tools } from '@babylonjs/core/Misc/tools';
 import { Layer } from '@babylonjs/core/Layers/layer';
-import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilitylayerRenderer';
+import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilityLayerRenderer';
 import { Color4 } from '@babylonjs/core/Maths/math';
 import { Scene } from '@babylonjs/core/scene';
 
