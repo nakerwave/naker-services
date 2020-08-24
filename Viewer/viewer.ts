@@ -244,9 +244,9 @@ export class NakerViewer {
     timeout;
     iconHovered() {
         setStyle(this.waterMark, { width: '170px' });
-        setStyle(this.div, { width: '170px' });
         if (this.timeout) clearTimeout(this.timeout);
         this.timeout = setTimeout(() => {
+            setStyle(this.div, { width: '150px' });
             setStyle(this.div, { opacity: '1' });
         }, 100);
     }
