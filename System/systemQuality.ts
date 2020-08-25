@@ -66,18 +66,21 @@ export class SystemQuality extends SystemAnimation {
 
     qualityAtBreak = false;
     improveQualityAtBreak(qualityAtBreak: boolean) {
-        this.qualityAtBreak = qualityAtBreak;
+        // Currently not working
+        // this.qualityAtBreak = qualityAtBreak;
     }
 
     keepHighQuality = false;
     alwaysKeepHighQuality(keepHighQuality: boolean) {
         this.keepHighQuality = keepHighQuality;
+        // Make sure to have the right pixelRatio or Scaling Level won't be right on mobile
+        this.checkPixelRatio();
         if (keepHighQuality) {
             this.notify(SystemEvent.HighQuality, 0);
             this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
         } else if (this.rendering) {
             this.notify(SystemEvent.LowQuality, 0);
-            this.engine.setHardwareScalingLevel(this.pixelRatio);
+            this.engine.setHardwareScalingLevel(1 / this.pixelRatio);
         }
     }
 
@@ -183,9 +186,9 @@ export class SystemQuality extends SystemAnimation {
     }
 
     addLayerImage(image: string, callback?: Function): Layer {
-        let layer = new Layer('image', image, this.qualityScene, false);
-        // layer.isBackground = true;
-        // layer.texture.hasAlpha = true;
+        let layer = new Layer('layerimage', image, this.qualityScene);
+        layer.isBackground = false;
+        layer.texture.hasAlpha = false;
 
         // Check if layer ready to make sure layer is in front of the scene and avoid seiing HD rendering
         if (callback) {

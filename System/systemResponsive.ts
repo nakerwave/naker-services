@@ -96,8 +96,8 @@ export class SystemResponsive extends System {
         }
 
         const devicePixelRatio = window.devicePixelRatio;
-
         let newPixelRatio = Math.min(this.maxScaling, devicePixelRatio);
+       
         // console.log(newPixelRatio)
         // console.log(this.renderWidth/newPixelRatio, this.renderHeight/newPixelRatio)
         // We make sure scene stays fluid on big screen by forcing pixelRatio to 1
