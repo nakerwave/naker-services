@@ -81,7 +81,7 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 		});
 	}
 
-	touchVector = new Vector2(1, 1);
+	touchVector = new Vector2(0.01, 0.01);
 	setTouchVector(touchVector: Vector2) {
 		this.touchVector = touchVector;
 	}
@@ -91,6 +91,7 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 		touchCatcher.on(NakerTouchEvent.Move, (touchEvent) => {
 			if (this.catching) {
 				touchEvent.change.x = -touchEvent.change.x;
+				touchEvent.change.y = -touchEvent.change.y;
 				let newTouch = this.getTouchVector(touchEvent.change);
 				this.catchMove(newTouch);
 			}
