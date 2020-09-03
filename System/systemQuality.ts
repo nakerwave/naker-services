@@ -46,8 +46,6 @@ export class SystemQuality extends SystemAnimation {
         this.on(SystemEvent.Resize, () => {
             if (!this.keepHighQuality && this.qualityBreakDone) {
                 if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
-                this.engine.resize();
-                this.scene.render();
                 this.scene.activeCamera.layerMask = 0x0FFFFFFF;
 
                 this.getScreenshot((image2) => {
@@ -58,9 +56,6 @@ export class SystemQuality extends SystemAnimation {
                         this.qualityLayer.render();
                     });
                 });
-            } else {
-                this.engine.resize();
-                this.scene.render();
             }
         });
     }

@@ -186,6 +186,10 @@ export class SystemResponsive extends System {
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
 
-        this.notify(SystemEvent.Resize, 0);
+        if (this.launched) {
+            this.engine.resize();
+            this.scene.render();
+            this.notify(SystemEvent.Resize, 0);
+        }
     }
 }
