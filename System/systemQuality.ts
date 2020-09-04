@@ -87,8 +87,6 @@ export class SystemQuality extends SystemAnimation {
         this.notify(SystemEvent.LowQuality, 0);
         this.qualityBreakStarted = false;
         this.qualityBreakDone = false;
-        console.log(this.pixelRatio);
-
         this.engine.setHardwareScalingLevel(1 / this.pixelRatio);
         if (this.formerCameraLayerMask) this.scene.activeCamera.layerMask = this.formerCameraLayerMask;
         if (this.layer1) this.layer1.dispose();

@@ -123,6 +123,7 @@ export class System extends NakerObservable<SystemEvent, number> {
         this.currentLaunchCallback = callback;
         this.checkSceneReadyToRender(() => {
             this.launched = true; 
+            this.engine.resize();
             this.scene.render();
             this.checkStartRender();
             if (callback) callback();

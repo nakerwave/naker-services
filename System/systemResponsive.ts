@@ -28,16 +28,6 @@ export class SystemResponsive extends System {
         // });
     }
 
-    /**
-     * Width of canvas
-     */
-    canvasWidth = 100;
-
-    /**
-     * Height of canvas
-     */
-    canvasHeight = 100;
-
     intervalLoop;
     sizeCheckInterval = 500;
 
@@ -50,11 +40,21 @@ export class SystemResponsive extends System {
     }
 
     checkChange() {
-        let sizeChanged = this.checkCanvasSize();
-        let platformChanged = false;
-        if (sizeChanged) platformChanged = this.checkPixelRatio();
-        if (sizeChanged || platformChanged) this.updateSize();
+        let canvasChanged = this.checkCanvasSize();
+        let windowChanged = this.checkWindowSize();
+        let platformChanged = this.checkPixelRatio();
+        if (canvasChanged || windowChanged || platformChanged) this.updateSize();
     }
+
+    /**
+     * Width of canvas
+     */
+    canvasWidth = 100;
+
+    /**
+     * Height of canvas
+     */
+    canvasHeight = 100;
 
     checkCanvasSize(): boolean {
         let newHeight, newWidth;
@@ -63,6 +63,30 @@ export class SystemResponsive extends System {
         if (newWidth !== this.canvasWidth || newHeight !== this.canvasHeight) {
             this.canvasWidth = newWidth;
             this.canvasHeight = newHeight
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Width of window
+     */
+    windowWidth = 100;
+
+    /**
+     * Height of window
+     */
+    windowHeight = 100;
+
+    checkWindowSize(): boolean {
+        let newHeight, newWidth;
+        newWidth = window.innerWidth;
+        newHeight = window.innerHeight;
+        
+        if (newWidth !== this.windowWidth || newHeight !== this.windowHeight) {
+            this.windowWidth = newWidth;
+            this.windowHeight = newHeight
             return true;
         } else {
             return false;
