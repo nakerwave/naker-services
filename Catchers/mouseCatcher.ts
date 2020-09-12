@@ -63,11 +63,14 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 				this.catchMove(this.mousePosition);
 			}
 		});
-
-		// Do not use pointermove or it will make a conflict with mobile events
-		window.addEventListener("mousemove", (evt) => {
-			this.getMousePosition(evt);
-			this.mouseOrientation(this.mousePosition);
+		
+		window.addEventListener("pointermove", (evt) => {
+			// We need pointermove in order to have drag&drop working
+			// But we need to avoid conflict between touch event when on mobile
+			if (!this.system.isOnMobile) {
+				this.getMousePosition(evt);
+				this.mouseOrientation(this.mousePosition);
+			}
 		});
 
 		// WARNING: This doesn't work if container z-index = -1
@@ -76,7 +79,12 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 			this.startDrag();
 		});
 
-		system.canvas.addEventListener("pointerup", (evt) => {
+		// Check pointerup on all window in case drag stopped outside container
+		window.addEventListener("pointerup", (evt) => {
+			this.dragging = false;
+		});
+
+		window.addEventListener("mouseleave", (evt) => {
 			this.dragging = false;
 		});
 	}
@@ -93,7 +101,8 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 				touchEvent.change.x = -touchEvent.change.x;
 				touchEvent.change.y = -touchEvent.change.y;
 				let newTouch = this.getTouchVector(touchEvent.change);
-				this.catchMove(newTouch);
+				// this.catchMove(newTouch);
+				this.mouseOrientation(newTouch);
 			}
 		});
 
@@ -146,9 +155,10 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 
 	mouseOrientation(mousepos: Vector2) {
 		if (this.catching) {
-			this.catchMove(mousepos);
 			if (this.dragging) {
 				this.catchDrag(mousepos);
+			} else {
+				this.catchMove(mousepos);
 			}
 		}
 	}
