@@ -219,7 +219,7 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 	catchDrag(mouse: Vector2) {
 		if (!this.hasEventObservers(NakerMouseEvent.Drag)) return;
 		// if (this.checkRecentCatch(100)) return;
-		let dragReal = mouse.subtract(this.dragStart);
+		let dragReal = this.dragStart.subtract(mouse);
 		let start = this.dragCatch.clone();
 		let change = dragReal.subtract(start);
 		let howmany = 5 / this.speed;
