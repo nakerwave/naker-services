@@ -1,7 +1,6 @@
 import { System } from '../System/system';
 
-import { el, mount, unmount, setStyle, setAttr } from 'redom';
-import icosphere from '../Asset/icosphere.svg';
+import { el, mount, setStyle, setAttr } from 'redom';
 
 export interface ProjectInterface extends ViewerOption {
     canvas?: HTMLCanvasElement,
@@ -17,7 +16,7 @@ export interface ViewerOption {
     canvas?: HTMLCanvasElement,
     waterMark?: boolean,
     pushQuality?: boolean,
-    fullScreenOption?: boolean,
+    fullScreen?: boolean,
     website?: string,
     listenEvent?: boolean,
 }
@@ -86,15 +85,11 @@ export class NakerViewer {
         // 'touch-action': 'none' Keep it to avoid refresh on android phones
         // -webkit-tap to avoid touch effect on iphone
 
-        // Add cool WaterMark in all naker Projects
         setAttr(this.canvas, { 'data-who': 'Made with naker.io' });
         mount(this.container, this.canvas);
 
         this.checkContainerPosition();
         this._checkViewport();
-
-        this.addWaterMark();
-        if (viewerOption && viewerOption.waterMark === false) this.removeWaterMark();
         if (viewerOption && viewerOption.listenEvent === false) this.setNoEvent();
     }
 
@@ -144,120 +139,6 @@ export class NakerViewer {
 
     setNoEvent() {
         setStyle(this.canvas, { 'pointer-events': 'none' });
-    }
-
-    iconStyle = {
-        position: 'relative',
-        display: 'inline-block',
-        float: 'right',
-        padding: '3px',
-        cursor: 'pointer',
-        height: '24px',
-        width: '24px',
-        'border-radius': '5px',
-        'box-sizing': 'unset',
-        'webkit-box-sizing': 'unset',
-    };
-    
-    divStyle = {
-        position: 'absolute',
-        padding: '5px',
-        left: '5px',
-        cursor: 'pointer',
-        height: '20px',
-        width: '0px',
-        color: '#6633ff',
-        opacity: '0',
-        transition: 'all ease 100ms',
-        'line-height': '20px',
-        'font-size': '15px',
-        'vertical-align': 'middle',
-        'box-sizing': 'unset',
-        'webkit-box-sizing': 'unset',
-        'font-family': 'Roboto, sans-serif',
-        'z-index': '10000000000000000000',
-        'text-overflow': 'ellipsis',
-        'overflow': 'hidden',
-    };
-    
-    containerStyle = {
-        position: 'absolute',
-        bottom: '5px', 
-        right: '5px', 
-        height: '30px', 
-        width: '30px', 
-        cursor: 'pointer',
-        background: 'rgba(255, 255, 255, 0.7)',
-        transition: 'all ease 100ms',
-        'border-radius': '5px',
-    };
-
-    waterMark: HTMLElement;
-    icosphere: HTMLElement;
-    div: HTMLElement;
-    addWaterMark() {
-        if (this.waterMark) return mount(this.container, this.waterMark);
-
-        this.waterMark = el('div', {
-                style: this.containerStyle,
-                onclick: () => { window.open('https://naker.io?href=watermark', '_blank') },
-                onmouseleave: () => { this.iconNotHovered(); },
-                onmouseenter: () => { this.iconHovered(); },
-            },
-            [
-                this.icosphere = el('div', {
-                    style: this.iconStyle,
-                }),
-                this.div = el('div', 'Made with Naker', {
-                    style: this.divStyle,
-                }),
-            ]
-        );
-        this.addImportantCss();
-
-        mount(this.container, this.waterMark);
-
-        this.icosphere.innerHTML = icosphere;
-        let icosphereHTML = this.icosphere.childNodes[0];
-        setAttr(icosphereHTML, { width: '24px', height: '24px' });
-        setStyle(this.icosphere, { 'margin-left': '5px' });
-    }
-
-    addImportantCss() {
-        if (this.icosphere.style && this.icosphere.style.setProperty) {
-            for (const key in this.iconStyle) {
-                this.icosphere.style.setProperty(key, this.iconStyle[key], 'important');
-            }
-            for (const key in this.divStyle) {
-                this.div.style.setProperty(key, this.divStyle[key], 'important');
-            }
-            for (const key in this.containerStyle) {
-                this.waterMark.style.setProperty(key, this.containerStyle[key], 'important');
-            }
-        }
-    }
-
-    removeWaterMark() {
-        if (this.waterMark) unmount(this.container, this.waterMark);
-    }
-
-    timeout;
-    iconHovered() {
-        setStyle(this.waterMark, { width: '170px' });
-        if (this.timeout) clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => {
-            setStyle(this.div, { width: '150px' });
-            setStyle(this.div, { opacity: '1' });
-        }, 100);
-    }
-
-    iconNotHovered() {
-        setStyle(this.div, { opacity: '0' });
-        if (this.timeout) clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => {
-            setStyle(this.div, { width: '0px' });
-            setStyle(this.waterMark, { width: '30px' });
-        }, 100);
     }
 }
 
