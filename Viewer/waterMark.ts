@@ -103,8 +103,6 @@ export class WaterMark {
         let iconHTML = button.childNodes[0];
         setAttr(iconHTML, { width: '20px', height: '20px', fill: 'white' });
         this.addImportantCss(button, this.buttonStyle);
-        console.log('add', button);
-        
         mount(this.container, button);
         return button;
     }

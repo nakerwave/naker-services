@@ -1,7 +1,7 @@
 import { NakerViewer, currentScript } from './viewer';
 
 export interface BasicEventMessage { 
-    targetName: 'document' | 'window' | 'canvas',
+    targetName: 'document' | 'window' | 'canvas' | 'loader', // Loader event used to have project loading progress
     eventName: string,
 }
 
@@ -90,7 +90,7 @@ export class NakerScreen extends NakerViewer {
         if (!this.worker) return false;
 
         this.worker.onmessage = (mg) => {
-            this.workerToScreen(mg)
+            this.messageFromWorker(mg)
         };
 
         const offscreenCanvas = this.canvas.transferControlToOffscreen();
@@ -156,8 +156,16 @@ export class NakerScreen extends NakerViewer {
         });
     }
 
-    workerToScreen(msg: any) {
+    messageFromWorker(msg: any) {
         let data: WorkerMessage = msg.data;
+        if (data.targetName == 'canvas' || data.targetName == 'window' || data.targetName == 'document') {
+            this.bindScreenToWorker(data);
+        } else if (data.type == 'event') {
+            this.handleEvent(data);
+        }
+    }
+
+    bindScreenToWorker(data: WorkerMessage) {
         switch (data.type) {
             case 'event':
                 this.bindEvent(data);
@@ -169,6 +177,29 @@ export class NakerScreen extends NakerViewer {
                 this.bindStyle(data);
                 break;
         }
+    }
+
+    /**
+     * All event
+     */
+    handlers = new Map();
+
+    bindWorkerToScreen(targetName: BasicEventMessage['targetName'], eventName: string, fn: Function, option?) {
+        const handlerId = targetName + eventName;
+        this.handlers.set(handlerId, fn);
+    }
+
+    handleEvent(event: WorkerMessage) {
+        const handlerId = event.targetName + event.eventName;
+        // Just in case
+        console.log(event);
+        
+        if (!this.handlers.has(handlerId)) {
+            return;
+            // Don't need to throw error has the event can be removed
+            // throw new Error('Unknown handlerId: ' + handlerId);
+        }
+        this.handlers.get(handlerId)(event.option);
     }
 
     getTarget(data: WorkerMessage) {

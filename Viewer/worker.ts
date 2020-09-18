@@ -1,4 +1,4 @@
-import { BindEventMessage, ResizeEventMessage, WorkerMessage } from './screen';
+import { BasicEventMessage, BindEventMessage, ResizeEventMessage, WorkerMessage } from './screen';
 
 export class NakerWorker {
     
@@ -38,14 +38,14 @@ export class NakerWorker {
         class HTMLElement { }
         
         // Listening events from Main thread
-        self.onmessage = (msg) => { this.onMainMessage(msg); }
+        self.onmessage = (msg) => { this.messageFromScreen(msg); }
         
         self.canvas = null;
     }
     
-    onMainMessage(msg) {
-        let type = msg.data.type;
+    messageFromScreen(msg) {
         let data = msg.data;
+        let type = data.type;
         switch (type) {
             case 'event':
                 this.handleEvent(data);
@@ -146,7 +146,7 @@ export class NakerWorker {
     }
 
     /**
-     * All event this.handlers
+     * All event
      */
     handlers = new Map();
 
@@ -159,7 +159,7 @@ export class NakerWorker {
      * @param fn
      * @param option third addEventListener argument
      */
-    bindHandler(targetName: 'document' | 'window' | 'canvas', eventName: string, fn: Function, option) {
+    bindHandler(targetName: BasicEventMessage['targetName'], eventName: string, fn: Function, option) {
         const handlerId = targetName + eventName;
         this.handlers.set(handlerId, fn);
 
@@ -179,7 +179,7 @@ export class NakerWorker {
      * @param targetName
      * @param eventName
      */
-    unbindHandler(targetName: 'document' | 'window' | 'canvas', eventName: string) {
+    unbindHandler(targetName: BasicEventMessage['targetName'], eventName: string) {
         const handlerId = targetName + eventName;
         this.handlers.delete(handlerId);
     }
