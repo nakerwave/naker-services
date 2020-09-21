@@ -206,10 +206,9 @@ export class NakerWorker {
         };
 
         event.eventClone.target = self.canvas;
-        // Just in case
         if (!this.handlers.has(handlerId)) {
             return;
-            // Don't need to throw error has the event can be removed
+            // Don't need to throw error as the event can have been removed
             // throw new Error('Unknown handlerId: ' + handlerId);
         }
         this.handlers.get(handlerId)(event.eventClone);

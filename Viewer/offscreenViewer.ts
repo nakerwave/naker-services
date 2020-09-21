@@ -33,6 +33,7 @@ export class NakerOffscreenViewer extends NakerScreen {
                 this.sendToWorker('build', project);
                 callback('offscreen mode');
             });
+            this.offscreen = offscreenSuccess;
             if (!offscreenSuccess) {
                 this.loadInscreen(project, callback);
             }

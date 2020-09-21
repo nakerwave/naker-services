@@ -191,9 +191,6 @@ export class NakerScreen extends NakerViewer {
 
     handleEvent(event: WorkerMessage) {
         const handlerId = event.targetName + event.eventName;
-        // Just in case
-        console.log(event);
-        
         if (!this.handlers.has(handlerId)) {
             return;
             // Don't need to throw error has the event can be removed
