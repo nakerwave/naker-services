@@ -52,8 +52,8 @@ export class SystemAnimation extends SystemResponsive {
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
-                this.runAnimations();
-                if (this.limitSwitch && this.rendering) this.scene.render();
+                let animStopped = this.runAnimations();
+                if ((this.limitSwitch && this.rendering) || animStopped) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
             });
         } else {
@@ -68,7 +68,7 @@ export class SystemAnimation extends SystemResponsive {
 	 * Make one step forward for all animations
 	 * @param fps Frame per second of the engine
 	 */
-    runAnimations() {
+    runAnimations(): boolean {
         // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
         this.fps = this.engine.getFps();
         this.fpsratio = 60 / this.fps;
@@ -76,12 +76,17 @@ export class SystemAnimation extends SystemResponsive {
         this.frameBeforeEnd = 0;
         // To avoid acceleration when focus back
         // if (this.focusback) return;
+        let animStopped = false;
         let fpsratio = Math.min(this.fpsratio, 2);
         for (let i = 0; i < this.list.length; i++) {
             let anim = this.list[i];
             if (anim.running) {
-                anim.run(anim.count);
-                if (anim.count >= anim.howmany) anim.stop(true);
+                if (anim.count >= anim.howmany) {
+                    anim.stop(true);
+                    animStopped = true;
+                } else {
+                    anim.run(anim.count);
+                }
                 anim.count += anim.step * fpsratio;
                 if (anim.howmany - anim.count > this.frameBeforeEnd) this.frameBeforeEnd = Math.round(anim.howmany - anim.count + 1);
             }
@@ -91,6 +96,8 @@ export class SystemAnimation extends SystemResponsive {
         this.frameSinceStarted++;
         if (this.frameBeforeEnd < this.lastFrameNumberCheck) this.notify(SystemEvent.End, this.frameBeforeEnd);
         else if (this.frameSinceStarted < this.firstFrameNumberCheck) this.notify(SystemEvent.Begin, this.frameSinceStarted);
+        
+        return animStopped;
     }
 
     lastFrameNumberCheck = 20;
