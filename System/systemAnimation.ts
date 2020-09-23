@@ -52,14 +52,18 @@ export class SystemAnimation extends SystemResponsive {
         this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
-                let animStopped = this.runAnimations();
-                if ((this.limitSwitch && this.rendering) || animStopped) this.scene.render();
+                let stopped = this.checkStoppedAnimations();
+                this.runAnimations();
+                if ((this.limitSwitch && this.rendering) || stopped) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
+                this.removeStoppedAnimations();
             });
         } else {
             this.engine.runRenderLoop(() => {
+                this.checkStoppedAnimations();
                 this.runAnimations();
                 this.scene.render();
+                this.removeStoppedAnimations();
             });
         }
     }
@@ -68,7 +72,7 @@ export class SystemAnimation extends SystemResponsive {
 	 * Make one step forward for all animations
 	 * @param fps Frame per second of the engine
 	 */
-    runAnimations(): boolean {
+    runAnimations() {
         // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
         this.fps = this.engine.getFps();
         this.fpsratio = 60 / this.fps;
@@ -76,17 +80,11 @@ export class SystemAnimation extends SystemResponsive {
         this.frameBeforeEnd = 0;
         // To avoid acceleration when focus back
         // if (this.focusback) return;
-        let animStopped = false;
         let fpsratio = Math.min(this.fpsratio, 2);
         for (let i = 0; i < this.list.length; i++) {
             let anim = this.list[i];
             if (anim.running) {
-                if (anim.count >= anim.howmany) {
-                    anim.stop(true);
-                    animStopped = true;
-                } else {
-                    anim.run(anim.count);
-                }
+                anim.run(anim.count);
                 anim.count += anim.step * fpsratio;
                 if (anim.howmany - anim.count > this.frameBeforeEnd) this.frameBeforeEnd = Math.round(anim.howmany - anim.count + 1);
             }
@@ -96,7 +94,33 @@ export class SystemAnimation extends SystemResponsive {
         this.frameSinceStarted++;
         if (this.frameBeforeEnd < this.lastFrameNumberCheck) this.notify(SystemEvent.End, this.frameBeforeEnd);
         else if (this.frameSinceStarted < this.firstFrameNumberCheck) this.notify(SystemEvent.Begin, this.frameSinceStarted);
-        
+    }
+
+    checkStoppedAnimations(): boolean {
+        let animStopped = false;
+        for (let i = 0; i < this.list.length; i++) {
+            let anim = this.list[i];
+            if (anim.running) {
+                if (anim.count >= anim.howmany) {
+                    animStopped = true;
+                    anim.stop(true);
+                    // this.removeAnimation(anim);
+                }
+            } else {
+                // this.removeAnimation(anim);
+            }
+        }
+        return animStopped;
+    }
+
+    removeStoppedAnimations(): boolean {
+        let animStopped = false;
+        for (let i = 0; i < this.list.length; i++) {
+            let anim = this.list[i];
+            if (!anim.running) {
+                this.removeAnimation(anim);
+            }
+        }
         return animStopped;
     }
 
@@ -488,7 +512,6 @@ export class Animation {
 	 */
     stop(arg?: boolean) {
         this.resetVar(arg);
-        this.system.removeAnimation(this);
         this.running = false;
         return this;
     }
@@ -497,7 +520,6 @@ export class Animation {
 	 * Pause animation
 	 */
     pause() {
-        this.system.removeAnimation(this);
         this.running = false;
         return this;
     }

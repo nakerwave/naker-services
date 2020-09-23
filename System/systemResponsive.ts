@@ -100,12 +100,7 @@ export class SystemResponsive extends System {
 
     isOnMobile = false;
 
-    /**
-     * Scale between the scene size and the container size
-     */
-    pixelRatio = 1;
-
-    checkPixelRatio(): boolean {
+    checkIfOnMobile(): boolean {
         let isMobile = navigator.userAgent.toLowerCase().match(/mobile/i),
             isTablet = navigator.userAgent.toLowerCase().match(/tablet/i),
             isAndroid = navigator.userAgent.toLowerCase().match(/android/i),
@@ -113,9 +108,22 @@ export class SystemResponsive extends System {
             isiPad = navigator.userAgent.toLowerCase().match(/ipad/i);
         if (isMobile || isTablet || isAndroid || isiPhone || isiPad) {
             this.isOnMobile = true;
-            this.maxScaling = 2;
         } else {
             this.isOnMobile = false;
+        }
+        return this.isOnMobile;
+    }
+
+    /**
+     * Scale between the scene size and the container size
+     */
+    pixelRatio = 1;
+
+    checkPixelRatio(): boolean {
+        let onMobile = this.checkIfOnMobile();
+        if (onMobile) {
+            this.maxScaling = 2;
+        } else {
             this.maxScaling = 1;
         }
 
