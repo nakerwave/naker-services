@@ -77,10 +77,14 @@ export class ScrollCatcher extends ProgressCatcher {
                 if (document.scrollingElement) {
                     height = document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight;
                 }
+            } else if (this.getContainerScrollable()) {
+                // If container scrollable
+                height = this._container.scrollHeight - this._container.clientHeight;
             } else {
                 height = this._container.scrollHeight - this._container.clientHeight;
             }
         }
+        
         // On some browser or phone, you can have a small different even if page not scrollable
         // Plus 50 is way too short to make et scene scroll
         if (height <= 50) {
@@ -90,6 +94,10 @@ export class ScrollCatcher extends ProgressCatcher {
             this.scrollHeight = height;
             this.followWindowScroll = true;
         }
+    }
+
+    getContainerScrollable(): boolean {
+        return this._container.scrollHeight > this._container.clientHeight;
     }
 
     /**
@@ -229,7 +237,7 @@ export class ScrollCatcher extends ProgressCatcher {
         // If scroll reach start or end we stop preventing page scroll
         let topTest = this.progressCatch + this.borderCheck < 1 && move >= 0;
         let bottomTest = this.progressCatch - this.borderCheck > 0 && move <= 0;
-        if (this._container != document.body && (topTest || bottomTest)) {
+        if ((this._container != document.body && !this.getContainerScrollable()) && (topTest || bottomTest)) {
             evt.preventDefault();
             evt.stopPropagation();
             setStyle(this.system.canvas, { 'touch-action': 'none' });
