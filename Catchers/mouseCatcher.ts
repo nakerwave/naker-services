@@ -89,6 +89,12 @@ export class MouseCatcher extends Catcher<NakerMouseEvent, Vector2> {
 		});
 	}
 
+	stop() {
+		this.dragAnimation.stop();
+		this.moveAnimation.stop();
+		this._stop();
+	}
+
 	touchVector = new Vector2(0.01, 0.01);
 	setTouchVector(touchVector: Vector2) {
 		this.touchVector = touchVector;
