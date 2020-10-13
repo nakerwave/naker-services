@@ -63,7 +63,7 @@ export class SystemQuality extends SystemAnimation {
     qualityAtBreak = false;
     improveQualityAtBreak(qualityAtBreak: boolean) {
         // Currently not working
-        // this.qualityAtBreak = qualityAtBreak;
+        this.qualityAtBreak = qualityAtBreak;
     }
 
     keepHighQuality = false;
