@@ -102,9 +102,9 @@ export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
         if (!this.hasObservers()) return;
         if (!progress) progress = 0;
         if (progress == this.progressReal) return;
-        
+        progress = this.animation.limitBorder(progress);
+
         // Sometimes on iphone, perc can go below 0
-        progress = this.checkBorderProgress(progress);
         this.progressReal = progress;
         
         let catchSpeed = (speed) ? speed : this.speed;
@@ -121,17 +121,16 @@ export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
         let howmany = Math.round(5 / catchSpeed);
         howmany = Math.min(howmany, 500);
         this.animation.simple(howmany, (perc) => {
-            this.progress(perc, catchSpeed);
+            this.progress(perc);
         });
     }
 
     progressStart: number;
     progressChange: number;
-    progress(perc: number, catchSpeed: number) {
+    progress(perc: number) {
         // We use catchSpeed to make perc is never equal to 0
         // This way the scroll start from the first mouseWheel
-        let percSpeed = this.checkBorderProgress(perc);
-        this.progressCatch = this.progressStart + this.progressChange * percSpeed;
+        this.progressCatch = this.progressStart + this.progressChange * perc;        
         this.progressGap = this.progressReal - this.progressCatch;
         this.notifyProgress();
     }
@@ -145,11 +144,5 @@ export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
     
     notifyProgress() {
         this.notify(ProgressEvent.Progress, { progress: this.progressCatch, remain: this.progressGap });
-    }
-
-    checkBorderProgress(progress: number): number {
-        progress = Math.max(0, progress);
-        progress = Math.min(1, progress);
-        return progress;
     }
 }
