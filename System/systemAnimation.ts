@@ -508,6 +508,7 @@ export class Animation {
     resetVar(arg?: boolean) {
         this.count = this.start;
         if (this.functend && this.running) this.functend(arg);
+        this.functend = null;
     }
 
 	/**
