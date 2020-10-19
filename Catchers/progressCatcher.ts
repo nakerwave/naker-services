@@ -1,4 +1,4 @@
-import { SystemAnimation, Animation, Ease, EaseMode } from '../System/systemAnimation';
+import { SystemAnimation } from '../System/systemAnimation';
 import { Catcher } from './catcher';
 
 export enum ProgressEvent {
@@ -7,7 +7,7 @@ export enum ProgressEvent {
     Progress,
 }
 
-interface ProgressEventData {
+export interface ProgressEventData {
     progress: number,
     remain: number,
 }
@@ -111,7 +111,9 @@ export class ProgressCatcher extends Catcher<ProgressEvent, ProgressEventData> {
         // Bigger speed will make percentage go behind 100%
         // Alway keep a minimum inertia or scroll won't be fluide at all
         catchSpeed = Math.min(this.maximumCatchSpeed, catchSpeed);
-        let isLimit = (progress == 0 || progress == 1);
+        // * limit can't be just 0 or 1
+        // Or it won't work with scroll which often send 0.999 value instead of 1
+        let isLimit = (progress < 0.01 || progress > 0.99);
         let isRecent = (catchSpeed == this.lastSpeed && this.checkRecentCatch(100));
         if (!isLimit && isRecent && !force) return;
         this.lastSpeed = catchSpeed;
