@@ -44,6 +44,7 @@ export class NakerOffscreenViewer extends NakerScreen {
     }
 
     loadInscreen(project: any, callback: Function) {
+        this.offscreen = false;
         this.inScreen(() => {
             project.container = this.container;
             project.canvas = this.canvas;
