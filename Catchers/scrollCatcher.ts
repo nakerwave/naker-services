@@ -130,7 +130,7 @@ export class ScrollCatcher extends ProgressCatcher {
             this.checkMouseWheel(evt, top);
         });
 
-        // Firefox trigger this other event which we need to prevent to avoid body scroll when in Stpry
+        // Firefox trigger this other event which we need to prevent to avoid body scroll when in Story
         this._container.addEventListener("MozMousePixelScroll", (evt) => {
             this.checkPreventComputerScroll(evt);
         });
