@@ -196,6 +196,7 @@ export class SystemAnimation extends SystemResponsive {
             if (containerVisible && (this.list.length != 0 || !this.needProcess)) this.startRender();
             else if (this.needProcess) this.pauseRender();
         }
+        this.checkFixedSide();
     }
 
     /**

@@ -217,11 +217,10 @@ export class SystemResponsive extends System {
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
-        this.checkFixedSide();
-
+        
         if (this.launched) {
             this.engine.resize();
-            this.scene.render();
+            this.checkFixedSide();
             this.notify(SystemEvent.Resize, 0);
         }
     }
@@ -229,5 +228,6 @@ export class SystemResponsive extends System {
     checkFixedSide() {
         if (this.containerRatio > 0) this.setHorizontalFixed(false);
         else this.setHorizontalFixed(true);
+        if (this.launched) this.scene.render();
     }
 }

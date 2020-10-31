@@ -102,9 +102,14 @@ export class System extends NakerObservable<SystemEvent, number> {
     checkStartRender() {
         if (this.launched) {
             let containerVisible = this.checkVisible();
-            if (containerVisible) this.startRender();
-            else this.pauseRender();
+            if (containerVisible) {
+                this.startRender();
+            } else {
+                this.scene.render();
+                this.pauseRender();
+            }
         }
+
     }
 
     /**
@@ -125,7 +130,6 @@ export class System extends NakerObservable<SystemEvent, number> {
         this.checkSceneReadyToRender(() => {
             this.launched = true; 
             this.engine.resize();
-            this.scene.render();
             this.checkStartRender();
             if (callback) callback();
         });

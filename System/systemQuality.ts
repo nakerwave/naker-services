@@ -36,11 +36,13 @@ export class SystemQuality extends SystemAnimation {
             if (this.keepHighQuality) this.notify(SystemEvent.HighQuality, 0);
             // Not able to take screenshot with offscreen viewer
             else if (this.qualityAtBreak && !this.offscreen) this.checkEndQuality();
+            else this.notify(SystemEvent.LowQuality, 0);
         });
 
         this.on(SystemEvent.Start, () => {
             if (this.keepHighQuality) this.notify(SystemEvent.HighQuality, 0);
             else if (this.qualityAtBreak) this.checkStartQuality();
+            else this.notify(SystemEvent.LowQuality, 0);
         });
 
         this.on(SystemEvent.Resize, () => {
