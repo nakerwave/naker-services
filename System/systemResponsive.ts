@@ -22,7 +22,7 @@ export class SystemResponsive extends System {
         // Call to launch the loop, initialize with and height of canvas plus make a first resize check
         this.setResizeContainerLoop();
 
-        // Useless bacause resize loop is already triggered
+        // Useless because resize loop is already triggered
         // window.addEventListener('resize', () => {
         //     this.engine.resize();
         // });
@@ -34,6 +34,7 @@ export class SystemResponsive extends System {
     // Only way to make sure the scene is always fitted with the container is to have a timer checking for changes
     // window resize does not always work in some specific cases
     setResizeContainerLoop() {
+        this.checkChange();
         this.intervalLoop = setInterval(() => {
             this.checkChange();
         }, this.sizeCheckInterval);
