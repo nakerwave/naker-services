@@ -1,5 +1,6 @@
 import { el, mount, unmount, setStyle, setAttr } from 'redom';
-import icosphere from '../Asset/icosphere.svg';
+import { svgStringToDom } from '../Tools/svgImport';
+import icosphere from '../Asset/icosphere.html';
 
 export class WaterMark {
 
@@ -20,7 +21,7 @@ export class WaterMark {
 
     constructor(parent: HTMLElement) {
         this.parent = parent;
-        this.container = el('div', { style: this.containerStyle });
+        this.container = el('div', { style: this.containerStyle });  
         this.setMenuEvent();
     }
 
@@ -99,9 +100,7 @@ export class WaterMark {
             onmouseenter: () => { this.iconHovered(button); if (hoverCallback) hoverCallback(); },
             onmouseleave: () => { this.iconNotHovered(button); if (hoverCallback) hoverCallback(); }
         });
-        button.innerHTML = icon;
-        let iconHTML = button.childNodes[0];
-        setAttr(iconHTML, { width: '20px', height: '20px', fill: 'white' });
+        svgStringToDom(button, icon);
         this.addImportantCss(button, this.buttonStyle);
         mount(this.container, button);
         return button;
