@@ -105,7 +105,6 @@ export class System extends NakerObservable<SystemEvent, number> {
             if (containerVisible) {
                 this.startRender();
             } else {
-                this.scene.render();
                 this.pauseRender();
             }
         }
@@ -115,10 +114,23 @@ export class System extends NakerObservable<SystemEvent, number> {
     /**
     * Check if element visible by the screen
     */
-    checkVisible() {
+
+    containerVisible = false;
+    checkVisible(): boolean {
         var rect = this.canvas.getBoundingClientRect();
         var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
-        return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+        // is canvas on screen depending on scroll
+        let onScreen = !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+        // is parent display or not
+        let parentDisplayed = !!this.canvas.offsetParent;
+        let containerVisible = (onScreen && parentDisplayed);
+        if (!containerVisible) this.engine.setSize(0, 0);
+        else if (containerVisible && !this.containerVisible) {
+            this.engine.resize();
+            this.scene.render();
+        }
+        this.containerVisible = containerVisible;
+        return this.containerVisible;
     }
 
     /**
@@ -129,7 +141,6 @@ export class System extends NakerObservable<SystemEvent, number> {
         this.currentLaunchCallback = callback;
         this.checkSceneReadyToRender(() => {
             this.launched = true; 
-            this.engine.resize();
             this.checkStartRender();
             if (callback) callback();
         });
@@ -180,6 +191,7 @@ export class System extends NakerObservable<SystemEvent, number> {
         if (this.rendering || !this.launched) return;
         // console.log('start');
         this.rendering = true;
+        this.engine.resize();
         this.forceRender();
     }
 

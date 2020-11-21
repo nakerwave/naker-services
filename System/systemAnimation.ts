@@ -192,11 +192,12 @@ export class SystemAnimation extends SystemResponsive {
     checkStartRender() {
         if (this.launched) {
             // If overflow style = hidden, there is no scrollingElement on document
+            this.checkSizeChange();
             let containerVisible = this.checkVisible();
             if (containerVisible && (this.list.length != 0 || !this.needProcess)) this.startRender();
             else if (this.needProcess) this.pauseRender();
         }
-        this.checkFixedSide();
+        this.checkFixedSideRatio();
     }
 
     /**

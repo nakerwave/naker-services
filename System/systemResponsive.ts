@@ -34,13 +34,14 @@ export class SystemResponsive extends System {
     // Only way to make sure the scene is always fitted with the container is to have a timer checking for changes
     // window resize does not always work in some specific cases
     setResizeContainerLoop() {
-        this.checkChange();
+        this.checkSizeChange();
         this.intervalLoop = setInterval(() => {
-            this.checkChange();
+            this.checkStartRender();
+            this.checkSizeChange();
         }, this.sizeCheckInterval);
     }
 
-    checkChange() {
+    checkSizeChange() {
         let canvasChanged = this.checkCanvasSize();
         let windowChanged = this.checkWindowSize();
         let platformChanged = this.checkPixelRatio();
@@ -220,13 +221,14 @@ export class SystemResponsive extends System {
         // console.log(this.containerRatio)
         
         if (this.launched) {
-            this.engine.resize();
-            this.checkFixedSide();
+            //! if container not diplayed, engine.resize can double the canvas size and make the window explode
+            if (this.containerVisible) this.engine.resize();
+            this.checkFixedSideRatio();
             this.notify(SystemEvent.Resize, 0);
         }
     }
 
-    checkFixedSide() {
+    checkFixedSideRatio() {
         if (this.containerRatio > 0) this.setHorizontalFixed(false);
         else this.setHorizontalFixed(true);
         if (this.launched) this.scene.render();
