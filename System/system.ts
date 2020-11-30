@@ -152,6 +152,7 @@ export class System extends NakerObservable<SystemEvent, number> {
         this.engine.stopRenderLoop();
         // Make sure scene is ready  
         this.scene.executeWhenReady(() => {
+            // console.log('ready');
             this.isCheckingReady = false;
             callback();
         });

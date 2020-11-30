@@ -6,15 +6,15 @@ export enum SimpleEvent {
 
 export class SimpleObservable<T> extends NakerObservable<SimpleEvent, T> {
 
-    addListener(funct: (eventData: T) => void, scope?: any, first?: boolean) {
+    onChange(funct: (eventData: T) => void, scope?: any, first?: boolean) {
         this.on(SimpleEvent.Progress, funct, scope, first);
     }
 
-    removeListener(funct: (eventData: T) => void): boolean {
+    offChange(funct: (eventData: T) => void): boolean {
         return this.off(SimpleEvent.Progress, funct);
     }
 
-    sendToListener(eventData: T) {
+    notifyChange(eventData: T) {
         this.notify(SimpleEvent.Progress, eventData);
     }
 
