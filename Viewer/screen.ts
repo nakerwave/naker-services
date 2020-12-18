@@ -107,10 +107,19 @@ export class NakerScreen extends NakerViewer {
         return true;
     }
 
+    engineVersion: string;
+    setEngineVersion(engineVersion: string) {
+        this.engineVersion = engineVersion;
+    }
+
     getScriptUrl(): string {
         let scriptUrlString = currentScript.src;
         let scriptUrlArray = scriptUrlString.split('/');
-        scriptUrlArray.pop();
+        scriptUrlArray.pop(); // Remove viewer.js
+        if (this.engineVersion) { // Check version
+            scriptUrlArray.pop();
+            scriptUrlArray.push('v' + this.engineVersion);
+        }
         let scriptUrl = scriptUrlArray.join('/') + '/';
         return scriptUrl;
     }

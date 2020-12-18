@@ -1,5 +1,4 @@
 import { NakerScreen } from './screen';
-import { System } from '../System/system';
 import { ViewerOption } from './viewer';
 
 export interface OffscreenViewerOption extends ViewerOption {
@@ -12,15 +11,10 @@ export class NakerOffscreenViewer extends NakerScreen {
      * Element where the 3D Scene will be drawn
      */
     container: HTMLElement;
-    system: System;
+    system: any;
 
     offscreen = true;
 
-    /**
-     * Creates a new System
-     * @param container Element where the scene will be drawn
-     * @param offscreen if false, the viewer won't use offscreen canvas
-     */
     constructor(viewerOption: OffscreenViewerOption) {
         super(viewerOption);
         if (viewerOption && viewerOption.offscreen !== undefined) this.offscreen = viewerOption.offscreen;

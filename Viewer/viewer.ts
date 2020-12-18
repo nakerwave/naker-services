@@ -1,5 +1,3 @@
-import { System } from '../System/system';
-
 import { el, mount, setStyle, setAttr } from 'redom';
 
 export interface ProjectInterface extends ViewerOption {
@@ -12,6 +10,7 @@ export interface ProjectInterface extends ViewerOption {
 
 export interface ViewerOption {
     id?: string,
+    version?: string,
     container?: HTMLElement,
     canvas?: HTMLCanvasElement,
     waterMark?: boolean,
@@ -39,18 +38,12 @@ export class NakerViewer {
      * Element where the 3D Scene will be drawn
      */
     container: HTMLElement;
-    system: System;
 
     /**
      * Canvas used to draw the 3D scene
      */
     canvas: HTMLCanvasElement;
 
-    /**
-     * Creates a new System
-     * @param container Element where the scene will be drawn
-     * @param offscreen if false, the viewer won't use offscreen canvas
-     */
     constructor(viewerOption: ViewerOption) {
         // Keep that variable def
         if (viewerOption.container) this.buildCanvas(viewerOption);
