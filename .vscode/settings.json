@@ -1,0 +1,8 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "explorer.sortOrder": "type",
+  "files.trimFinalNewlines": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
