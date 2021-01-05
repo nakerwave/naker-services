@@ -1,6 +1,6 @@
 import { el, mount, unmount, setStyle } from 'redom';
 import { svgStringToDom } from '../Tools/svgImport';
-let icosphere = '<svg id="Calque_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800" style="enable-background:new 0 0 800 800"><style>.st0{fill:#7cfcf0}.st1{fill:#7ce8f0}.st2{fill:#767ee0}.st3{fill:#7dbeef}.st4{fill:#7df8f0}.st5{fill:#7bf0ee}.st6{fill:#78c8e7}.st7{fill:#7ec4ef}.st8{fill:#6d65d0}.st9{fill:#593ca7}.st10{fill:#7c75ec}.st11{fill:#7a8ee8}.st12{fill:#7ccdee}.st13{fill:#656bc1}.st14{fill:#6856c4}.st15{fill:#540c9e}.st16{fill:#550ca0}.st17{fill:#44168e}.st18{fill:#441389}.st19{fill:#6a0fc7}.st20{fill:#5c0dad}.st21{fill:#440a80}.st22{fill:#450e8c}.st23{fill:#4e0b93}.st24{fill:#530c9c}.st25{fill:#440b7f}.st26{fill:#6469c0}.st27{fill:#4d1090}.st28{fill:#7df0f0}</style><path class="st0" d="M214.1 141.7 202.4 54.4 45.2 229.1z"/><path class="st1" d="M383 19.4 214.1 141.7 202.4 54.4z"/><path class="st2" d="M487.8 141.7 383 19.4 598.5 71.9z"/><path class="st3" d="M214.1 141.7H487.8L383 19.4z"/><path class="st4" d="M97.6 339.7 45.2 229.1 214.1 141.7z"/><path class="st5" d="M21.9 479.5 97.6 339.7 45.2 229.1z"/><path class="st6" d="M167.5 572.7 97.6 339.7 21.9 479.5z"/><path class="st7" d="M487.8 141.7 307.3 357.2 214.1 141.7z"/><path class="st8" d="M709.1 269.9 487.8 141.7 598.5 71.9z"/><path class="st9" d="M738.2 217.4 709.1 269.9 598.5 71.9z"/><path class="st10" d="M563.5 374.7 709.1 269.9 487.8 141.7z"/><path class="st11" d="M307.3 357.2l256.2 17.5L487.8 141.7z"/><path class="st12" d="M167.5 572.7 307.3 357.2 97.6 339.7z"/><path class="st13" d="M447 601.8 307.3 357.2 167.5 572.7z"/><path class="st14" d="M563.5 374.7 447 601.8 307.3 357.2z"/><path class="st15" d="M779 427.1 709.1 269.9 738.2 217.4z"/><path class="st16" d="M685.8 537.8 779 427.1 709.1 269.9z"/><path class="st17" d="M563.5 374.7 685.8 537.8 709.1 269.9z"/><path class="st18" d="M447 601.8 685.8 537.8 563.5 374.7z"/><path class="st19" d="M703.3 630.9 685.8 537.8 779 427.1z"/><path class="st20" d="M540.2 735.8 685.8 537.8 703.3 630.9z"/><path class="st21" d="M447 601.8 540.2 735.8 685.8 537.8z"/><path class="st22" d="M313.1 735.8 447 601.8 540.2 735.8z"/><path class="st23" d="M359.7 782.4 540.2 735.8H313.1z"/><path class="st24" d="M144.2 695 313.1 735.8 359.7 782.4z"/><path class="st25" d="M167.5 572.7 313.1 735.8 447 601.8z"/><path class="st26" d="M21.9 479.5 144.2 695 167.5 572.7z"/><path class="st27" d="M313.1 735.8 144.2 695 167.5 572.7z"/><path class="st28" d="M307.3 357.2 97.6 339.7l116.5-198z"/></svg>'
+let icosphere = '<svg id="Naker-logo" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 384.7 358.6" style="enable-background:new 0 0 384.7 358.6"><style>.st0{fill:url(#SVGID_1_)}.st1{fill:#63f}.st2{fill:url(#SVGID_2_)}</style><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="86.5848" y1="243.1276" x2="383.3806" y2="179.9697" gradientTransform="matrix(1 0 0 -1 0 360)"><stop offset="0" style="stop-color:#63f"/><stop offset="1" style="stop-color:#97f6ff"/></linearGradient><path class="st0" d="M213.1 120.6 139 260.1l-38.8 1.3c-9.8-.8-15.1-9.6-10.1-19.5C95 232.5 203.6 16 203.6 16c9.9-22.5 34.7-21.2 44.3 3.5 31.3 81.3 133.9 306.9 133.9 306.9L246.6 119.3c0 0-4.2-7.4-6.1-9.6-4.7-6.9-12.8-8.7-18.9-3.2C219.6 107.7 213.4 119.9 213.1 120.6z"/><path class="st1" d="M113 260.8l157.9-4.7 20.4 33.1c4.2 8.9-.9 17.9-11.9 18.4-10.6.5-252.4 13.4-252.4 13.4C2.4 323.4-8.8 301.3 8 280.8 63 213.2 204.6 13.9 204.6 13.9L95.3 232.4c0 0-4.3 7.3-5.3 10-3.7 7.6-1.2 15.4 6.6 18C98.6 261.6 112.2 260.9 113 260.8z"/><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="201.3283" y1="3.801" x2="226.151" y2="243.3191" gradientTransform="matrix(1 0 0 -1 0 360)"><stop offset="0" style="stop-color:#09f"/><stop offset="1" style="stop-color:#00f"/></linearGradient><path class="st2" d="M283.5 277.3l-82.9-133.2 18-34.1c5.1-8.5 16.1-9.4 22.1-.1 5.8 8.9 138 211.6 138 211.6 14.5 19.9.9 40.7-25.2 36.6-86-13.6-330.1-37-330.1-37l244.4-14.2c0 0 8.5.1 11.3-.5 8.4-.6 14-6.7 12.3-14.8C291.4 289.4 284 278 283.5 277.3z"/></svg>'
 
 export class WaterMark {
 
@@ -8,7 +8,7 @@ export class WaterMark {
     container: HTMLElement;
     height = 30;
 
-    containerStyle = { 
+    containerStyle = {
         height: this.height + 'px',
         width: '200px',
         bottom: '5px',
@@ -21,7 +21,7 @@ export class WaterMark {
 
     constructor(parent: HTMLElement) {
         this.parent = parent;
-        this.container = el('div', { style: this.containerStyle });  
+        this.container = el('div', { style: this.containerStyle });
         this.setMenuEvent();
     }
 
@@ -82,7 +82,7 @@ export class WaterMark {
         display: 'inline-block',
         float: 'right',
         padding: '5px',
-        background: 'rgba(0, 0, 0, 0.3)',
+        background: 'rgba(0, 0, 0, 0.1)',
         cursor: 'pointer',
         // - 10 because of the padding
         height: (this.height - 10) + 'px',
@@ -90,7 +90,7 @@ export class WaterMark {
         'box-sizing': 'unset',
         'webkit-box-sizing': 'unset',
         'border-radius': '5px',
-        transition: 'all ease 100ms',
+        transition: 'all ease 200ms',
     };
 
     addButton(icon: string, clickCallback: Function, hoverCallback?: Function): HTMLElement {
@@ -107,12 +107,12 @@ export class WaterMark {
     }
 
     iconHovered(icon: HTMLElement) {
-        let rgba = 'rgba(0, 0, 0, 0.6)';
+        let rgba = 'rgba(0, 0, 0, 0.3)';
         setStyle(icon, { background: rgba });
     }
 
     iconNotHovered(icon: HTMLElement) {
-        let rgba = 'rgba(0, 0, 0, 0.3)';
+        let rgba = 'rgba(0, 0, 0, 0.1)';
         setStyle(icon, { background: rgba });
     }
 
@@ -128,7 +128,7 @@ export class WaterMark {
     //     'box-sizing': 'unset',
     //     'webkit-box-sizing': 'unset',
     // };
-    
+
     // madeWithStyle = {
     //     position: 'absolute',
     //     padding: '5px',

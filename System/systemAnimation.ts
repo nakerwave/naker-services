@@ -4,10 +4,10 @@ import { SystemEvent } from './system';
 import remove from 'lodash/remove';
 import {
     IEasingFunction,
-    EasingFunction, 
-    CircleEase, 
+    EasingFunction,
+    CircleEase,
     BounceEase,
-    BackEase, 
+    BackEase,
     CubicEase,
     ElasticEase,
     ExponentialEase,
@@ -68,15 +68,15 @@ export class SystemAnimation extends SystemResponsive {
         }
     }
 
-	/**
-	 * Make one step forward for all animations
-	 * @param fps Frame per second of the engine
-	 */
+    /**
+     * Make one step forward for all animations
+     * @param fps Frame per second of the engine
+     */
     runAnimations() {
         // if (mode == 'develoment') this.fpsnode.textContent = fps+' - '+this.list.length;
         this.fps = this.engine.getFps();
         this.fpsratio = 60 / this.fps;
-        
+
         this.frameBeforeEnd = 0;
         // To avoid acceleration when focus back
         // if (this.focusback) return;
@@ -127,9 +127,9 @@ export class SystemAnimation extends SystemResponsive {
     lastFrameNumberCheck = 20;
     firstFrameNumberCheck = 2;
 
-	/**
-	 * Stop all the scene animation
-	 */
+    /**
+     * Stop all the scene animation
+     */
     stopAnimations() {
         this.setFocusBack();
         for (let i = 0; i < this.list.length; i++) {
@@ -138,9 +138,9 @@ export class SystemAnimation extends SystemResponsive {
         }
     }
 
-	/**
-	 * Restart all the scene animation if there is any
-	 */
+    /**
+     * Restart all the scene animation if there is any
+     */
     restartAnimations() {
         this.setFocusBack();
         for (let i = 0; i < this.list.length; i++) {
@@ -149,9 +149,9 @@ export class SystemAnimation extends SystemResponsive {
         }
     }
 
-	/**
-	 * Make a small pause of animations (Used when focus is back to window)
-	 */
+    /**
+     * Make a small pause of animations (Used when focus is back to window)
+     */
     setFocusBack() {
         this.focusback = true;
         // In case in worker
@@ -224,7 +224,7 @@ export class SystemAnimation extends SystemResponsive {
         this.startRender();
         setTimeout(() => {
             this.checkStopRender();
-        }, time? time : 20);
+        }, time ? time : 20);
     }
 }
 
@@ -265,44 +265,44 @@ export class Animation {
 
     system: SystemAnimation;
 
-	/**
-	 * Starting value
-	 */
+    /**
+     * Starting value
+     */
     start = 1;
 
-	/**
-	 * Current progress
-	 */
+    /**
+     * Current progress
+     */
     count = 0;
 
-	/**
-	 * Progress step used in each run call
-	 */
+    /**
+     * Progress step used in each run call
+     */
     step = 1;
 
-	/**
-	 * Is the animation running or not
-	 */
+    /**
+     * Is the animation running or not
+     */
     running = false;
 
-	/**
-	 * How many step is needed to end the animation
-	 */
+    /**
+     * How many step is needed to end the animation
+     */
     howmany: number;
 
-	/**
-	 * Function called at each run and used to animate something
-	 */
+    /**
+     * Function called at each run and used to animate something
+     */
     funct: (perc: number, count: number) => void;
 
-	/**
-	 * Function called when animation is over
-	 */
+    /**
+     * Function called when animation is over
+     */
     functend: Function;
 
-	/**
-	 * Key of animation used to store it
-	 */
+    /**
+     * Key of animation used to store it
+     */
     key: string;
 
     /**
@@ -310,13 +310,13 @@ export class Animation {
      */
     easing: EasingFunction;
 
-	/**
-	 * Create a new animation
-	 * @param system Manager where to push animation
-	 * @param howmany How many step is needed to end the animation
-	 * @param start Starting value
-	 * @param step Progress step used in each run call
-	 */
+    /**
+     * Create a new animation
+     * @param system Manager where to push animation
+     * @param howmany How many step is needed to end the animation
+     * @param start Starting value
+     * @param step Progress step used in each run call
+     */
     constructor(system: SystemAnimation, howmany?: number, start?: number, step?: number) {
         this.system = system;
         if (howmany) this.setParam(howmany, start, step);
@@ -326,12 +326,12 @@ export class Animation {
         return this;
     }
 
-	/**
-	 * Set animation parameters
-	 * @param howmany How many step is needed to end the animation
-	 * @param start Starting value
-	 * @param step Progress step used in each run call
-	 */
+    /**
+     * Set animation parameters
+     * @param howmany How many step is needed to end the animation
+     * @param start Starting value
+     * @param step Progress step used in each run call
+     */
     setParam(howmany: number, start?: number, step?: number) {
         if (this.running) this.stop(true);
         this.howmany = howmany - 1;
@@ -343,7 +343,7 @@ export class Animation {
 
     setEasing(ease: Ease, mode?: EaseMode) {
         if (ease == Ease.Linear) this.easing = new LinearEase();
-        if (ease == Ease.Circle) this.easing = new CircleEase();
+        else if (ease == Ease.Circle) this.easing = new CircleEase();
         else if (ease == Ease.Back) this.easing = new BackEase();
         else if (ease == Ease.Bounce) this.easing = new BounceEase();
         else if (ease == Ease.Cubic) this.easing = new CubicEase();
@@ -355,7 +355,7 @@ export class Animation {
         else if (ease == Ease.Quintic) this.easing = new QuinticEase();
         else if (ease == Ease.Sine) this.easing = new SineEase();
         else if (ease == Ease.BezierCurve) this.easing = new BezierCurveEase();
-        
+
         if (mode && this.easing) {
             if (mode == EaseMode.In) this.easing.setEasingMode(EasingFunction.EASINGMODE_EASEIN);
             else if (mode == EaseMode.Out) this.easing.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
@@ -363,24 +363,24 @@ export class Animation {
         }
     }
 
-	/**
-	 * Create an infinite animation which will never stop
-	 * @param funct Function called at each run and used to animate something
-	 */
+    /**
+     * Create an infinite animation which will never stop
+     * @param funct Function called at each run and used to animate something
+     */
     infinite(funct: (perc: number, count: number) => void) {
         let howmany = 1000000000000;
         this.simple(howmany, funct);
         return this;
     }
 
-	/**
-	 * Create an infinite animation which will never stop
-	 * @param howmany How many step is needed to end the animation
-	 * @param alter How many step do we need to alternate the animation
-	 * @param funct1 Alternate function 1
-	 * @param funct2 Alternate function 2
-	 * @param functend Function called when animation is over
-	 */
+    /**
+     * Create an infinite animation which will never stop
+     * @param howmany How many step is needed to end the animation
+     * @param alter How many step do we need to alternate the animation
+     * @param funct1 Alternate function 1
+     * @param funct2 Alternate function 2
+     * @param functend Function called when animation is over
+     */
     alternate(howmany: number, alter: number, funct1: (perc: number, count: number) => void, funct2?: Function, functend?: Function) {
         let ft = true;
         let alterstep = 0;
@@ -397,14 +397,14 @@ export class Animation {
         return this;
     }
 
-	/**
-	 * Create an infinite animation which will never stop
-	 * @param howmany How many step is needed to end the animation
-	 * @param loop How many step do we need to loopn the animation
-	 * @param funct Function called at each run and used to animate something
-	 * @param functloop Function called everytime the loop goes back to start
-	 * @param functend Function called when animation is over
-	 */
+    /**
+     * Create an infinite animation which will never stop
+     * @param howmany How many step is needed to end the animation
+     * @param loop How many step do we need to loopn the animation
+     * @param funct Function called at each run and used to animate something
+     * @param functloop Function called everytime the loop goes back to start
+     * @param functend Function called when animation is over
+     */
     loop(howmany: number, loop: number, funct: (perc: number, count: number) => void, functloop?: Function, functend?: Function) {
         let loopstep = 0;
         this.simple(howmany, (perc, count) => {
@@ -419,9 +419,9 @@ export class Animation {
         return this;
     }
 
-	/**
-	 * Reverse the current step of the animation
-	 */
+    /**
+     * Reverse the current step of the animation
+     */
     reverse() {
         this.step = -this.step;
         return this;
@@ -455,12 +455,12 @@ export class Animation {
     // 	});
     // }
 
-	/**
-	 * Easiest way to lauch an animation (By default it start at 0 and use a step of 1)
-	 * @param howmany How many step is needed to end the animation
-	 * @param funct Function called at each run and used to animate something
-	 * @param functend Function called when animation is over
-	 */
+    /**
+     * Easiest way to lauch an animation (By default it start at 0 and use a step of 1)
+     * @param howmany How many step is needed to end the animation
+     * @param funct Function called at each run and used to animate something
+     * @param functend Function called when animation is over
+     */
     simple(howmany: number, funct: (perc: number, count: number) => void, functend?: Function) {
         // Equal 1 so that it start quick
         this.start = 1;
@@ -471,11 +471,11 @@ export class Animation {
         return this;
     }
 
-	/**
-	 * Set main animation functions and launch it (Often used after setting the animation parameters)
-	 * @param funct Function called at each run and used to animate something
-	 * @param functend Function called when animation is over
-	 */
+    /**
+     * Set main animation functions and launch it (Often used after setting the animation parameters)
+     * @param funct Function called at each run and used to animate something
+     * @param functend Function called when animation is over
+     */
     go(funct: (perc: number, count: number) => void, functend?: Function) {
         this.resetVar();
         this.running = true;
@@ -497,9 +497,9 @@ export class Animation {
         return Math.min(perc, 1);
     }
 
-	/**
-	 * Restart animation
-	 */
+    /**
+     * Restart animation
+     */
     restart() {
         if (this.running) {
             this.pause();
@@ -513,27 +513,27 @@ export class Animation {
         this.functend = null;
     }
 
-	/**
-	 * Stop animation
-	 * @param arg Sent to functend so that it knows the stop can be forced and is not due to the end of the animation
-	 */
+    /**
+     * Stop animation
+     * @param arg Sent to functend so that it knows the stop can be forced and is not due to the end of the animation
+     */
     stop(arg?: boolean) {
         this.resetVar(arg);
         this.running = false;
         return this;
     }
 
-	/**
-	 * Pause animation
-	 */
+    /**
+     * Pause animation
+     */
     pause() {
         this.running = false;
         return this;
     }
 
-	/**
-	 * Play animation
-	 */
+    /**
+     * Play animation
+     */
     play() {
         this.system.addAnimation(this);
         return this;

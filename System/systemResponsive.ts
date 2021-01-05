@@ -85,7 +85,7 @@ export class SystemResponsive extends System {
         let newHeight, newWidth;
         newWidth = window.innerWidth;
         newHeight = window.innerHeight;
-        
+
         if (newWidth !== this.windowWidth || newHeight !== this.windowHeight) {
             this.windowWidth = newWidth;
             this.windowHeight = newHeight
@@ -131,7 +131,7 @@ export class SystemResponsive extends System {
 
         const devicePixelRatio = window.devicePixelRatio;
         let newPixelRatio = Math.min(this.maxScaling, devicePixelRatio);
-       
+
         // console.log(newPixelRatio)
         // console.log(this.renderWidth/newPixelRatio, this.renderHeight/newPixelRatio)
         // We make sure scene stays fluid on big screen by forcing pixelRatio to 1
@@ -219,7 +219,7 @@ export class SystemResponsive extends System {
         // console.log(window.orientation, window.devicePixelRatio)
         // console.log(this.containerWidth, this.containerHeight)
         // console.log(this.containerRatio)
-        
+
         if (this.launched) {
             //! if container not diplayed, engine.resize can double the canvas size and make the window explode
             if (this.containerVisible) this.engine.resize();

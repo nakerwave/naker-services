@@ -34,7 +34,7 @@ export class ScrollCatcher extends ProgressCatcher {
         super(system);
         this._container = container;
         this.system = system;
-        
+
         this.system.on(SystemEvent.Resize, () => {
             this.checkHeight();
         });
@@ -55,7 +55,7 @@ export class ScrollCatcher extends ProgressCatcher {
     */
     setScrollSpeed(scrollSpeed: number) {
         this.scrollSpeed = scrollSpeed;
-        this.speedHeight = 1000/this.scrollSpeed;
+        this.speedHeight = 1000 / this.scrollSpeed;
         this.checkHeight();
     }
 
@@ -84,7 +84,7 @@ export class ScrollCatcher extends ProgressCatcher {
                 height = this._container.scrollHeight - this._container.clientHeight;
             }
         }
-        
+
         // On some browser or phone, you can have a small different even if page not scrollable
         // Plus 50 is way too short to make et scene scroll
         if (height <= 50) {
@@ -105,7 +105,7 @@ export class ScrollCatcher extends ProgressCatcher {
      * @ignore
      */
     _setScrollEvent() {
-        // Body use different evnet for scroll
+        // Body use different event for scroll
         if (this._container == document.body) {
             window.addEventListener("scroll", (evt) => {
                 let top = document.scrollingElement.scrollTop;
@@ -163,7 +163,7 @@ export class ScrollCatcher extends ProgressCatcher {
             let evt = touchEvent.event;
             this.checkPreventBodyScroll(evt, change.y);
             if (Math.abs(change.x) < Math.abs(change.y)) {
-                let top = this.progressReal * this.scrollHeight + change.y/5;
+                let top = this.progressReal * this.scrollHeight + change.y / 5;
                 if (this.catching) this.catchTop(top);
             }
         });
@@ -174,9 +174,9 @@ export class ScrollCatcher extends ProgressCatcher {
      */
     _start() {
         this.catching = true;
-        this.progressCatch = 0; 
+        this.progressCatch = 0;
         this.progressGap = 0;
-        
+
         if (this.followWindowScroll) {
             if (this._container == document.body) {
                 if (document.scrollingElement) {
