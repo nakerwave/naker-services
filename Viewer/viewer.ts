@@ -1,12 +1,5 @@
 import { el, mount, setStyle, setAttr } from 'redom';
-
-export interface ProjectInterface extends ViewerOption {
-    canvas?: HTMLCanvasElement,
-    // engine: 'story' | 'form' | 'back',
-    name?: string,
-    assets?: Array<any>,
-    palette?: Array<any>,
-}
+import { checkElementVisible } from '../Tools/util';
 
 export interface ViewerOption {
     id?: string,
@@ -18,6 +11,14 @@ export interface ViewerOption {
     fullScreen?: boolean,
     website?: string,
     listenEvent?: boolean,
+}
+
+export interface ProjectInterface extends ViewerOption {
+    canvas?: HTMLCanvasElement,
+    // engine: 'story' | 'form' | 'back',
+    name?: string,
+    assets?: Array<any>,
+    palette?: Array<any>,
 }
 
 export let quotereplacement = '|';
@@ -84,6 +85,25 @@ export class NakerViewer {
         this.checkContainerPosition();
         this._checkViewport();
         if (viewerOption && viewerOption.listenEvent === false) this.setNoEvent();
+    }
+
+    checkIfVisible = false;
+    waitElementToBeVisible(callback: Function) {
+        this.checkIfVisible = true;
+        this.checkContainerVisible(callback);
+        window.addEventListener("scroll", () => {
+            this.checkContainerVisible(callback);
+        });
+
+    }
+
+    checkContainerVisible(callback: Function) {
+        if (!this.checkIfVisible) return;
+        let containerVisible = checkElementVisible(this.canvas, 500);
+        if (containerVisible) {
+            callback();
+            this.checkIfVisible = false;
+        }
     }
 
     checkElWithStyle(el: HTMLElement) {

@@ -3,6 +3,7 @@ import { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math';
 
 import { NakerObservable } from '../Tools/observable';
+import { checkElementVisible } from '../Tools/util';
 
 /**
  * Manage all the essential assets needed to build a 3D scene (Engine, Scene Cameras, etc)
@@ -46,7 +47,7 @@ export class System extends NakerObservable<SystemEvent, number> {
      * Creates a new System
      * @param canvas Element where the scene will be drawn
      */
-    constructor(canvas: HTMLCanvasElement, screenshot?:boolean) {
+    constructor(canvas: HTMLCanvasElement, screenshot?: boolean) {
         super('System');
         // if (!Engine.isSupported()) throw 'WebGL not supported';
         this.canvas = canvas;
@@ -117,13 +118,7 @@ export class System extends NakerObservable<SystemEvent, number> {
 
     containerVisible = false;
     checkVisible(): boolean {
-        var rect = this.canvas.getBoundingClientRect();
-        var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
-        // is canvas on screen depending on scroll
-        let onScreen = !(rect.bottom < 0 || rect.top - viewHeight >= 0);
-        // is parent display or not
-        let parentDisplayed = !!this.canvas.offsetParent;
-        let containerVisible = (onScreen && parentDisplayed);
+        let containerVisible = checkElementVisible(this.canvas);
         if (!containerVisible) this.engine.setSize(0, 0);
         else if (containerVisible && !this.containerVisible) {
             this.engine.resize();
@@ -140,12 +135,12 @@ export class System extends NakerObservable<SystemEvent, number> {
     launchRender(callback?: Function) {
         this.currentLaunchCallback = callback;
         this.checkSceneReadyToRender(() => {
-            this.launched = true; 
+            this.launched = true;
             this.checkStartRender();
             if (callback) callback();
         });
     }
-    
+
     isCheckingReady = false;
     checkSceneReadyToRender(callback: Function) {
         this.isCheckingReady = true;
@@ -199,10 +194,10 @@ export class System extends NakerObservable<SystemEvent, number> {
     isRendering(): boolean {
         return this.rendering;
     }
-    
+
     forceRender() {
         this.notify(SystemEvent.Start, 0);
-        this.engine.stopRenderLoop();        
+        this.engine.stopRenderLoop();
         if (this.limitFPS) {
             this.engine.runRenderLoop(() => {
                 if (this.limitSwitch) this.scene.render();
