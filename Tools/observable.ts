@@ -45,7 +45,10 @@ export class NakerObservable<U, T> {
 
     once(event: U, funct: (eventData: T) => void, scope?: any) {
         let execFunc = (eventData) => {
-            this.off(event, execFunc);
+            //* setTimeout need as we loop on oberver object
+            setTimeout(() => {
+                this.off(event, execFunc);
+            }, 0);
             funct(eventData);
         };
         this.on(event, execFunc, scope);
@@ -56,10 +59,7 @@ export class NakerObservable<U, T> {
             if (obs.event === event && obs.funct === funct) {
                 var index = this.observers.indexOf(obs);
                 if (index !== -1) {
-                    //* setTimeout need as we loop on oberver object
-                    setTimeout(() => {
-                        this.observers.splice(index, 1);
-                    }, 0);
+                    this.observers.splice(index, 1);
                     return true;
                 }
             }
