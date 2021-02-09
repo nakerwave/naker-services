@@ -56,7 +56,10 @@ export class NakerObservable<U, T> {
             if (obs.event === event && obs.funct === funct) {
                 var index = this.observers.indexOf(obs);
                 if (index !== -1) {
-                    this.observers.splice(index, 1);
+                    //* setTimeout need as we loop on oberver object
+                    setTimeout(() => {
+                        this.observers.splice(index, 1);
+                    }, 0);
                     return true;
                 }
             }
