@@ -43,6 +43,14 @@ export class NakerObservable<U, T> {
         }
     }
 
+    once(event: U, funct: (eventData: T) => void, scope?: any) {
+        let execFunc = (eventData) => {
+            this.off(event, execFunc);
+            funct(eventData);
+        };
+        this.on(event, execFunc, scope);
+    }
+
     off(event: U, funct: (eventData: T) => void): boolean {
         for (var obs of this.observers) {
             if (obs.event === event && obs.funct === funct) {
@@ -55,7 +63,7 @@ export class NakerObservable<U, T> {
         }
         return false;
     }
-    
+
     inTheMiddleOfEventCallback: Array<U> = [];
     notify(event: U, eventData: T) {
         if (this.inTheMiddleOfEventCallback.indexOf(event) == -1) {
@@ -72,7 +80,7 @@ export class NakerObservable<U, T> {
             console.error('Infinite callback loop in observable: ' + this.observableName + ', Event: ' + event, eventData);
         }
     }
-        
+
     notifyAll(eventData: T) {
         // Use null to avoid error message in loop test
         if (this.inTheMiddleOfEventCallback.indexOf(null) == -1) {
