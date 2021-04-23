@@ -96,14 +96,24 @@ export class WaterMark {
     addButton(icon: string, clickCallback: Function, hoverCallback?: Function): HTMLElement {
         let button = el('div', {
             style: this.buttonStyle,
-            onclick: () => { if (clickCallback) clickCallback(); },
+            // onclick not working with mouse so we use pointerup instead
+            // onclick: () => { if (clickCallback) clickCallback(); }, 
             onmouseenter: () => { this.iconHovered(button); if (hoverCallback) hoverCallback(); },
             onmouseleave: () => { this.iconNotHovered(button); if (hoverCallback) hoverCallback(); }
         });
+        button.addEventListener("pointerup", (e) => {
+            this.prevent(e)
+            if (clickCallback) clickCallback();
+        })
         svgStringToDom(button, icon);
         this.addImportantCss(button, this.buttonStyle);
         mount(this.container, button);
         return button;
+    }
+
+    prevent(evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
     }
 
     iconHovered(icon: HTMLElement) {
