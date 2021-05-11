@@ -149,6 +149,9 @@ export class System extends NakerObservable<SystemEvent, number> {
         this.scene.executeWhenReady(() => {
             // console.log('ready');
             this.isCheckingReady = false;
+            // Force to have correct scene parameters
+            this.notify(SystemEvent.Stop, 0);
+            this.scene.render()
             callback();
         });
     }
@@ -282,5 +285,25 @@ export class System extends NakerObservable<SystemEvent, number> {
         if (limitFPS == this.limitFPS) return;
         this.limitFPS = limitFPS;
         if (this.rendering) this.forceRender();
+    }
+
+    disposeElements() {
+        for (let i = 0; i < this.scene.meshes.length; i++) {
+            const mesh = this.scene.meshes[i];
+            mesh.dispose()
+        }
+        this.scene.meshes = []
+        for (let i = 0; i < this.scene.lights.length; i++) {
+            const light = this.scene.lights[i];
+            light.dispose()
+        }
+        this.scene.lights = []
+    }
+
+    dispose() {
+        this.stopRender()
+        this.scene.dispose()
+        this.engine.dispose()
+        this.canvas.parentElement.removeChild(this.canvas)
     }
 }
