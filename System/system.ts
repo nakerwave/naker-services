@@ -290,7 +290,9 @@ export class System extends NakerObservable<SystemEvent, number> {
     disposeElements() {
         for (let i = 0; i < this.scene.meshes.length; i++) {
             const mesh = this.scene.meshes[i];
-            mesh.dispose()
+            //! Do not dispose Meshes as they can be used again when loading twice a model for instance
+            // mesh.dispose()
+            mesh.isVisible = false
         }
         this.scene.meshes = []
         for (let i = 0; i < this.scene.lights.length; i++) {
