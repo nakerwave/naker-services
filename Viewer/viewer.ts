@@ -36,9 +36,14 @@ export let addQuote = (optionString: string): string => {
 export class NakerViewer {
 
     /**
-     * Element where the 3D Scene will be drawn
+     * Main container
      */
     container: HTMLElement;
+
+    /**
+     * Element where the 3D Scene will be drawn
+     */
+    sceneContainer: HTMLElement;
 
     /**
      * Canvas used to draw the 3D scene
@@ -69,7 +74,15 @@ export class NakerViewer {
             }
         }
 
-        this.canvas = el('canvas', { style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden', 'overflow-x': 'hidden', outline: 'none', 'touch-action': 'none' }, oncontextmenu: "javascript:return false;" });
+        this.sceneContainer = el('div', {
+            class: 'naker-scene-container',
+            style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden', 'overflow-x': 'hidden' }, oncontextmenu: "javascript:return false;"
+        });
+        mount(this.container, this.sceneContainer);
+        this.canvas = el('canvas', {
+            class: 'naker-canvas',
+            style: { top: '0px', left: '0px', width: '100%', height: '100%', 'overflow-y': 'hidden', 'overflow-x': 'hidden', outline: 'none', 'touch-action': 'none' }
+        });
         let canvasposition = 'absolute';
         if (this.container == document.body) canvasposition = 'fixed';
         setStyle(this.canvas, { position: canvasposition });
@@ -80,7 +93,7 @@ export class NakerViewer {
         // -webkit-tap to avoid touch effect on iphone
 
         setAttr(this.canvas, { 'data-who': 'Made with naker.io' });
-        mount(this.container, this.canvas);
+        mount(this.sceneContainer, this.canvas);
 
         this.checkContainerPosition();
         this._checkViewport();
