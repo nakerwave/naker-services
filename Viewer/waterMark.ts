@@ -23,6 +23,7 @@ export class WaterMark {
         this.parent = parent;
         this.container = el('div', { style: this.containerStyle });
         this.setMenuEvent();
+        this.show()
     }
 
     setMenuEvent() {
@@ -61,7 +62,6 @@ export class WaterMark {
     visible = false;
     // Do not use system animation here because it will reset the quality of the scene
     fadeIn() {
-        this.show();
         if (this.visible) return;
         this.visible = true;
         setStyle(this.container, { opacity: 1 });

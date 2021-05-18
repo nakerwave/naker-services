@@ -120,7 +120,7 @@ export class SystemQuality extends SystemAnimation {
     formerCameraLayerMask;
     qualityBreakStarted = false;
     qualityBreakDone = false;
-    
+
     checkEndQuality() {
         this.notify(SystemEvent.HighQuality, 0);
         this.qualityBreakStarted = true;
@@ -138,7 +138,7 @@ export class SystemQuality extends SystemAnimation {
                     this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
                     this.scene.render();
                     // this.qualityLayer.render();
-                    
+
                     this.getScreenshot((image2) => {
                         if (this.isRendering()) return;
                         this.layer2 = this.addLayerImage(image2);
@@ -153,7 +153,7 @@ export class SystemQuality extends SystemAnimation {
                         // document.body.append(img2);
                         // img2.setAttribute('src', image2);
                         // console.log(this.layer1, this.layer2);
-    
+
                         var t = 0, change = 0.05;
                         this.engine.runRenderLoop(() => {
                             if (this.isRendering()) return;
@@ -162,7 +162,7 @@ export class SystemQuality extends SystemAnimation {
                             a = Math.min(a, 1)
                             this.layer1.color.a = Math.max(2 - a * 2);
                             this.layer2.color.a = Math.min(a * 2, 1);
-                            
+
                             this.qualityLayer.render();
                             if (a == 1) {
                                 this.engine.stopRenderLoop();
