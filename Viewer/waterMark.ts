@@ -90,6 +90,7 @@ export class WaterMark {
         'box-sizing': 'unset',
         'webkit-box-sizing': 'unset',
         'border-radius': '5px',
+        'margin-right': '5px',
         transition: 'all ease 200ms',
     };
 

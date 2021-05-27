@@ -101,8 +101,9 @@ export class SystemResponsive extends System {
     maxScaling = 1;
 
     isOnMobile = false;
+    isOnIphone = false;
 
-    checkIfOnMobile(): boolean {
+    checkDevice(): boolean {
         let isMobile = navigator.userAgent.toLowerCase().match(/mobile/i),
             isTablet = navigator.userAgent.toLowerCase().match(/tablet/i),
             isAndroid = navigator.userAgent.toLowerCase().match(/android/i),
@@ -113,6 +114,11 @@ export class SystemResponsive extends System {
         } else {
             this.isOnMobile = false;
         }
+        if (isiPhone || isiPad) {
+            this.isOnIphone = true;
+        } else {
+            this.isOnIphone = false;
+        }
         return this.isOnMobile;
     }
 
@@ -122,7 +128,7 @@ export class SystemResponsive extends System {
     pixelRatio = 1;
 
     checkPixelRatio(): boolean {
-        let onMobile = this.checkIfOnMobile();
+        let onMobile = this.checkDevice();
         if (onMobile) {
             this.maxScaling = 2;
         } else {
