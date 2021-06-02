@@ -13,3 +13,22 @@ export function checkElementVisible(element: HTMLElement, margin?: number): bool
     let containerVisible = (onScreen && parentDisplayed);
     return containerVisible;
 }
+
+export let getDevice = (): 'iOS' | 'Androïd' | 'Computer' => {
+    let isMobile = navigator.userAgent.toLowerCase().match(/mobile/i),
+        isTablet = navigator.userAgent.toLowerCase().match(/tablet/i),
+        isAndroid = navigator.userAgent.toLowerCase().match(/android/i),
+        isiPhone = navigator.userAgent.toLowerCase().match(/iphone/i),
+        isiPad = navigator.userAgent.toLowerCase().match(/ipad/i);
+    if (isiPhone || isiPad) {
+        return 'iOS'
+    } else if (isMobile || isTablet || isAndroid) {
+        return 'Androïd'
+    } else {
+        return 'Computer'
+    }
+}
+
+export let getUrlWithoutExtension = (url: string): string => {
+    return url.substr(0, url.lastIndexOf('.') + 1);
+}
