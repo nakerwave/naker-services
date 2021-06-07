@@ -43,6 +43,7 @@ export class SystemQuality extends SystemAnimation {
             if (this.keepHighQuality) this.notify(SystemEvent.HighQuality, 0);
             else if (this.qualityAtBreak) this.checkStartQuality();
             else this.notify(SystemEvent.LowQuality, 0);
+            this.checkHardwareScaling()
         });
 
         this.on(SystemEvent.Resize, () => {
@@ -72,8 +73,12 @@ export class SystemQuality extends SystemAnimation {
     alwaysKeepHighQuality(keepHighQuality: boolean) {
         this.keepHighQuality = keepHighQuality;
         // Make sure to have the right pixelRatio or Scaling Level won't be right on mobile
+        this.checkHardwareScaling()
+    }
+
+    checkHardwareScaling() {
         this.checkPixelRatio();
-        if (keepHighQuality) {
+        if (this.keepHighQuality) {
             this.notify(SystemEvent.HighQuality, 0);
             this.engine.setHardwareScalingLevel(0.5 / this.pixelRatio);
         } else if (this.rendering) {
