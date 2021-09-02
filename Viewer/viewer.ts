@@ -182,8 +182,11 @@ getCurrentScript();
 
 export let checkScript = (callback: Function) => {
     if (!currentScript) return;
-
     var projectString = currentScript.dataset.option;
+    if (!projectString) {
+        projectString = currentScript.getAttribute('data-option');
+    }
+
     if (projectString) {
         let projectJson = addQuote(projectString);
         let projectOption: ProjectInterface;

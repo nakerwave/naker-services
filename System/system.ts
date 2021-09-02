@@ -205,10 +205,12 @@ export class System extends NakerObservable<SystemEvent, number> {
             this.engine.runRenderLoop(() => {
                 if (this.limitSwitch) this.scene.render();
                 this.limitSwitch = !this.limitSwitch;
+                // this.checkScaling()
             });
         } else {
             this.engine.runRenderLoop(() => {
                 this.scene.render();
+                // this.checkScaling()
             });
         }
     }
@@ -285,6 +287,20 @@ export class System extends NakerObservable<SystemEvent, number> {
         if (limitFPS == this.limitFPS) return;
         this.limitFPS = limitFPS;
         if (this.rendering) this.forceRender();
+    }
+
+    adaptScalingToFps = false
+    setAdaptScalingToFps(adaptScalingToFps: boolean) {
+        this.adaptScalingToFps = adaptScalingToFps
+    }
+
+    checkScaling() {
+        if (this.adaptScalingToFps) {
+            let fps = this.engine.getFps()
+            let scaling = (60 - fps) / 60 + 0.5
+            console.log(fps, scaling);
+            this.engine.setHardwareScalingLevel(scaling)
+        }
     }
 
     disposeElements() {

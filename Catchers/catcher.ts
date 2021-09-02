@@ -86,7 +86,7 @@ export abstract class Catcher<T, U> extends NakerObservable<T, U> {
     */
     checkRecentCatch(interval: number): boolean {
         let now = new Date().getTime();
-        if (now - this.lastTimeCatch < interval ) {
+        if (now - this.lastTimeCatch < interval) {
             return true;
         } else {
             this.lastTimeCatch = now;
